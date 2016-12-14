@@ -1,0 +1,8 @@
+{
+  "name": "svgtopng.absovlent",
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
+    "nightmare": "^2.5.0"
+  }
+}
