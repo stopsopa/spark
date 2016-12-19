@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Spark test</title>
+</head>
+<body>
+    <button id="json">json</button>
+    <button id="post">post</button>
+    <br>
+    <input type="text" id="url" placeholder="url" value="http://yahoo.com">
+    <br>
+    <input type="text" id="file" placeholder="file" value="jahoo.png">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+
+        var log = (function () {try {return console.log;}catch (e) {return function () {}}}());
+
+        var i = (new Date()).getTime();
+
+        function json(url, data) {
+            return $.ajax(url, {
+                type: 'post',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(data)
+            });
+        }
+        function post(url, data) {
+            return $.ajax(url, {
+                type: 'post',
+                contentType: 'application/x-www-form-urlencoded',
+                data: data
+            });
+        }
+
+        $(function () {
+
+            var url = $('#url');
+            var file = $('#file');
+
+            $('#json').on('click', function () {
+                json('/fetch?get=paramtest', {
+                    url: url.val(),
+                    file: 'tmp/' + i + '_' + file.val()
+                })
+                i += 1;
+            });
+            $('#post').on('click', function () {
+                post('/fetch?get=paramtest', {
+                    url: url.val(),
+                    file: 'tmp/' + i + '_' + file.val()
+                })
+                i += 1;
+            });
+        });
+    </script>
+</body>
+</html>

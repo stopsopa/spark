@@ -1,6 +1,11 @@
 {
   "dependencies": {
+    "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "nightmare": "^2.8.1"
+  },
+  "scripts": {
+    "start": "node server.jsx",
+    "test": "node test.jsx"
   }
 }

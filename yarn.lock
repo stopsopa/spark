@@ -57,6 +57,21 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
+body-parser@^1.15.2:
+  version "1.15.2"
+  resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.15.2.tgz#d7578cf4f1d11d5f6ea804cef35dc7a7ff6dae67"
+  dependencies:
+    bytes "2.4.0"
+    content-type "~1.0.2"
+    debug "~2.2.0"
+    depd "~1.1.0"
+    http-errors "~1.5.0"
+    iconv-lite "0.4.13"
+    on-finished "~2.3.0"
+    qs "6.2.0"
+    raw-body "~2.1.7"
+    type-is "~1.6.13"
+
 boom@2.x.x:
   version "2.10.1"
   resolved "https://registry.yarnpkg.com/boom/-/boom-2.10.1.tgz#39c8918ceff5799f83f9492a848f625add0c766f"
@@ -77,6 +92,10 @@ buffer-shims@^1.0.0:
 builtin-modules@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-1.1.1.tgz#270f076c5a72c02f5b65a47df94c5fe3a278892f"
+
+bytes@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/bytes/-/bytes-2.4.0.tgz#7d97196f9d5baf7f6935e25985549edd2a6c2339"
 
 camelcase-keys@^2.0.0:
   version "2.1.0"
@@ -180,8 +199,8 @@ dashdash@^1.12.0:
     assert-plus "^1.0.0"
 
 debug@^2.1.3, debug@^2.2.0:
-  version "2.4.4"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-2.4.4.tgz#c04d17a654e9202464803f096153f70a6f31f4be"
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-2.4.5.tgz#34c7b12a1ca96674428f41fe92c49b4ce7cd0607"
   dependencies:
     ms "0.7.2"
 
@@ -290,7 +309,7 @@ etag@~1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.7.0.tgz#03d30b5f67dd6e632d2945d30d6652731a34d5d8"
 
-express:
+express@^4.14.0:
   version "4.14.0"
   resolved "https://registry.yarnpkg.com/express/-/express-4.14.0.tgz#c1ee3f42cdc891fb3dc650a8922d51ec847d0d66"
   dependencies:
@@ -489,6 +508,10 @@ http-signature@~1.1.0:
     assert-plus "^0.2.0"
     jsprim "^1.2.2"
     sshpk "^1.7.0"
+
+iconv-lite@0.4.13:
+  version "0.4.13"
+  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.13.tgz#1f88aba4ab0b1508e8312acc39345f36e992e2f2"
 
 indent-string@^2.1.0:
   version "2.1.0"
@@ -730,9 +753,9 @@ negotiator@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
 
-nightmare:
-  version "2.8.1"
-  resolved "https://registry.yarnpkg.com/nightmare/-/nightmare-2.8.1.tgz#c7d56e4b37d16978fc853ecb3acc976c315e16d9"
+nightmare@^2.8.1:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/nightmare/-/nightmare-2.9.0.tgz#1aed57dba60412eb3d3eb83202522c3461993df9"
   dependencies:
     debug "^2.2.0"
     deep-defaults "^1.0.3"
@@ -887,6 +910,14 @@ qs@6.2.0:
 range-parser@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.0.tgz#f49be6b487894ddc40dcc94a322f611092e00d5e"
+
+raw-body@~2.1.7:
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/raw-body/-/raw-body-2.1.7.tgz#adfeace2e4fb3098058014d08c072dcc59758774"
+  dependencies:
+    bytes "2.4.0"
+    iconv-lite "0.4.13"
+    unpipe "1.0.0"
 
 rc@^1.1.2:
   version "1.1.6"
@@ -1186,7 +1217,7 @@ typedarray@~0.0.5:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-unpipe@~1.0.0:
+unpipe@~1.0.0, unpipe@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
 
