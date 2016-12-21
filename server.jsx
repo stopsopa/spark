@@ -8,14 +8,21 @@ const http          = require('http');
 const path          = require('path');
 const bodyParser    = require('body-parser');
 const fs            = require('fs');
-const log           = console.log;
 const assert        = console.assert;
 const express       = require('express');
 const app           = express();
 
+const log = function () {
+    return console.log.apply(this, ["\n"].concat(Array.prototype.slice.call(arguments)));
+}
+
 function isObject(a) {
     return (!!a) && (a.constructor === Object);
 };
+
+fs.readdirSync('tmp').forEach(function (f) {
+    fs.unlinkSync(path.resolve('tmp', f));
+});
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
@@ -42,17 +49,23 @@ const defopt = {
     //     waitTimeout: 20000, // 20 sec
     //     executionTimeout: 10000, // 10 sec
     // },
-    headers : {}
+    headers : {},
+    // readyid: 'readyid', // don't change anything
+    nmsc: 'nmsc', // just namespace [nightmare scraper] window.nmsc = window.nmsc || []; nmsc.push(true);
+
+
+    // readyselector : 'body #UH-0-Header',
+    // readyselector : '[class="text-lowercase ng-binding"]', // first priority
+    ajaxwatchdog: true, // second priority (only if readyselector is not specified)
 };
 
 const nightmaredef = { // https://github.com/segmentio/nightmare#api
-    gotoTimeout: 20000, // 20 sec
-    waitTimeout: 20000, // 20 sec
-    executionTimeout: 10000, // 10 sec
-    loadTimeout: 10000, // 10 sec
+    // gotoTimeout: 20000, // 20 sec
+    // waitTimeout: 20000, // 20 sec
+    // executionTimeout: 10000, // 10 sec
+    // loadTimeout: 10000, // 10 sec
     'ignore-certificate-errors': true,
-    show: false,
-    ignoreCertificateErrors: true
+    show: true,
 };
 // https://expressjs.com/en/guide/routing.html#app-route
 app.all('/fetch', (req, res) => {
@@ -95,6 +108,10 @@ app.all('/fetch', (req, res) => {
         return res.end(error);
     }
 
+    if (!params.readyid) {
+        params.readyid = 'readyid_' + (new Date()).getTime();
+    }
+
     var night = Nightmare(nightmareopt);
 
     var once = function (fn) {
@@ -109,8 +126,8 @@ app.all('/fetch', (req, res) => {
 
     var collect = {};
 
-    night
-        .on('did-get-response-details', once(function () {
+    var queue = night
+        .on('did-get-response-details', once(function (event, status, newURL, originalURL, httpResponseCode, requestMethod, referrer, headers, resourceType) {
             // https://github.com/segmentio/nightmare#onevent-callback
             // https://github.com/electron/electron/blob/master/docs/api/web-contents.md#class-webcontents
             // log('did-get-response-details', Array.prototype.slice.call(arguments)[7])
@@ -120,39 +137,108 @@ app.all('/fetch', (req, res) => {
             });
             collect['did-get-response-details'] = data;
         }))
-        .on('did-fail-load', once(function () {
-            var data = Array.prototype.slice.call(arguments);
-            data.push({
-                doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-fail-load'
-            });
-            collect['did-fail-load'] = data;
-        }))
-        .on('did-get-redirect-request', function () {
-            if (!collect['did-get-redirect-request']) {
-                collect['did-get-redirect-request'] = [];
+        .on('did-fail-load', once(function (event, errorCode, errorDescription, validatedURL, isMainFrame) {
+            if (isMainFrame) {
+                var data = Array.prototype.slice.call(arguments);
+                data.push({
+                    doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-fail-load'
+                });
+                collect['did-fail-load'] = data;
             }
-            var data = Array.prototype.slice.call(arguments);
-            data.push({
-                doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-redirect-request'
-            });
-            collect['did-get-redirect-request'].push(data);
+        }))
+        .on('did-get-redirect-request', function (event, oldURL, newURL, isMainFrame) {
+            if (isMainFrame) {
+                if (!collect['did-get-redirect-request']) {
+                    collect['did-get-redirect-request'] = [];
+                }
+                var data = Array.prototype.slice.call(arguments);
+                data.push({
+                    doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-redirect-request'
+                });
+                collect['did-get-redirect-request'].push(data);
+            }
         })
         .goto(params.url, params.headers || {})
-        .screenshot(params.file)
+    ;
+
+    if (params.readyselector) {
+        queue = queue.wait(params.readyselector);
+    }
+    else {
+        queue = queue
+            .wait('body')
+            .evaluate(function (params) {
+
+                params = JSON.parse(params);
+
+                (function (ready) {
+
+                    if (window[params.nmsc] && window[params.nmsc].length) {
+                        return ready();
+                    }
+
+                    window[params.nmsc] = {
+                        push: ready
+                    };
+
+                    if (params.ajaxwatchdog) {
+                        
+                    }
+
+
+                        var box = document.querySelector('#YDC-Stream');
+                        box.innerHTML = params;
+                        var button = document.createElement('input');
+                        button.setAttribute('type', 'button');
+                        button.value = params.readyid;
+                        document.querySelector('#UH-0-Header').appendChild(button);
+
+                        button.addEventListener('click', ready);
+
+
+
+                }(function () {
+                    setTimeout(function () {
+                        var end = document.createElement('div');
+                        end.setAttribute('id', params.readyid);
+                        document.body.appendChild(end)
+                    }, 50);
+                }));
+            }, JSON.stringify(params))
+            .wait('#' + params.readyid)
+            .evaluate(function (params) {
+                params = JSON.parse(params);
+                var readyid = document.querySelector('#' + params.readyid);
+                readyid.parentNode.removeChild(readyid);
+            }, JSON.stringify(params))
+        ;
+    }
+
+    queue = queue
+        .evaluate(function (params) {
+
+            params = JSON.parse(params);
+
+            return document.documentElement.innerHTML;
+        }, JSON.stringify(params))
         .end() // without that, then will be executed but entire script wont stop
-        .then(function () {
+        .then(function (html) {
 
             var data = {
-                collect: collect
+                collect: collect,
+                html: html
             };
 
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+            // log('then', collect);
 
             res.statusCode = collect['did-get-response-details'][4];
 
             res.end(JSON.stringify(data));
         })
         .catch(function (error) {
+            log('catch', params.file);
 
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
 

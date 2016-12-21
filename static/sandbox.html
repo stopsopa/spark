@@ -19,8 +19,6 @@
 
         var log = (function () {try {return console.log;}catch (e) {return function () {}}}());
 
-        var i = (new Date()).getTime();
-
         function json(url, data) {
             return $.ajax(url, {
                 type: 'post',
@@ -36,6 +34,8 @@
             });
         }
 
+        var i = 0;
+
         $(function () {
 
             var url = $('#url');
@@ -44,15 +44,17 @@
             $('#json').on('click', function () {
                 json('/fetch?get=paramtest', {
                     url: url.val(),
+//                    file: 'tmp/' + (new Date()).getTime() + '_' + file.val()
                     file: 'tmp/' + i + '_' + file.val()
-                })
+                });
                 i += 1;
             });
             $('#post').on('click', function () {
                 post('/fetch?get=paramtest', {
                     url: url.val(),
+//                    file: 'tmp/' + (new Date()).getTime() + '_' + file.val()
                     file: 'tmp/' + i + '_' + file.val()
-                })
+                });
                 i += 1;
             });
         });
