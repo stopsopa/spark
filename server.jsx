@@ -3,6 +3,9 @@
 // później obczaić:
 // clear cache: https://github.com/segmentio/nightmare#custom-preload-script
 
+// ajax
+// http://stackoverflow.com/questions/5202296/add-a-hook-to-all-ajax-requests-on-a-page
+
 const Nightmare     = require('nightmare');
 const http          = require('http');
 const path          = require('path');
@@ -56,7 +59,7 @@ const defopt = {
 
     // readyselector : 'body #UH-0-Header',
     // readyselector : '[class="text-lowercase ng-binding"]', // first priority
-    ajaxwatchdog: true, // second priority (only if readyselector is not specified)
+    ajaxwatchdog: true, // second priority (only if readyselector is not specified) - enabled by default
 };
 
 const nightmaredef = { // https://github.com/segmentio/nightmare#api
@@ -159,6 +162,15 @@ app.all('/fetch', (req, res) => {
             }
         })
         .goto(params.url, params.headers || {})
+        .inject('js', path.resolve('libs', 'ajaxwatchdog.js'))
+        // .evaluate(function (params) {
+        //
+        //     params = JSON.parse(params);
+        //
+        //     // document.addEventListener('DOMContentLoaded', function () {
+        //     //     document.body.innerHTML = 'DOMContentLoaded';
+        //     // })
+        // }, JSON.stringify(params))
     ;
 
     if (params.readyselector) {
@@ -182,18 +194,8 @@ app.all('/fetch', (req, res) => {
                     };
 
                     if (params.ajaxwatchdog) {
-                        
+
                     }
-
-
-                        var box = document.querySelector('#YDC-Stream');
-                        box.innerHTML = params;
-                        var button = document.createElement('input');
-                        button.setAttribute('type', 'button');
-                        button.value = params.readyid;
-                        document.querySelector('#UH-0-Header').appendChild(button);
-
-                        button.addEventListener('click', ready);
 
 
 
@@ -205,12 +207,13 @@ app.all('/fetch', (req, res) => {
                     }, 50);
                 }));
             }, JSON.stringify(params))
+            // .wait(3000)
             .wait('#' + params.readyid)
-            .evaluate(function (params) {
-                params = JSON.parse(params);
-                var readyid = document.querySelector('#' + params.readyid);
-                readyid.parentNode.removeChild(readyid);
-            }, JSON.stringify(params))
+            // .evaluate(function (params) {
+            //     params = JSON.parse(params);
+            //     var readyid = document.querySelector('#' + params.readyid);
+            //     readyid.parentNode.removeChild(readyid);
+            // }, JSON.stringify(params))
         ;
     }
 
@@ -231,14 +234,12 @@ app.all('/fetch', (req, res) => {
 
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
-            // log('then', collect);
-
             res.statusCode = collect['did-get-response-details'][4];
 
-            res.end(JSON.stringify(data));
+            res.end(html);
+            // res.end(JSON.stringify(data));
         })
         .catch(function (error) {
-            log('catch', params.file);
 
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
