@@ -260,6 +260,7 @@ app.all('/fetch', (req, res) => {
                     }));
                 }, JSON.stringify(params))
                 .wait('#' + params.readyid)
+                .screenshot(path.resolve('tmp', params.readyid + '.png'))
                 .evaluate(function (params) {
                     params = JSON.parse(params);
                     var readyid = document.querySelector('#' + params.readyid);

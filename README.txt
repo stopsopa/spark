@@ -12,3 +12,6 @@ killall node
 (sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run start 0.0.0.0 80
 
 window.nmsc = window.nmsc || []; nmsc.push(true);
+
+/// headless browser testing travis-ci
+https://docs.travis-ci.com/user/gui-and-headless-browsers/
