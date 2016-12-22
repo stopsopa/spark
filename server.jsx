@@ -16,12 +16,22 @@ const express       = require('express');
 const app           = express();
 
 const log = function () {
-    return console.log.apply(this, ["\n"].concat(Array.prototype.slice.call(arguments)));
+    return console.log.apply(this, Array.prototype.slice.call(arguments));
 }
 
-function isObject(a) {
-    return (!!a) && (a.constructor === Object);
-};
+// function isObject(a) {
+//     return (!!a) && (a.constructor === Object);
+// };
+
+// var once = function (fn) {
+//     var trigger = true;
+//     return function () {
+//         if (trigger) {
+//             trigger = false;
+//             return fn.apply(this, Array.prototype.slice.call(arguments));
+//         }
+//     };
+// };
 
 fs.readdirSync('tmp').forEach(function (f) {
     fs.unlinkSync(path.resolve('tmp', f));
@@ -63,193 +73,231 @@ const defopt = {
 };
 
 const nightmaredef = { // https://github.com/segmentio/nightmare#api
-    // gotoTimeout: 20000, // 20 sec
-    // waitTimeout: 20000, // 20 sec
-    // executionTimeout: 10000, // 10 sec
-    // loadTimeout: 10000, // 10 sec
+    gotoTimeout: 20000, // 20 sec [This will throw an exception if the .goto()]
+    waitTimeout: 20000, // 20 sec [This will throw an exception if the .wait() didn't return true within the set timeframe.]
+    pollInterval: 60, // How long to wait between checks for the .wait() condition to be successful.
+    executionTimeout: 10000, // 10 sec [The maxiumum amount of time to wait for an .evaluate() statement to complete.]
+    loadTimeout: 40000, // 10 sec [powinien być dłuższy czas niż gotoTimeout inaczej exception from gotoTimeout będzie zduszony]
     'ignore-certificate-errors': true,
     show: true,
+    dock: true,
+    // openDevTools: {
+    //     mode: 'detach'
+    // },
+
+    alwaysOnTop: false,
+    webPreferences: {
+        preload: path.resolve('libs', "preload.js") // (custom preload script preload.js) https://github.com/segmentio/nightmare#custom-preload-script
+        //alternative: preload: "absolute/path/to/custom-script.js"
+    }
 };
 // https://expressjs.com/en/guide/routing.html#app-route
 app.all('/fetch', (req, res) => {
 
-    var params = req.query;
+    function json(code, data) {
 
-    var error = false;
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
-    if (req.method === 'POST') { // http://expressjs.com/en/api.html#req
+        res.statusCode = code;
 
-        // interesting failure: req.body is not object when urlencoded post ???
-        // log('post: ', req.body, req.method, isObject(req.body), typeof req.body, req.body.constructor);
-        Object.assign(params, req.body);
+        if (typeof data === 'string') {
+
+            return res.end(data);
+        }
+
+        res.end(JSON.stringify(data));
     }
 
-    params = Object.assign({}, defopt, params);
+    try {
+        var params = req.query;
 
-    var nightmareopt = Object.assign({}, nightmaredef);
+        var error = false;
 
-    if (params.nightmare) {
-        nightmareopt = Object.assign(nightmareopt, param.nightmare)
-    }
+        if (req.method === 'POST') { // http://expressjs.com/en/api.html#req
 
-    log('params', params);
+            // interesting failure: req.body is not object when urlencoded post ???
+            // log('post: ', req.body, req.method, isObject(req.body), typeof req.body, req.body.constructor);
+            Object.assign(params, req.body);
+        }
 
-    if (!params.url) {
+        params = Object.assign({}, defopt, params);
 
-        error = "specify 'url' param (in get or post or json method)";
-    }
+        var nightmareopt = Object.assign({}, nightmaredef);
 
-    if (!params.file) {
+        if (params.nightmare) {
+            nightmareopt = Object.assign(nightmareopt, param.nightmare)
+        }
 
-        error = "specify 'file' param (in get or post or json method)";
-    }
+        log('params', params);
 
-    if (error) {
+        if (!params.url) {
 
-        res.statusCode = 404;
+            error = "specify 'url' param (in get or post or json method)";
+        }
 
-        return res.end(error);
-    }
+        if (!params.file) {
 
-    if (!params.readyid) {
-        params.readyid = 'readyid_' + (new Date()).getTime();
-    }
+            error = "specify 'file' param (in get or post or json method)";
+        }
 
-    var night = Nightmare(nightmareopt);
+        if (error) {
 
-    var once = function (fn) {
-        var trigger = true;
-        return function () {
-            if (trigger) {
-                trigger = false;
-                return fn.apply(this, Array.prototype.slice.call(arguments));
-            }
-        };
-    };
+            res.statusCode = 404;
 
-    var collect = {};
+            return res.end(error);
+        }
 
-    var queue = night
-        .on('did-get-response-details', once(function (event, status, newURL, originalURL, httpResponseCode, requestMethod, referrer, headers, resourceType) {
-            // https://github.com/segmentio/nightmare#onevent-callback
-            // https://github.com/electron/electron/blob/master/docs/api/web-contents.md#class-webcontents
-            // log('did-get-response-details', Array.prototype.slice.call(arguments)[7])
-            var data = Array.prototype.slice.call(arguments);
-            data.push({
-                doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-response-details'
-            });
-            collect['did-get-response-details'] = data;
-        }))
-        .on('did-fail-load', once(function (event, errorCode, errorDescription, validatedURL, isMainFrame) {
-            if (isMainFrame) {
-                var data = Array.prototype.slice.call(arguments);
-                data.push({
-                    doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-fail-load'
-                });
-                collect['did-fail-load'] = data;
-            }
-        }))
-        .on('did-get-redirect-request', function (event, oldURL, newURL, isMainFrame) {
-            if (isMainFrame) {
-                if (!collect['did-get-redirect-request']) {
-                    collect['did-get-redirect-request'] = [];
-                }
-                var data = Array.prototype.slice.call(arguments);
-                data.push({
-                    doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-redirect-request'
-                });
-                collect['did-get-redirect-request'].push(data);
-            }
-        })
-        .goto(params.url, params.headers || {})
-        .inject('js', path.resolve('libs', 'ajaxwatchdog.js'))
-        // .evaluate(function (params) {
-        //
-        //     params = JSON.parse(params);
-        //
-        //     // document.addEventListener('DOMContentLoaded', function () {
-        //     //     document.body.innerHTML = 'DOMContentLoaded';
-        //     // })
-        // }, JSON.stringify(params))
-    ;
+        if (!params.readyid) {
+            params.readyid = 'readyid_' + (new Date()).getTime();
+        }
 
-    if (params.readyselector) {
-        queue = queue.wait(params.readyselector);
-    }
-    else {
+        var night = Nightmare(nightmareopt);
+
+        var collect = {};
+
+        var queue = night
+                .on('console', function (type) {
+                    var args = Array.prototype.slice.call(arguments);
+                    args[0] = '[browser:'+args[0]+']';
+                    log.apply(this, args);
+                })
+                .on('page', function (type) {
+                    var args = Array.prototype.slice.call(arguments);
+                    switch(type) {
+                        case 'error':
+                            return json(500, {
+                                errorType: 'page event error',
+                                data: args
+                            });
+                        case 'alert':
+                        case 'prompt':
+                        case 'confirm':
+                            args[0] = "[browser:"+args[0]+"]";
+                            return log.apply(this, args);
+                        default:
+                    }
+                })
+                .once('did-get-response-details', function (event, status, newURL, originalURL, httpResponseCode, requestMethod, referrer, headers, resourceType) {
+                    // https://github.com/segmentio/nightmare#onevent-callback
+                    // https://github.com/electron/electron/blob/master/docs/api/web-contents.md#class-webcontents
+                    // log('did-get-response-details', Array.prototype.slice.call(arguments)[7])
+                    var data = Array.prototype.slice.call(arguments);
+                    data.push({
+                        doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-response-details'
+                    });
+                    collect['did-get-response-details'] = data;
+                })
+                .once('did-fail-load', function (event, errorCode, errorDescription, validatedURL, isMainFrame) {
+                    if (isMainFrame) {
+                        var data = Array.prototype.slice.call(arguments);
+                        data.push({
+                            doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-fail-load'
+                        });
+                        collect['did-fail-load'] = data;
+                    }
+                })
+                .on('did-get-redirect-request', function (event, oldURL, newURL, isMainFrame) {
+                    if (isMainFrame) {
+                        if (!collect['did-get-redirect-request']) {
+                            collect['did-get-redirect-request'] = [];
+                        }
+                        var data = Array.prototype.slice.call(arguments);
+                        data.push({
+                            doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-redirect-request'
+                        });
+                        collect['did-get-redirect-request'].push(data);
+                    }
+                })
+                .goto(params.url, params.headers || {})
+            ;
+
+        if (params.readyselector) {
+            queue = queue.wait(params.readyselector);
+        }
+        else {
+            queue = queue
+
+                // mozna później spróbować to wywalić
+                .wait('body')
+
+
+                .evaluate(function (params) {
+
+                    params = JSON.parse(params);
+
+                    (function (ready) {
+
+                        if (window[params.nmsc] && window[params.nmsc].length) {
+                            return ready();
+                        }
+
+                        window[params.nmsc] = {
+                            push: ready
+                        };
+
+                        if (params.ajaxwatchdog) {
+
+                        }
+
+                        setTimeout(ready, 6000);
+
+
+                        var button = document.createElement('input');
+                        button.setAttribute('type', 'button');
+                        button.value = 'evaluate click to exit';
+                        document.body.insertBefore(button, document.body.childNodes[0]);
+
+                        button.addEventListener('click', function () {
+                            window.nmsc = window.nmsc || []; nmsc.push(true);
+                        });
+
+                    }(function () {
+                        setTimeout(function () {
+                            var end = document.createElement('div');
+                            end.setAttribute('id', params.readyid);
+                            document.body.appendChild(end)
+                        }, 50);
+                    }));
+                }, JSON.stringify(params))
+                .wait('#' + params.readyid)
+                .evaluate(function (params) {
+                    params = JSON.parse(params);
+                    var readyid = document.querySelector('#' + params.readyid);
+                    readyid.parentNode.removeChild(readyid);
+                }, JSON.stringify(params))
+            ;
+        }
+
         queue = queue
-            .wait('body')
             .evaluate(function (params) {
 
                 params = JSON.parse(params);
 
-                (function (ready) {
-
-                    if (window[params.nmsc] && window[params.nmsc].length) {
-                        return ready();
-                    }
-
-                    window[params.nmsc] = {
-                        push: ready
-                    };
-
-                    if (params.ajaxwatchdog) {
-
-                    }
-
-
-
-                }(function () {
-                    setTimeout(function () {
-                        var end = document.createElement('div');
-                        end.setAttribute('id', params.readyid);
-                        document.body.appendChild(end)
-                    }, 50);
-                }));
+                return document.documentElement.innerHTML;
             }, JSON.stringify(params))
-            // .wait(3000)
-            .wait('#' + params.readyid)
-            // .evaluate(function (params) {
-            //     params = JSON.parse(params);
-            //     var readyid = document.querySelector('#' + params.readyid);
-            //     readyid.parentNode.removeChild(readyid);
-            // }, JSON.stringify(params))
-        ;
+            .end() // without that, then will be executed but entire script wont stop
+            .then(function (html) {
+
+                var data = {
+                    collect: collect,
+                    html: html,
+                };
+
+                // json(collect['did-get-response-details'][4], html)
+                json(collect['did-get-response-details'][4], data)
+            })
+            .catch(function (error) {
+
+                json(500, {
+                    try_catch: 'Nightmare crashed',
+                    details: error
+                });
+            })
     }
+    catch (e) {
 
-    queue = queue
-        .evaluate(function (params) {
-
-            params = JSON.parse(params);
-
-            return document.documentElement.innerHTML;
-        }, JSON.stringify(params))
-        .end() // without that, then will be executed but entire script wont stop
-        .then(function (html) {
-
-            var data = {
-                collect: collect,
-                html: html
-            };
-
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-            res.statusCode = collect['did-get-response-details'][4];
-
-            res.end(html);
-            // res.end(JSON.stringify(data));
-        })
-        .catch(function (error) {
-
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-            res.statusCode = 500;
-
-            res.end(JSON.stringify({
-                try_catch: 'Nightmare crashed',
-                details: error
-            }));
-        })
+        json(500, e);
+    }
 });
 
 app.use(express.static('static'))
