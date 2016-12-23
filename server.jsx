@@ -33,9 +33,16 @@ const log = function () {
 //     };
 // };
 
-fs.readdirSync('tmp').forEach(function (f) {
-    fs.unlinkSync(path.resolve('tmp', f));
-});
+var tmp = path.resolve('tmp');
+
+if (fs.existsSync(tmp)) {
+    fs.readdirSync(tmp).forEach(function (f) {
+        fs.unlinkSync(path.resolve(tmp, f));
+    });
+}
+else {
+    fs.mkdirSync(tmp);
+}
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
@@ -302,6 +309,23 @@ app.all('/fetch', (req, res) => {
 });
 
 app.use(express.static('static'))
+
+app.get('/json', (req, res) => {
+
+    setTimeout(() => {
+
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+        res.end(JSON.stringify({
+            ok: true
+        }));
+
+    }, 300)
+})
+
+app.get('/wrongurl', (req, res) => {
+
+});
 
 app.listen(port, function () {
     console.log('Server running 0.0.0.0:'+port)

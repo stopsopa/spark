@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ajax</title>
+</head>
+<body>
+
+    <button id="moreajax">moreajax</button>
+    <button id="fetch">fetch</button>
+    <button id="wrongurl">wrongurl</button>
+    <pre></pre>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+
+        var log = (function () {try {return console.log;}catch (e) {return function () {}}}());
+
+        /**
+         * Later extend to this syntax: http://stackoverflow.com/a/37532556
+         */
+        (function () {
+
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
+            function over(method, on, off) {
+
+                var old = window.XMLHttpRequest.prototype[method];
+
+                if (!old.old) {
+
+                    var stack = [];
+
+                    window.XMLHttpRequest.prototype[on] = function (fn) {
+                        if (typeof fn === 'function') {
+                            stack.push(fn);
+                        }
+                    }
+
+                    window.XMLHttpRequest.prototype[off] = function (fn) {
+                        for (var i = 0, l = stack.length ; i < l ; i += 1 ) {
+                            if (stack[i] === fn) {
+                                stack.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+
+                    window.XMLHttpRequest.prototype[method] = function () {
+                        var args = Array.prototype.slice.call(arguments);
+
+                        for (var i = 0, l = stack.length ; i < l ; i += 1 ) {
+                            stack[i].apply(this, args);
+                        }
+
+                        return old.apply(this, args);
+                    }
+
+                    window.XMLHttpRequest.prototype[method].old = old;
+                }
+            }
+
+            var list = [], c, on, off, t;
+            for (var i in XMLHttpRequest.prototype) {
+                try {
+                    t = typeof XMLHttpRequest.prototype[i];
+                    if (t === 'function') {
+
+                        c = capitalizeFirstLetter(i);
+
+                        on  = 'on' + c;
+
+                        off = 'off' + c;
+
+                        over(i, on, off);
+
+                        list.push(on);
+                        log('overrided: ', i);
+                    }
+                    else {
+//                        log("can't override - not function: ", i)
+                    }
+                }
+                catch (e) {
+//                    log("can't extend: ", i);
+                }
+            }
+
+            window.XMLHttpRequest.prototype.list = list;
+
+//            window.XMLHttpRequest.prototype.list.forEach(function (i) {
+//                XMLHttpRequest.prototype[i](function () {
+//                    log(i + ' called', Array.prototype.slice.call(arguments));
+//                });
+//            });
+
+        }());
+
+        window.XMLHttpRequest.prototype.onAllFinished = function (finishedfn, debouncetime /* 1000 */, fusetime /* 1500 */) {
+
+            if (typeof debouncetime === 'undefined') {
+                debouncetime = 1000;
+            }
+
+            if (typeof fusetime === 'undefined' || fusetime < debouncetime) {
+                fusetime = debouncetime + 500;
+            }
+
+            function unique(pattern) {
+                pattern || (pattern = 'xyxyxy');
+                return pattern.replace(/[xy]/g,
+                function(c) {
+                    var r = Math.random() * 16 | 0,
+                            v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            function debounce(fn, delay) {
+                var timer = null;
+                return function () {
+                    var context = this, args = arguments;
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        fn.apply(context, args);
+                    }, delay);
+                };
+            };
+
+            (function () {
+
+                var urls = {};
+
+                var counter = 0;
+                function up (key) {
+                    counter += 1;
+                    initEmergency(key);
+                }
+                function down(key) {
+                    counter -= 1;
+                    delete urls[key];
+                    initEmergency(key);
+                }
+                var emergency;
+                function initEmergency(key) {
+                    if (!emergency) {
+                        emergency = debounce(function () {
+                            if (finishedfn) {
+                                var tmp = [];
+                                for (var i in urls) {
+                                    tmp.push(urls[i]);
+                                }
+                                finishedfn({
+                                    notFinishedAsynchronousResponses: tmp,
+                                });
+                            }
+                            finishedfn = false;
+                        }, fusetime);
+                    }
+                    emergency();
+                }
+                var onReady = debounce(function () {
+                    if (counter === 0) {
+                        finishedfn && finishedfn({
+                            notFinishedAsynchronousResponses: []
+                        });
+                        finishedfn = false;
+                    }
+                }, debouncetime);
+
+                (function (old) {
+                    if (old && !old.old) {
+                        fetch = function () {
+                            var args = Array.prototype.slice.call(arguments);
+                            log('fetch is called', args)
+                            var promise = old.apply(this, args);
+                            promise = promise.then(function () {
+//                                down();
+                            });
+                            return promise;
+                        }
+                        fetch.old = old;
+                    }
+                }(window.fetch));
+
+
+                XMLHttpRequest.prototype.onOpen(function (method, url) {
+
+                    var key = unique()+'_'+((new Date()).getTime());
+                    urls[key] = url;
+
+                    up(key);
+                    var xhr = this;
+                    this.addEventListener('readystatechange', function (e) {
+                        if (xhr.readyState === 4) {
+                            down(key)
+                            if (counter === 0) {
+                                onReady();
+                            }
+                        }
+                    })
+                });
+
+                onReady();
+            }())
+        };
+
+        window.XMLHttpRequest.prototype.onAllFinished(function (status) {
+            log('onAllFinished', status)
+        }, 1000, 10000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+        var ajaxNative = (function () {
+            function createXHR() {
+                if (window.XDomainRequest) return new XDomainRequest();     // code for IE7+, Firefox, Chrome, Opera, Safari
+                if (window.XMLHttpRequest) return new XMLHttpRequest();     // code for IE7+, Firefox, Chrome, Opera, Safari
+                if (window.ActiveXObject)  return new ActiveXObject("Microsoft.XMLHTTP");  //   code for IE6, IE5
+                throw "Can't create xhr object";
+            };
+            return function (url, data, fn, errfn) { // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+                data || (data = {});
+                errfn || (errfn = function (e) {log(e)})
+                var xhr  = createXHR();
+                xhr.open('GET', url, true);
+                xhr.setRequestHeader('Content-type', 'text/plain'); // for ie9 issue
+                xhr.onreadystatechange = function() {
+                    if (xhr.status === 0) {
+                        xhr.abort();
+                        errfn && errfn('Server not found');
+                        return;
+                    }
+                    if (xhr.readyState == 4)   {
+                        if (xhr.status  == 200) {
+                            try {
+                                var resp = JSON.parse(xhr.responseText);
+                            }
+                            catch (e) {
+                                throw e;
+                            }
+                            fn && fn(resp);
+                            xhr=null;
+                        }
+                        else {
+                            errfn && errfn('Error status code: '+xhr.status);
+                        }
+                    }
+                }
+                xhr.send(JSON.stringify(data));
+            };
+        })();
+
+        $(function () {
+            var i = 0;
+
+            var pre = document.querySelector('pre');
+
+            function ajax(l, fn) {
+                $.ajax('/json?_' + l)
+                    .done(function (data) {
+                        pre.innerHTML += l + "\n";
+                        log(l, data);
+                        fn && fn();
+                    })
+                ;
+            }
+
+            function ajaxN(l, fn) {
+                ajaxNative('/json?_n_' + l, {}, fn)
+            }
+
+            setTimeout(function () {
+
+                ajax('a1', function () {
+                    ajax('a2', function () {
+                        ajax('a3', function () {
+                            ajax('a4', function () {
+                                setTimeout(function () {
+                                    ajax('b1', function () {
+                                        ajaxN('b2');
+                                    });
+                                }, 300);
+                            });
+                        });
+                    });
+                });
+
+                setTimeout(function () {
+                    ajax('c1', function () {
+                        ajax('c2', function () {
+                            ajaxN('c3', function () {
+                                ajaxN('c4', function () {
+                                })
+                            })
+                        });
+                    });
+                }, 50)
+
+            }, 500);
+
+            (function () {
+
+                var i = 0;
+
+                $('#moreajax').on('click', function () {
+                    ajax('a1_'+i, function () {
+                        ajax('a2_'+i, function () {
+                            ajax('a3_'+i, function () {
+                                ajax('a4_'+i, function () {
+                                    setTimeout(function () {
+                                        ajax('b1_'+i, function () {
+                                            ajaxN('b2_'+i);
+                                        });
+                                    }, 300);
+                                });
+                            });
+                        });
+                    });
+                    i += 1;
+                });
+
+                (function () {
+                    var i = 0;
+                    $('#wrongurl').on('click', function () {
+                        ajaxNative('/wrongurl?_'+i)
+                        i += 1;
+                    })
+                }())
+            }());
+
+            (function () {
+                var i = 0;
+                function fetchN(l, fn) {
+                    var f = fetch('/json?fetch_' + l)
+
+                    if (typeof fn === 'function ') {
+                        f.then(fn);
+                    }
+                }
+                $('#fetch').on('click', function () {
+                    fetchN('fetch_' + i, function (data) {
+                        log('button fetch', data);
+                    });
+                    i += 1;
+                });
+            }());
+
+        });
+
+    </script>
+</body>
+</html>

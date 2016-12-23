@@ -71,7 +71,7 @@ window.addEventListener('error', function(e) {
     }
 })()
 
-window.log = (function () {try {return console.log;}catch (e) {return function () {}}}())
+window.log = (function () {try {return console.log;}catch (e) {return function () {}}}());
 
 // document.addEventListener('DOMContentLoaded', function () {
 //     log('DOMContentLoaded earlyaspossible')
