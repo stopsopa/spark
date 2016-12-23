@@ -11,38 +11,10 @@ const http          = require('http');
 const path          = require('path');
 const bodyParser    = require('body-parser');
 const fs            = require('fs');
-const assert        = console.assert;
 const express       = require('express');
+const assert        = console.assert;
+const log           = console.log;
 const app           = express();
-
-const log = function () {
-    return console.log.apply(this, Array.prototype.slice.call(arguments));
-}
-
-// function isObject(a) {
-//     return (!!a) && (a.constructor === Object);
-// };
-
-// var once = function (fn) {
-//     var trigger = true;
-//     return function () {
-//         if (trigger) {
-//             trigger = false;
-//             return fn.apply(this, Array.prototype.slice.call(arguments));
-//         }
-//     };
-// };
-
-var tmp = path.resolve('tmp');
-
-if (fs.existsSync(tmp)) {
-    fs.readdirSync(tmp).forEach(function (f) {
-        fs.unlinkSync(path.resolve(tmp, f));
-    });
-}
-else {
-    fs.mkdirSync(tmp);
-}
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
@@ -58,7 +30,7 @@ const port = process.argv[3];
 
 assert(port >= 0 && port <= 65535, "port beyond range 0 - 65535 : '" + port + "'");
 
-app.use(bodyParser.urlencoded({ extended: false })) // post data
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json()); // https://github.com/expressjs/body-parser#expressconnect-top-level-generic
 
 const defopt = {
@@ -70,13 +42,16 @@ const defopt = {
     //     executionTimeout: 10000, // 10 sec
     // },
     headers : {},
-    // readyid: 'readyid', // don't change anything
+    // readyid: 'readyid', // don't change anything, you just can use predefined id instead of random
     nmsc: 'nmsc', // just namespace [nightmare scraper] window.nmsc = window.nmsc || []; nmsc.push(true);
-
 
     // readyselector : 'body #UH-0-Header',
     // readyselector : '[class="text-lowercase ng-binding"]', // first priority
-    ajaxwatchdog: true, // second priority (only if readyselector is not specified) - enabled by default
+    returnonlyhtml: false,
+    ajaxwatchdog: {
+        waitafterlastajaxresponse: 1000, // 1 sec
+        longestajaxrequest: 5000 // 5 sec
+    }, // second priority (only if readyselector is not specified) - enabled by default
 };
 
 const nightmaredef = { // https://github.com/segmentio/nightmare#api
@@ -86,15 +61,15 @@ const nightmaredef = { // https://github.com/segmentio/nightmare#api
     executionTimeout: 10000, // 10 sec [The maxiumum amount of time to wait for an .evaluate() statement to complete.]
     loadTimeout: 40000, // 10 sec [powinien być dłuższy czas niż gotoTimeout inaczej exception from gotoTimeout będzie zduszony]
     'ignore-certificate-errors': true,
-    show: true,
-    dock: true,
-    // openDevTools: {
+    show: false,
+    dock: false,
+    // openDevTools: { // to enable developer tools
     //     mode: 'detach'
     // },
 
     alwaysOnTop: false,
     webPreferences: {
-        preload: path.resolve('libs', "preload.js") // (custom preload script preload.js) https://github.com/segmentio/nightmare#custom-preload-script
+        preload: path.resolve('static', 'libs', "onAllFinished.js") // (custom preload script preload.js) https://github.com/segmentio/nightmare#custom-preload-script
         //alternative: preload: "absolute/path/to/custom-script.js"
     }
 };
@@ -135,16 +110,9 @@ app.all('/fetch', (req, res) => {
             nightmareopt = Object.assign(nightmareopt, param.nightmare)
         }
 
-        log('params', params);
-
         if (!params.url) {
 
             error = "specify 'url' param (in get or post or json method)";
-        }
-
-        if (!params.file) {
-
-            error = "specify 'file' param (in get or post or json method)";
         }
 
         if (error) {
@@ -157,6 +125,8 @@ app.all('/fetch', (req, res) => {
         if (!params.readyid) {
             params.readyid = 'readyid_' + (new Date()).getTime();
         }
+
+        log('params', params);
 
         var night = Nightmare(nightmareopt);
 
@@ -224,9 +194,8 @@ app.all('/fetch', (req, res) => {
         else {
             queue = queue
 
-                // mozna później spróbować to wywalić
-                .wait('body')
-
+                // can try to get rid of this later
+                // .wait('body')
 
                 .evaluate(function (params) {
 
@@ -235,7 +204,7 @@ app.all('/fetch', (req, res) => {
                     (function (ready) {
 
                         if (window[params.nmsc] && window[params.nmsc].length) {
-                            return ready();
+                            return ready(window[params.nmsc][0]);
                         }
 
                         window[params.nmsc] = {
@@ -243,34 +212,41 @@ app.all('/fetch', (req, res) => {
                         };
 
                         if (params.ajaxwatchdog) {
-
+                            window.XMLHttpRequest.prototype.onAllFinished(function (status) {
+                                window[params.nmsc] = window[params.nmsc] || []; window[params.nmsc].push(status);
+                            }, params.ajaxwatchdog.waitafterlastajaxresponse, params.ajaxwatchdog.longestajaxrequest);
                         }
 
-                        setTimeout(ready, 6000);
+                        // shutdown after interval - for testing
+                        // setTimeout(ready, 6000);
 
+                        // build button for manual close for testing
+                        // var button = document.createElement('input');
+                        // button.setAttribute('type', 'button');
+                        // button.value = 'close manually';
+                        // document.body.insertBefore(button, document.body.childNodes[0]);
+                        //
+                        // button.addEventListener('click', function () {
+                        //     window.nmsc = window.nmsc || []; nmsc.push(true);
+                        // });
 
-                        var button = document.createElement('input');
-                        button.setAttribute('type', 'button');
-                        button.value = 'evaluate click to exit';
-                        document.body.insertBefore(button, document.body.childNodes[0]);
-
-                        button.addEventListener('click', function () {
-                            window.nmsc = window.nmsc || []; nmsc.push(true);
-                        });
-
-                    }(function () {
+                    }(function (data) {
                         setTimeout(function () {
+                            if (document.getElementById(params.readyid)) {
+                                return;
+                            }
                             var end = document.createElement('div');
                             end.setAttribute('id', params.readyid);
-                            document.body.appendChild(end)
+                            document.body.appendChild(end);
+                            window[params.nmsc].ajaxwatchdogresponse = data;
                         }, 50);
                     }));
                 }, JSON.stringify(params))
                 .wait('#' + params.readyid)
-                .screenshot(path.resolve('tmp', params.readyid + '.png'))
+                // .screenshot(path.resolve('tmp', params.readyid + '.png')) // for testing
                 .evaluate(function (params) {
                     params = JSON.parse(params);
-                    var readyid = document.querySelector('#' + params.readyid);
+                    var readyid = document.getElementById(params.readyid);
                     readyid.parentNode.removeChild(readyid);
                 }, JSON.stringify(params))
             ;
@@ -281,21 +257,46 @@ app.all('/fetch', (req, res) => {
 
                 params = JSON.parse(params);
 
-                return document.documentElement.innerHTML;
-            }, JSON.stringify(params))
-            .end() // without that, then will be executed but entire script wont stop
-            .then(function (html) {
-
                 var data = {
-                    collect: collect,
-                    html: html,
+                    html: (function () {
+                        // https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
+                        // http://stackoverflow.com/a/10162353
+                        var node = document.doctype;
+                        var html = "<!DOCTYPE "
+                            + node.name
+                            + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+                            + (!node.publicId && node.systemId ? ' SYSTEM' : '')
+                            + (node.systemId ? ' "' + node.systemId + '"' : '')
+                            + '>';
+                        html += document.documentElement.outerHTML
+
+                        return html;
+                    }())
                 };
 
-                // json(collect['did-get-response-details'][4], html)
-                json(collect['did-get-response-details'][4], data)
+                if (window[params.nmsc].ajaxwatchdogresponse) {
+                    data.ajaxwatchdogresponse = window[params.nmsc].ajaxwatchdogresponse;
+                }
+
+                return data;
+            }, JSON.stringify(params))
+            .end() // end nightmare instance
+            .then(function (data) {
+
+                data.collect = collect;
+
+                if (params.returnonlyhtml) {
+
+                    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+                    res.statusCode = collect['did-get-response-details'][4];
+
+                    return res.end(data.html);
+                }
+
+                return json(collect['did-get-response-details'][4], data)
             })
             .catch(function (error) {
-
                 json(500, {
                     try_catch: 'Nightmare crashed',
                     details: error
@@ -303,7 +304,6 @@ app.all('/fetch', (req, res) => {
             })
     }
     catch (e) {
-
         json(500, e);
     }
 });
@@ -323,7 +323,7 @@ app.get('/json', (req, res) => {
     }, 300)
 })
 
-app.get('/wrongurl', (req, res) => {
+app.get('/ajaxwrong', (req, res) => {
 
 });
 

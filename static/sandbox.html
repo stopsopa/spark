@@ -5,15 +5,31 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/css/normalize.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
     <title>Spark test</title>
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-    <button id="json">json</button>
-    <button id="post">post</button>
+    <button id="get" class="btn btn-primary">get</button>
+    <button id="post" class="btn btn-primary">post</button>
+    <button id="json" class="btn btn-primary">json</button>
+    <label>
+        <input type="checkbox" id="returnonlyhtml">
+        only html
+    </label>
     <br>
-    <input type="text" id="url" placeholder="url" value="http://localhost/erroronpage.html">
-    <br>
-    <input type="text" id="file" placeholder="file" value="jahoo.png">
+    <input
+        type="text"
+        id="url"
+        placeholder="url"
+        value="http://localhost/ajax.html"
+        class="form-control"
+    >
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script>
 
@@ -26,36 +42,31 @@
                 data: JSON.stringify(data)
             });
         }
-        function post(url, data) {
-            return $.ajax(url, {
-                type: 'post',
-                contentType: 'application/x-www-form-urlencoded',
-                data: data
-            });
-        }
 
         var i = 0;
 
         $(function () {
 
             var url = $('#url');
-            var file = $('#file');
+            var che = document.getElementById('returnonlyhtml');
 
-            $('#json').on('click', function () {
-                json('/fetch?get=paramtest', {
+            $('#get').on('click', function () {
+                $.get('/fetch', {
                     url: url.val(),
-//                    file: 'tmp/' + (new Date()).getTime() + '_' + file.val()
-                    file: 'tmp/' + i + '_' + file.val()
-                });
-                i += 1;
+                    returnonlyhtml: che.checked
+                })
             });
             $('#post').on('click', function () {
-                post('/fetch?get=paramtest', {
+                $.post('/fetch', {
                     url: url.val(),
-//                    file: 'tmp/' + (new Date()).getTime() + '_' + file.val()
-                    file: 'tmp/' + i + '_' + file.val()
+                    returnonlyhtml: che.checked
+                })
+            });
+            $('#json').on('click', function () {
+                json('/fetch', {
+                    url: url.val(),
+                    returnonlyhtml: che.checked
                 });
-                i += 1;
             });
         });
     </script>
