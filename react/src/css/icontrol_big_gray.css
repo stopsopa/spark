@@ -1,0 +1,89 @@
+/**
+ * @author Szymon Działowski
+ */
+.icontrol .fake {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    box-sizing: border-box;
+    border: 1px solid #C8C8C8;
+}
+.icontrol input {
+    position: absolute;
+    opacity: 0;
+}
+.icontrol:hover .fake {
+    border-color: #73716E;
+    border-width: 2px;
+}
+.icontrol :focus + .fake {
+    -webkit-box-shadow: 0 0 3px #727272;
+    box-shadow: 0 0 3px #727272;
+}
+.icontrol input[type="radio"]:checked + .fake,
+.icontrol input[type="checkbox"]:checked + .fake {
+    background-color: #73716E;
+    border-color: #73716E;
+}
+.icontrol input[type="radio"]:checked + .fake::before,
+.icontrol input[type="checkbox"]:checked + .fake::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 4px;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    width: 10px;
+    height: 6px;
+    -webkit-transform: rotate(-42.5deg);
+    -ms-transform: rotate(-42.5deg);
+    transform: rotate(-42.5deg);
+    color: white;
+
+    /* bootstrap force for all ::before these settings */
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.icontrol:hover input[type="radio"]:checked:disabled + .fake::before,
+.icontrol:hover input[type="checkbox"]:checked:disabled + .fake::before {
+    top: 5px;
+    left: 4px;
+}
+.icontrol:hover input[type="radio"]:checked + .fake::before,
+.icontrol:hover input[type="checkbox"]:checked + .fake::before {
+    top: 4px;
+    left: 3px;
+}
+.icontrol:hover input[type="radio"] + .fake,
+.icontrol:hover input[type="checkbox"] + .fake {
+    border-color: #73716E;
+}
+.icontrol:hover input[type="radio"]:disabled + .fake,
+.icontrol:hover input[type="checkbox"]:disabled + .fake {
+    border-width: 1px;
+    border-color: #C8C8C8;
+}
+.icontrol:hover input[type="radio"]:disabled:checked + .fake,
+.icontrol:hover input[type="checkbox"]:disabled:checked + .fake {
+    border-color: #73716E;
+}
+
+body .icontrol input[type="radio"]:focus + .fake,
+body .icontrol input[type="checkbox"]:focus + .fake {
+    box-shadow: 0 0 3px #727272;
+}
+
+
+/* only radio vvv */
+.icontrol input[type="radio"] + .fake {
+    border-radius: 30px;
+}
+.icontrol:hover input[type="radio"]:disabled + .fake {
+    border-width: 1px;
+}
+
+.icontrol input[type="radio"]:checked + .fake::before {
+    left: 4px;
+}

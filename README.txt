@@ -15,3 +15,7 @@ window.nmsc = window.nmsc || []; nmsc.push(true);
 
 /// headless browser testing travis-ci
 https://docs.travis-ci.com/user/gui-and-headless-browsers/
+
+
+---- further research ----
+https://github.com/oliviertassinari/react-swipeable-views

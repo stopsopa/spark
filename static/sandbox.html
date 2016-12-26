@@ -5,8 +5,16 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="/css/normalize.min.css">
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bundles/css/normalize.min.css">
+    <link rel="stylesheet" href="/bundles/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&amp;subset=latin-ext" rel="stylesheet">
+
+    <!--not working properly - don't use vvv -->
+        <!--http://www.material-ui.com/#/components/font-icon-->
+        <!--http://google.github.io/material-design-icons/#icon-font-for-the-web-->
+        <!--<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">-->
+    <!--not working properly - don't use ^^^ -->
+
     <title>Spark test</title>
     <style>
         body {
@@ -15,6 +23,13 @@
     </style>
 </head>
 <body>
+    <div id="app"></div>
+    <script src="/js/commons.bundle.js"></script>
+    <script src="/js/example.bundle.js"></script>
+
+    <!--<script src="/"></script>-->
+<hr>
+
     <button id="get" class="btn btn-primary">get</button>
     <button id="post" class="btn btn-primary">post</button>
     <button id="json" class="btn btn-primary">json</button>
