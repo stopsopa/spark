@@ -5,6 +5,13 @@ body {
     padding: 20px;
 }
 
+
 body #parent {
     @include border-radius(5px);
+}
+.buttons {
+    display: flex;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    align-items: center;
 }

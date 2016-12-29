@@ -6,7 +6,7 @@ import {
     brown600, brown700,
     yellow900,
     brown200, grey300, brown500, grey500,
-    white, darkBlack, fullBlack,
+    white, grey800, fullBlack,
 // } from '../colors';
 } from 'material-ui/styles/colors';
 import {fade} from 'material-ui/utils/colorManipulator';
@@ -27,14 +27,14 @@ export default {
     accent1Color: yellow900,
     accent2Color: brown200,
     accent3Color: grey500,
-    textColor: darkBlack,
-    secondaryTextColor: fade(darkBlack, 0.54),
+    textColor: grey800,
+    secondaryTextColor: fade(grey800, 0.54),
     alternateTextColor: white,
     canvasColor: white,
     borderColor: grey300,
-    disabledColor: fade(darkBlack, 0.3),
+    disabledColor: fade(grey800, 0.3),
     pickerHeaderColor: brown600,
-    clockCircleColor: fade(darkBlack, 0.07),
+    clockCircleColor: fade(grey800, 0.07),
     shadowColor: fullBlack,
   },
 };

@@ -1,0 +1,4 @@
+<script>
+    'fetch' in window || document.write('<script src="/bundles/js/fetch.min.js"><\/script>');
+    'Promise' in window || document.write('<script src="/bundles/js/bluebird.core.min.js"><\/script>');
+</script>

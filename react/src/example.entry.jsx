@@ -11,7 +11,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
 render(
-    <Sandbox />,
+    <Sandbox url="/fetch"/>,
     document.getElementById('app')
 );
 
