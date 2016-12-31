@@ -126,6 +126,10 @@ app.all('/fetch', (req, res) => {
             params.readyid = 'readyid_' + (new Date()).getTime();
         }
 
+        if (typeof params.returnonlyhtml === 'string') {
+            params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
+        }
+
         log('params', params);
 
         var night = Nightmare(nightmareopt);

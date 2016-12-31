@@ -7,6 +7,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import theme from 'theme/theme';
 import trim from 'lodash/trim';
+import debounce from 'lodash/debounce';
 
 import {blue500, red500, greenA200} from 'material-ui/styles/colors';
 
@@ -17,6 +18,7 @@ import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
 import {Tabs, Tab} from 'material-ui/Tabs';
 import CircularProgress from 'material-ui/CircularProgress';
+import Slider from 'material-ui/Slider';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
 import ajax from 'lib/ajax';
 
@@ -38,15 +40,23 @@ export default class Sandbox extends React.Component {
     constructor(...args) {
         super(...args);
 
+        this.notLess = 100;
+
         this.state = {
             url: '',
             onlyHtml: true,
             tab: 'request', // request, html, json, printscreen
             loading: false,
             method: 'json',
+            ajaxwatchdog: true,
+                waitafterlastajaxresponse: 1000,
+                longestajaxrequest: 5000,
 
             errorUrl: ''
         };
+
+        this.onChangeLAR = debounce(this.onChangeLAR.bind(this), 150);
+        this.onChangeWALAR = debounce(this.onChangeWALAR.bind(this), 150)
     }
     @autobind
     onChangeUrl(e) {
@@ -62,11 +72,14 @@ export default class Sandbox extends React.Component {
     }
     @autobind
     onChangeOnlyHtml(e, value) {
-        log('onlyHtml', value)
         this.setState({
-            onlyHtml: !value
-        }, () => {
-            log('state', this.state)
+            onlyHtml: value
+        });
+    }
+    @autobind
+    onToggleAjaxWatchdog(e, value) {
+        this.setState({
+            ajaxwatchdog: value
         });
     }
     onFetch(method, e) {
@@ -90,12 +103,12 @@ export default class Sandbox extends React.Component {
         })
         .done((json) => {
             log('data', json);
+            
         })
         .always(() => {
             this.setState({
                 loading: false
             })
-            log('always', this.state)
         });
     }
     @autobind
@@ -103,6 +116,40 @@ export default class Sandbox extends React.Component {
         this.setState({
             tab: tab
         })
+    }
+    onChangeWALAR(e, value) {
+        this.setState((ps, props) => {
+
+            const fuse = value + this.notLess;
+
+            var val = {
+                waitafterlastajaxresponse: value
+            };
+
+            if (fuse > ps.longestajaxrequest) {
+                val.longestajaxrequest = fuse;
+            }
+
+            return val;
+        });
+    }
+    onChangeLAR(e, value) {
+        this.setState((ps, props) => {
+
+            // waitafterlastajaxresponse: 1000,
+            //     longestajaxrequest: 5000,
+            const fuse = value - this.notLess;
+
+            var val = {
+                longestajaxrequest: value
+            };
+
+            if (fuse < ps.waitafterlastajaxresponse) {
+                val.waitafterlastajaxresponse = fuse;
+            }
+
+            return val;
+        });
     }
     render() {
         return (
@@ -143,8 +190,6 @@ export default class Sandbox extends React.Component {
                                 />
                             </RadioButtonGroup>
                         </div>
-                        <div>
-                        </div>
                         <RaisedButton
                             label={this.state.method.toUpperCase()}
                             primary={true}
@@ -155,16 +200,54 @@ export default class Sandbox extends React.Component {
                                 width: 96
                             }}
                         />
-                        <Toggle
-                            label={"Only html O" + (this.state.onlyHtml ? 'n' : 'ff')}
-                            value={this.state.onlyHtml}
-                            onToggle={this.onChangeOnlyHtml}
-                            labelPosition="right"
-                            disabled={this.state.loading}
-                            style={{
-                                maxWidth: 150
-                            }}
-                        />
+                        <div>
+                            <Toggle
+                                label="Only html"
+                                defaultToggled={this.state.onlyHtml}
+                                onToggle={this.onChangeOnlyHtml}
+                                labelPosition="right"
+                                disabled={this.state.loading}
+                                style={{
+                                    minWidth: 170
+                                }}
+                            />
+                            <Toggle
+                                label="Ajax watchdog"
+                                defaultToggled={this.state.ajaxwatchdog}
+                                onToggle={this.onToggleAjaxWatchdog}
+                                labelPosition="right"
+                                disabled={this.state.loading}
+                                style={{
+                                    minWidth: 170
+                                }}
+                            />
+                        </div>
+                        {this.state.ajaxwatchdog &&
+                            <div>
+                                <p className="slider-label">Wait for last ajax response [{this.state.waitafterlastajaxresponse}]</p>
+                                <Slider
+                                    value={this.state.waitafterlastajaxresponse}
+                                    min={200} max={3000} step={100}
+                                    onChange={this.onChangeWALAR}
+                                    sliderStyle={{
+                                        width: 200,
+                                        marginTop: 2,
+                                        marginBottom: 2
+                                    }}
+                                />
+                                <p className="slider-label">Longest ajax request [{this.state.longestajaxrequest}]</p>
+                                <Slider
+                                    value={this.state.longestajaxrequest}
+                                    min={1000} max={10000} step={100}
+                                    onChange={this.onChangeLAR}
+                                    sliderStyle={{
+                                        width: 200,
+                                        marginTop: 2,
+                                        marginBottom: 2
+                                    }}
+                                />
+                            </div>
+                        }
                         {this.state.loading &&
                             <CircularProgress
                                 size={20}
