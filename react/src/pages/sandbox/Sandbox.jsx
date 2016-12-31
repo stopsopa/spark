@@ -56,7 +56,7 @@ export default class Sandbox extends React.Component {
         };
 
         this.onChangeLAR = debounce(this.onChangeLAR.bind(this), 150);
-        this.onChangeWALAR = debounce(this.onChangeWALAR.bind(this), 150)
+        this.onChangeWALAR = debounce(this.onChangeWALAR.bind(this), 150);
     }
     @autobind
     onChangeUrl(e) {
