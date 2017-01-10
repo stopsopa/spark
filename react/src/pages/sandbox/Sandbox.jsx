@@ -12,6 +12,7 @@ import debounce from 'lodash/debounce';
 import {blue500, red500, greenA200} from 'material-ui/styles/colors';
 
 import RaisedButton from 'material-ui/RaisedButton';
+import FlatButton from 'material-ui/FlatButton';
 import FontIcon from 'material-ui/FontIcon';
 import Divider from 'material-ui/Divider';
 import TextField from 'material-ui/TextField';
@@ -26,6 +27,7 @@ import ActionAndroid from 'material-ui/svg-icons/action/android';
 import ActionFlightTakeoff from 'material-ui/svg-icons/action/flight-takeoff';
 // import IcCludDownload from 'material-ui/svg-icons/action/3d-rotation';
 import IcCludDownload from 'material-ui/svg-icons/file/cloud-download';
+import IcSave from 'material-ui/svg-icons/content/save';
 const IcCludDownloadIcon = <IcCludDownload />
 
 var ic_account_balance = <FontIcon className="material-icons md-18" color={red500}>ic_account_balance</FontIcon>
@@ -43,7 +45,7 @@ export default class Sandbox extends React.Component {
         this.notLess = 100;
 
         this.state = {
-            url: '',
+            url: document.cookie || "",
             onlyHtml: true,
             tab: 'request', // request, html, json, printscreen
             loading: false,
@@ -117,6 +119,10 @@ export default class Sandbox extends React.Component {
             tab: tab
         })
     }
+    @autobind
+    onRemember() {
+        document.cookie = this.state.url;
+    }
     onChangeWALAR(e, value) {
         this.setState((ps, props) => {
 
@@ -155,7 +161,7 @@ export default class Sandbox extends React.Component {
         return (
             <MuiThemeProvider muiTheme={getMuiTheme(theme)}>
                 <div>
-                    <div>
+                    <div className="urlbox">
                         <TextField
                             hintText="Url"
                             fullWidth={true}
@@ -163,6 +169,13 @@ export default class Sandbox extends React.Component {
                             value={this.state.url}
                             errorText={this.state.errorUrl}
                             disabled={this.state.loading}
+                        />
+                        <FlatButton
+                            onClick={this.onRemember}
+                            icon={<IcSave />}
+                            style={{
+                                marginLeft: 20
+                            }}
                         />
                     </div>
                     <div className="buttons">

@@ -18,3 +18,10 @@ body #parent {
 .slider-label {
     margin: 0 0 1px 0;
 }
+
+.urlbox {
+    display: flex;
+    & > button {
+        flex-basis: 88px;
+    }
+}

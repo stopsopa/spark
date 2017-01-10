@@ -11,11 +11,6 @@ var env = utils.setup(path.resolve('./config.js'));
 
 var alias = utils.con('alias');
 
-if (env === 'prod') {
-    alias['react']      = 'react-lite';
-    alias['react-dom']  = 'react-lite';
-}
-
 module.exports = {
     entry: utils.entry(),
     // entry: {

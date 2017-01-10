@@ -3452,10 +3452,6 @@ react-event-listener@^0.4.0:
     react-addons-shallow-compare "^0.14.0 || ^15.0.0"
     warning "^3.0.0"
 
-react-lite:
-  version "0.15.30"
-  resolved "https://registry.yarnpkg.com/react-lite/-/react-lite-0.15.30.tgz#7b95b6a85d748a0a5a530aa3bd677f2646350aba"
-
 react-router:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/react-router/-/react-router-3.0.0.tgz#3f313e4dbaf57048c48dd0a8c3cac24d93667dff"
