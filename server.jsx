@@ -15,6 +15,8 @@ const express       = require('express');
 const assert        = console.assert;
 const log           = console.log;
 const app           = express();
+const spawn         = require('child_process').spawn;
+const base64        = require('base-64');
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
@@ -30,7 +32,7 @@ const port = process.argv[3];
 
 assert(port >= 0 && port <= 65535, "port beyond range 0 - 65535 : '" + port + "'");
 
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json()); // https://github.com/expressjs/body-parser#expressconnect-top-level-generic
 
 const defopt = {
@@ -52,17 +54,20 @@ const defopt = {
         waitafterlastajaxresponse: 1000, // 1 sec
         longestajaxrequest: 5000 // 5 sec
     }, // second priority (only if readyselector is not specified) - enabled by default
+    timeout: 36000, // general fork process timeout
+    delimiter: "-{[\"'}]-"
 };
 
 const nightmaredef = { // https://github.com/segmentio/nightmare#api
-    gotoTimeout: 20000, // 20 sec [This will throw an exception if the .goto()]
-    waitTimeout: 20000, // 20 sec [This will throw an exception if the .wait() didn't return true within the set timeframe.]
+    gotoTimeout: 30000, // 20 sec [This will throw an exception if the .goto()]
+    loadTimeout: 35000, // 10 sec [powinien być dłuższy czas niż gotoTimeout inaczej exception from gotoTimeout będzie zduszony]
+
+    waitTimeout: 30000, // 20 sec [This will throw an exception if the .wait() didn't return true within the set timeframe.]
     pollInterval: 60, // How long to wait between checks for the .wait() condition to be successful.
-    executionTimeout: 10000, // 10 sec [The maxiumum amount of time to wait for an .evaluate() statement to complete.]
-    loadTimeout: 40000, // 10 sec [powinien być dłuższy czas niż gotoTimeout inaczej exception from gotoTimeout będzie zduszony]
+    executionTimeout: 30000, // 10 sec [The maxiumum amount of time to wait for an .evaluate() statement to complete.]
     'ignore-certificate-errors': true,
-    show: false,
-    dock: false,
+    show: true,
+    dock: true,
     // openDevTools: { // to enable developer tools
     //     mode: 'detach'
     // },
@@ -73,27 +78,54 @@ const nightmaredef = { // https://github.com/segmentio/nightmare#api
         //alternative: preload: "absolute/path/to/custom-script.js"
     }
 };
+function base64ToObj(base) {
+    return JSON.parse(base64.decode(base));
+}
+function objToBase64(obj) {
+    return base64.encode(JSON.stringify(obj));
+}
+
 // https://expressjs.com/en/guide/routing.html#app-route
 app.all('/fetch', (req, res) => {
 
-    function json(code, data) {
+    var
+        proc,
+        handler,
+        json,
+        params = req.query,
+        error = false,
+        ret = {
+            log: log
+        }
+    ;
 
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    ret.json = json = function (code, data) {
 
-        res.statusCode = code;
+        try {
+            clearTimeout(handler);
 
-        if (typeof data === 'string') {
+            proc && proc.kill && proc.kill('SIGKILL');
 
-            return res.end(data);
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+            res.statusCode = code;
+
+            if (typeof data === 'string') {
+
+                return res.end(data);
+            }
+
+            res.end(JSON.stringify(data));
+
+        }
+        catch (e) {
+            log('express error: ', e)
         }
 
-        res.end(JSON.stringify(data));
+        json = function () {};
     }
 
     try {
-        var params = req.query;
-
-        var error = false;
 
         if (req.method === 'POST') { // http://expressjs.com/en/api.html#req
 
@@ -104,22 +136,14 @@ app.all('/fetch', (req, res) => {
 
         params = Object.assign({}, defopt, params);
 
-        var nightmareopt = Object.assign({}, nightmaredef);
-
-        if (params.nightmare) {
-            nightmareopt = Object.assign(nightmareopt, param.nightmare)
-        }
+        params.nightmare = Object.assign(params.nightmare || {}, nightmaredef);
 
         if (!params.url) {
-
             error = "specify 'url' param (in get or post or json method)";
         }
 
         if (error) {
-
-            res.statusCode = 404;
-
-            return res.end(error);
+            return json(404, error);
         }
 
         if (!params.readyid) {
@@ -130,185 +154,146 @@ app.all('/fetch', (req, res) => {
             params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
         }
 
-        log('params', params);
 
-        var night = Nightmare(nightmareopt);
+        // return json(500, params)
 
-        var collect = {};
+        // const proc = spawn('ls', ['-la'], {
+        //     timeout: params.timeout
+        // });
+        //
+        // proc.stdout.on('data', (data) => {
+        //
+        //     var obj = data.toString('ascii');
+        //
+        //     return log(obj);
+        //
+        //     if (obj.flag === 'exit') {
+        //         clearTimeout(handler);
+        //     }
+        //
+        //     ret[obj.flag].apply(this, obj.data);
+        // });
 
-        var queue = night
-                .on('console', function (type) {
-                    var args = Array.prototype.slice.call(arguments);
-                    args[0] = '[browser:'+args[0]+']';
-                    log.apply(this, args);
-                })
-                .on('page', function (type) {
-                    var args = Array.prototype.slice.call(arguments);
-                    switch(type) {
-                        case 'error':
-                            return json(500, {
-                                errorType: 'page event error',
-                                data: args
-                            });
-                        case 'alert':
-                        case 'prompt':
-                        case 'confirm':
-                            args[0] = "[browser:"+args[0]+"]";
-                            return log.apply(this, args);
-                        default:
-                    }
-                })
-                .once('did-get-response-details', function (event, status, newURL, originalURL, httpResponseCode, requestMethod, referrer, headers, resourceType) {
-                    // https://github.com/segmentio/nightmare#onevent-callback
-                    // https://github.com/electron/electron/blob/master/docs/api/web-contents.md#class-webcontents
-                    // log('did-get-response-details', Array.prototype.slice.call(arguments)[7])
-                    var data = Array.prototype.slice.call(arguments);
-                    data.push({
-                        doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-response-details'
+        // return log(objToBase64({raz: 'dwa'})) // eyJyYXoiOiJkd2EifQ==
+
+                    // const proc = spawn('node', ['fork.jsx', 'eyJyYXoiOiJkd2EifQ==']);
+                    //
+                    // proc.stdout.on('data', (data) => {
+                    //
+                    //     var obj = base64ToObj(data.toString('ascii'));
+                    //
+                    //     log(obj);
+                    // });
+                    //
+                    // var handler;
+                    //
+                    // if (params.timeout) {
+                    //     handler = setTimeout(() => {
+                    //
+                    //         proc.kill('SIGKILL');
+                    //
+                    //         log('process killed - timeout for url: ' + params.timeout);
+                    //
+                    //         return json(500, {
+                    //             errorType: 'process killed - timeout',
+                    //             data: params
+                    //         });
+                    //     }, 3000);
+                    // }
+                    //
+                    // return log('extyi');
+
+        // return log(`node fork.jsx ` + objToBase64(params) + ' plain');
+
+        // simple.html
+        // node fork.jsx eyJoZWFkZXJzIjp7fSwibm1zYyI6Im5tc2MiLCJyZXR1cm5vbmx5aHRtbCI6ZmFsc2UsImFqYXh3YXRjaGRvZyI6eyJ3YWl0YWZ0ZXJsYXN0YWpheHJlc3BvbnNlIjoxMDAwLCJsb25nZXN0YWpheHJlcXVlc3QiOjUwMDB9LCJ0aW1lb3V0IjoxNTAwMCwidXJsIjoiaHR0cDovL2h0dHBkLnBsL3NpbXBsZS5odG1sIiwibmlnaHRtYXJlIjp7ImdvdG9UaW1lb3V0Ijo0MDAwLCJ3YWl0VGltZW91dCI6NDAwMCwicG9sbEludGVydmFsIjo2MCwiZXhlY3V0aW9uVGltZW91dCI6NDAwMCwibG9hZFRpbWVvdXQiOjYwMDAsImlnbm9yZS1jZXJ0aWZpY2F0ZS1lcnJvcnMiOnRydWUsInNob3ciOnRydWUsImRvY2siOnRydWUsImFsd2F5c09uVG9wIjpmYWxzZSwid2ViUHJlZmVyZW5jZXMiOnsicHJlbG9hZCI6Ii9Wb2x1bWVzL3RjL3ZhZ3JhbnQvc3BhcmsvcnVudGltZS9wdWJsaWNfaHRtbC9zdGF0aWMvbGlicy9vbkFsbEZpbmlzaGVkLmpzIn19LCJyZWFkeWlkIjoicmVhZHlpZF8xNDg0MDgzODExODE2In0= plain
+
+        // ajax.html
+        // node fork.jsx eyJoZWFkZXJzIjp7fSwibm1zYyI6Im5tc2MiLCJyZXR1cm5vbmx5aHRtbCI6dHJ1ZSwiYWpheHdhdGNoZG9nIjp7IndhaXRhZnRlcmxhc3RhamF4cmVzcG9uc2UiOjEwMDAsImxvbmdlc3RhamF4cmVxdWVzdCI6NTAwMH0sInRpbWVvdXQiOjE1MDAwLCJ1cmwiOiJodHRwOi8vbG9jYWxob3N0L2FqYXguaHRtbCIsIm5pZ2h0bWFyZSI6eyJnb3RvVGltZW91dCI6NDAwMCwid2FpdFRpbWVvdXQiOjQwMDAsInBvbGxJbnRlcnZhbCI6NjAsImV4ZWN1dGlvblRpbWVvdXQiOjQwMDAsImxvYWRUaW1lb3V0Ijo2MDAwLCJpZ25vcmUtY2VydGlmaWNhdGUtZXJyb3JzIjp0cnVlLCJzaG93Ijp0cnVlLCJkb2NrIjp0cnVlLCJhbHdheXNPblRvcCI6ZmFsc2UsIndlYlByZWZlcmVuY2VzIjp7InByZWxvYWQiOiIvVm9sdW1lcy90Yy92YWdyYW50L3NwYXJrL3J1bnRpbWUvcHVibGljX2h0bWwvc3RhdGljL2xpYnMvb25BbGxGaW5pc2hlZC5qcyJ9fSwicmVhZHlpZCI6InJlYWR5aWRfMTQ4NDA4NDU3MTM4OCJ9 plain
+
+        proc = spawn('node', ['fork.jsx', objToBase64(params)], {
+            maxBuffer: 200*1024,
+            timeout: params.timeout,
+            killSignal: 'SIGTERM',
+            shell: true
+        });
+
+        // if (params.timeout) {
+        //     handler = setTimeout(() => {
+        //
+        //         log('process killed - timeout for url: ' + params.timeout);
+        //
+        //         return json(500, {
+        //             errorType: 'process killed - timeout',
+        //             data: params
+        //         });
+        //     }, params.timeout + 100);
+        // }
+
+        var i, tmp, buff = '', delen = params.delimiter.length;
+
+        function cut() { // http://stackoverflow.com/a/15515651
+
+            i = buff.indexOf(params.delimiter);
+
+            if (i > -1) {
+
+                tmp = buff.substr(0, i);
+
+                buff = buff.substr(i + delen);
+
+                try {
+                    tmp = JSON.parse(tmp);
+                }
+                catch(e) {
+                    json(500, {
+                        errorType: 'data from child process - json parse error',
+                        data: tmp
                     });
-                    collect['did-get-response-details'] = data;
-                })
-                .once('did-fail-load', function (event, errorCode, errorDescription, validatedURL, isMainFrame) {
-                    if (isMainFrame) {
-                        var data = Array.prototype.slice.call(arguments);
-                        data.push({
-                            doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-fail-load'
-                        });
-                        collect['did-fail-load'] = data;
-                    }
-                })
-                .on('did-get-redirect-request', function (event, oldURL, newURL, isMainFrame) {
-                    if (isMainFrame) {
-                        if (!collect['did-get-redirect-request']) {
-                            collect['did-get-redirect-request'] = [];
-                        }
-                        var data = Array.prototype.slice.call(arguments);
-                        data.push({
-                            doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-redirect-request'
-                        });
-                        collect['did-get-redirect-request'].push(data);
-                    }
-                })
-                .goto(params.url, params.headers || {})
-            ;
-
-        if (params.readyselector) {
-            queue = queue.wait(params.readyselector);
-        }
-        else {
-            queue = queue
-
-                // can try to get rid of this later
-                // .wait('body')
-
-                .evaluate(function (params) {
-
-                    params = JSON.parse(params);
-
-                    (function (ready) {
-
-                        if (window[params.nmsc] && window[params.nmsc].length) {
-                            return ready(window[params.nmsc][0]);
-                        }
-
-                        window[params.nmsc] = {
-                            push: ready
-                        };
-
-                        if (params.ajaxwatchdog) {
-                            window.XMLHttpRequest.prototype.onAllFinished(function (status) {
-                                window[params.nmsc] = window[params.nmsc] || []; window[params.nmsc].push(status);
-                            }, params.ajaxwatchdog.waitafterlastajaxresponse, params.ajaxwatchdog.longestajaxrequest);
-                        }
-
-                        // shutdown after interval - for testing
-                        // setTimeout(ready, 6000);
-
-                        // build button for manual close for testing
-                        // var button = document.createElement('input');
-                        // button.setAttribute('type', 'button');
-                        // button.value = 'close manually';
-                        // document.body.insertBefore(button, document.body.childNodes[0]);
-                        //
-                        // button.addEventListener('click', function () {
-                        //     window.nmsc = window.nmsc || []; nmsc.push(true);
-                        // });
-
-                    }(function (data) {
-                        setTimeout(function () {
-                            if (document.getElementById(params.readyid)) {
-                                return;
-                            }
-                            var end = document.createElement('div');
-                            end.setAttribute('id', params.readyid);
-                            document.body.appendChild(end);
-                            window[params.nmsc].ajaxwatchdogresponse = data;
-                        }, 50);
-                    }));
-                }, JSON.stringify(params))
-                .wait('#' + params.readyid)
-                // .screenshot(path.resolve('tmp', params.readyid + '.png')) // for testing
-                .evaluate(function (params) {
-                    params = JSON.parse(params);
-                    var readyid = document.getElementById(params.readyid);
-                    readyid.parentNode.removeChild(readyid);
-                }, JSON.stringify(params))
-            ;
-        }
-
-        queue = queue
-            .evaluate(function (params) {
-
-                params = JSON.parse(params);
-
-                var data = {
-                    html: (function () {
-                        // https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
-                        // http://stackoverflow.com/a/10162353
-                        var node = document.doctype;
-                        var html = "<!DOCTYPE "
-                            + node.name
-                            + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
-                            + (!node.publicId && node.systemId ? ' SYSTEM' : '')
-                            + (node.systemId ? ' "' + node.systemId + '"' : '')
-                            + '>';
-                        html += document.documentElement.outerHTML
-
-                        return html;
-                    }())
-                };
-
-                if (window[params.nmsc].ajaxwatchdogresponse) {
-                    data.ajaxwatchdogresponse = window[params.nmsc].ajaxwatchdogresponse;
                 }
 
-                return data;
-            }, JSON.stringify(params))
-            .end() // end nightmare instance
-            .then(function (data) {
-
-                data.collect = collect;
-
-                if (params.returnonlyhtml) {
-
-                    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-
-                    res.statusCode = collect['did-get-response-details'][4];
-
-                    return res.end(data.html);
+                if (tmp.flag) {
+                    ret[tmp.flag].apply(this, tmp.data);
                 }
+                else {
+                    json(500, {
+                        errorType: 'wrong data from child process',
+                        data: tmp
+                    })
+                }
+            }
+        }
 
-                return json(collect['did-get-response-details'][4], data)
-            })
-            .catch(function (error) {
-                json(500, {
-                    try_catch: 'Nightmare crashed',
-                    details: error
-                });
-            })
+        proc.stdout.on('data', (data) => {
+
+            buff += `${data}`;
+
+            cut();
+        });
+
+        proc.stderr.on('data', (data) => {
+
+            return json(500, {
+                errorType: 'child process stderr',
+                data: data.toString('utf-8')
+            });
+        });
+
+        proc.on('close', (code) => {
+
+            cut();
+
+            // return json(500, {
+            //     errorType: 'child process closed',
+            //     data: params
+            // });
+        });
     }
     catch (e) {
-        json(500, e);
+        json(500, {
+            errorType: 'parent process general exception',
+            data: e
+        });
     }
 });
 
@@ -331,6 +316,6 @@ app.get('/ajaxwrong', (req, res) => {
 
 });
 
-app.listen(port, function () {
+app.listen(port, () => {
     console.log('Server running 0.0.0.0:'+port)
 });

@@ -1,49 +1,46 @@
-var log       = console.log;
+const spawn = require('child_process').spawn;
+const log = console.log;
 
-var Nightmare = require('nightmare');
-const fs = require('fs');
+function base64ToObj(base) {
+    return JSON.parse((new Buffer(base, 'base64')).toString('utf-8'));
+}
+function objToBase64(obj) {
+    return (new Buffer(JSON.stringify(obj))).toString('base64');
+}
 
-var browser = new Nightmare({
-    show: false,
-    ignoreCertificateErrors: true
-})
+const data = {
+    'raz' : 'dwa',
+    'list' : ['one', 'two'],
+    'pipe' : '|',
+    'quotion mark' : '"',
+    'apostrophe' : "'",
+    'ąę' : 'żź'
+};
 
-var file = 'google.png';
+const proc = spawn('node', ['in.jsx', objToBase64(data)], {
+    timeout: 3000
+});
 
-if (fs.existsSync(file)) {
-    fs.unlinkSync(file);
+var handler = setTimeout(() => {
+    proc.kill('SIGHUP')
+    log('process kiclled - timeocut');
+}, 3000);
 
-    if (fs.existsSync(file)) {
-        throw "can't delete file '"+file+"'";
+proc.stdout.on('data', (data) => {
+
+    var obj = base64ToObj(data.toString('ascii'));
+
+    if (obj.flag === 'exit') {
+        clearTimeout(handler);
     }
-}
 
-if (fs.existsSync(file)) {
-    throw "file '"+file+"' shouldn't exist";
-}
+    log('data', obj);
+});
 
-try {
-    browser
-        .goto('https://www.google.co.uk')
-        .screenshot(file)
-        .end() // without that, then will be executed but entire script wont stop
-        .then(function (result) {
+proc.stderr.on('data', (data) => {
+    console.log(`stderr: ${data}`);
+});
 
-            if (!fs.existsSync(file)) {
-                throw "file '"+file+"' doesn't exist, this file should be created by nightmare";
-            }
-
-            if (fs.lstatSync(file).isFile()) {
-                log('result: nightmare works (file '+ file + ' exist)')
-            }
-            else {
-                throw 'error - file '+ file + "hasn't been created";
-            }
-        })
-        .catch(function (error) {
-            console.error('Nightmare error:', error);
-        })
-}
-catch (e) {
-    log('general error: '+e)
-}
+proc.on('close', (code) => {
+    console.log(`child process exited with code ${code}`);
+});
