@@ -133,7 +133,7 @@ export default class Sandbox extends React.Component {
                     })
                 });
             }
-            
+
         }(this.state.method, this.state.url, this.props.url, this.state.onlyHtml, ajaxwatchdog)).bind(this);
 
         last();
