@@ -41,7 +41,7 @@ export default class Sandbox extends React.Component {
         this.state = {
             url: document.cookie || "",
             onlyHtml: true,
-            tab: 'request', // request, html, json, printscreen
+            tab: 'request', // request, response, html, printscreen
             loading: false,
             method: 'json',
             ajaxwatchdog: true,
@@ -58,6 +58,10 @@ export default class Sandbox extends React.Component {
 
         this.onChangeLAR    = debounce(this.onChangeLAR.bind(this), 150);
         this.onChangeWALAR  = debounce(this.onChangeWALAR.bind(this), 150);
+    }
+    setState() {
+        log('setState')
+        return super.setState.apply(this, arguments);
     }
     @autobind
     onChangeUrl(e) {
@@ -280,15 +284,15 @@ export default class Sandbox extends React.Component {
                             <Tab label="Request" value="request">
                                 Request content
                             </Tab>
+                            <Tab label="Response" value="response">
+                                Response content
+                            </Tab>
                             <Tab label="Html" value="html">
                                 Html content
                             </Tab>
-                            <Tab label="Json" value="json">
-                                Json content
-                            </Tab>
-                            <Tab label="Printscreen" value="preentscreen">
-                                Printscreen content
-                            </Tab>
+                            {/*<Tab label="Printscreen" value="preentscreen">*/}
+                                {/*Printscreen content*/}
+                            {/*</Tab>*/}
                         </Tabs>
                     </div>
                 </div>
