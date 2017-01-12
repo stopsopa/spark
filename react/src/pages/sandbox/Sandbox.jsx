@@ -22,12 +22,16 @@ import CircularProgress from 'material-ui/CircularProgress';
 import Slider from 'material-ui/Slider';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
 import ajax from 'lib/ajax';
+import cookies from 'lib/cookies';
 
 import IcCludDownload from 'material-ui/svg-icons/file/cloud-download';
+import IcCached from 'material-ui/svg-icons/action/cached';
 import IcSave from 'material-ui/svg-icons/content/save';
 const IcCludDownloadIcon = <IcCludDownload />
 
 var ic_account_balance = <FontIcon className="material-icons md-18" color={red500}>ic_account_balance</FontIcon>;
+
+var key = 'url';
 
 export default class Sandbox extends React.Component {
     static PropTypes = {
@@ -39,9 +43,9 @@ export default class Sandbox extends React.Component {
         this.notLess = 100;
 
         this.state = {
-            url: document.cookie || "",
+            url: cookies.get(key) || location.origin + '/ajax.html',
             onlyHtml: true,
-            tab: 'request', // request, html, json, printscreen
+            tab: 'request', // request, response, html, printscreen
             loading: false,
             method: 'json',
             ajaxwatchdog: true,
@@ -53,11 +57,17 @@ export default class Sandbox extends React.Component {
             json: '',
             printscreen: '',
 
-            errorUrl: ''
+            errorUrl: '',
+
+            last: false
         };
 
         this.onChangeLAR    = debounce(this.onChangeLAR.bind(this), 150);
         this.onChangeWALAR  = debounce(this.onChangeWALAR.bind(this), 150);
+    }
+    setState() {
+        log('setState')
+        return super.setState.apply(this, arguments);
     }
     @autobind
     onChangeUrl(e) {
@@ -95,24 +105,43 @@ export default class Sandbox extends React.Component {
             });
         }
 
+        var ajaxwatchdog = this.state.ajaxwatchdog;
+
+        if (ajaxwatchdog) {
+            ajaxwatchdog = {
+                waitafterlastajaxresponse: this.state.waitafterlastajaxresponse,
+                longestajaxrequest: this.state.longestajaxrequest
+            };
+        }
+
+        var last = (function (method, url, propurl, only, ajaxwatchdog) {
+
+            return function () {
+                ajax[method](propurl, {
+                    data: {
+                        url: url,
+                        returnonlyhtml: only,
+                        ajaxwatchdog: ajaxwatchdog
+                    }
+                })
+                .done((json) => {
+                    log('data', json);
+                })
+                .always(() => {
+                    this.setState({
+                        loading: false
+                    })
+                });
+            }
+            
+        }(this.state.method, this.state.url, this.props.url, this.state.onlyHtml, ajaxwatchdog)).bind(this);
+
+        last();
+
         this.setState({
             errorUrl: '',
-            loading: true
-        });
-
-        ajax[this.state.method](this.props.url, {
-            data: {
-                url: this.state.url,
-                returnonlyhtml: this.state.onlyHtml
-            }
-        })
-        .done((json) => {
-            log('data', json);
-        })
-        .always(() => {
-            this.setState({
-                loading: false
-            })
+            loading: true,
+            last: last
         });
     }
     @autobind
@@ -123,7 +152,7 @@ export default class Sandbox extends React.Component {
     }
     @autobind
     onRemember() {
-        document.cookie = this.state.url;
+        cookies.set(key, this.state.url)
     }
     onChangeWALAR(e, value) {
         this.setState((ps, props) => {
@@ -175,6 +204,15 @@ export default class Sandbox extends React.Component {
                         <FlatButton
                             onClick={this.onRemember}
                             icon={<IcSave />}
+                            style={{
+                                marginLeft: 20
+                            }}
+                        />
+                        <FlatButton
+                            onClick={this.state.last || function () {}}
+                            icon={<IcCached />}
+                            primary={true}
+                            disabled={!this.state.last}
                             style={{
                                 marginLeft: 20
                             }}
@@ -280,15 +318,15 @@ export default class Sandbox extends React.Component {
                             <Tab label="Request" value="request">
                                 Request content
                             </Tab>
+                            <Tab label="Response" value="response">
+                                Response content
+                            </Tab>
                             <Tab label="Html" value="html">
                                 Html content
                             </Tab>
-                            <Tab label="Json" value="json">
-                                Json content
-                            </Tab>
-                            <Tab label="Printscreen" value="preentscreen">
-                                Printscreen content
-                            </Tab>
+                            {/*<Tab label="Printscreen" value="preentscreen">*/}
+                                {/*Printscreen content*/}
+                            {/*</Tab>*/}
                         </Tabs>
                     </div>
                 </div>

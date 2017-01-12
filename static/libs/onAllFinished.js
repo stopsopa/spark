@@ -216,7 +216,6 @@ if (typeof require !== 'undefined') {
                 function down(key) {
                     counter -= 1;
                     delete urls[key];
-                    log('down: ' + counter)
                     initEmergency(key);
                     if (counter === 0) {
                         onReady();
@@ -227,7 +226,6 @@ if (typeof require !== 'undefined') {
                     if (!emergency) {
                         emergency = debounce(function () {
                             if (finishedfn) {
-                                log('emergency logic - and reset')
                                 var tmp = [];
                                 for (var i in urls) {
                                     tmp.push(urls[i]);
@@ -244,8 +242,6 @@ if (typeof require !== 'undefined') {
                     emergency();
                 }
                 var onReady = debounce(function () {
-                    log('onReady: ' + counter);
-
                     if (counter === 0) {
                         finishedfn && finishedfn({
                             notFinishedAsynchronousResponses: [],
@@ -258,7 +254,7 @@ if (typeof require !== 'undefined') {
 
                 (function (old) {
                     if (old && !old.old) {
-                        log("override fetch")
+                        // log("override fetch")
                         fetch = function (url) {
 
                             var key = unique();
@@ -275,7 +271,7 @@ if (typeof require !== 'undefined') {
                         fetch.old = old;
                     }
                     else {
-                        log("don't override fetch")
+                        // log("don't override fetch")
                     }
                 }(window.fetch));
 

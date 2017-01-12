@@ -1,22 +1,12 @@
-// https://nodejs.org/dist/latest-v6.x/docs/api/synopsis.html
-
-// check later:
-// clear cache: https://github.com/segmentio/nightmare#custom-preload-script
-
-// ajax
-// http://stackoverflow.com/questions/5202296/add-a-hook-to-all-ajax-requests-on-a-page
-
-const Nightmare     = require('nightmare');
+//Lets require/import the HTTP module
 const http          = require('http');
 const path          = require('path');
-const bodyParser    = require('body-parser');
-const fs            = require('fs');
-const express       = require('express');
-const assert        = console.assert;
+const Nightmare     = require('nightmare');
 const log           = console.log;
+const assert        = console.assert;
+const bodyParser    = require('body-parser');
+const express       = require('express');
 const app           = express();
-const spawn         = require('child_process').spawn;
-const base64        = require('base-64');
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
@@ -34,6 +24,7 @@ assert(port >= 0 && port <= 65535, "port beyond range 0 - 65535 : '" + port + "'
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json()); // https://github.com/expressjs/body-parser#expressconnect-top-level-generic
+
 
 const defopt = {
     // width: 1366,
@@ -55,7 +46,6 @@ const defopt = {
         longestajaxrequest: 5000 // 5 sec
     }, // second priority (only if readyselector is not specified) - enabled by default
     timeout: 36000, // general fork process timeout
-    delimiter: "-{[\"'}]-"
 };
 
 const nightmaredef = { // https://github.com/segmentio/nightmare#api
@@ -78,52 +68,14 @@ const nightmaredef = { // https://github.com/segmentio/nightmare#api
         //alternative: preload: "absolute/path/to/custom-script.js"
     }
 };
-function base64ToObj(base) {
-    return JSON.parse(base64.decode(base));
-}
-function objToBase64(obj) {
-    return base64.encode(JSON.stringify(obj));
-}
 
-// https://expressjs.com/en/guide/routing.html#app-route
 app.all('/fetch', (req, res) => {
 
     var
-        proc,
-        handler,
-        json,
+        id = 'readyid_' + (new Date()).getTime(),
         params = req.query,
-        error = false,
-        ret = {
-            log: log
-        }
+        error = false
     ;
-
-    ret.json = json = function (code, data) {
-
-        try {
-            clearTimeout(handler);
-
-            proc && proc.kill && proc.kill('SIGKILL');
-
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-            res.statusCode = code;
-
-            if (typeof data === 'string') {
-
-                return res.end(data);
-            }
-
-            res.end(JSON.stringify(data));
-
-        }
-        catch (e) {
-            log('express error: ', e)
-        }
-
-        json = function () {};
-    }
 
     try {
 
@@ -154,74 +106,175 @@ app.all('/fetch', (req, res) => {
             params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
         }
 
-        proc = spawn('node', ['fork.jsx', objToBase64(params)], {
-            maxBuffer: 200*1024,
-            timeout: params.timeout,
-            killSignal: 'SIGTERM',
-            shell: true
-        });
+        var json = (function () {
+            var stop = false;
+            return function (code, data) {
 
-        if (params.timeout) {
-            handler = setTimeout(() => {
-
-                log('process killed because of timeout for url: ' + params.url);
-
-                return json(500, {
-                    errorType: 'process killed - timeout',
-                    data: params
-                });
-            }, params.timeout + 100);
-        }
-
-        var i, tmp, buff = '', delen = params.delimiter.length;
-
-        function cut() { // http://stackoverflow.com/a/15515651
-
-            i = buff.indexOf(params.delimiter);
-
-            if (i > -1) {
-
-                tmp = buff.substr(0, i);
-
-                buff = buff.substr(i + delen);
+                if (stop) {
+                    return;
+                }
 
                 try {
-                    tmp = JSON.parse(tmp);
+
+                    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+                    res.statusCode = code;
+
+                    if (typeof data === 'string') {
+
+                        return res.end(data);
+                    }
+
+                    res.end(JSON.stringify(data));
+
                 }
-                catch(e) {
-                    json(500, {
-                        errorType: 'data from child process - json parse error',
-                        data: tmp
-                    });
+                catch (e) {
+                    log('express error: ', e)
                 }
 
-                if (tmp.flag) {
-                    ret[tmp.flag].apply(this, tmp.data);
-                }
-                else {
-                    json(500, {
-                        errorType: 'wrong data from child process',
-                        data: tmp
-                    })
-                }
+                stop = true;
             }
-        }
+        }());
 
-        proc.stdout.on('data', (data) => {
+        var night = Nightmare(params.nightmare);
 
-            buff += `${data}`;
+        var collect = {};
 
-            cut();
-        });
+        night
+            .on('console', function () {
+                var args = Array.prototype.slice.call(arguments);
 
-        proc.stderr.on('data', (data) => {
-            return json(500, {
-                errorType: 'child process stderr',
-                data: data.toString('utf-8')
-            });
-        });
+                args[0] = '[browser:'+args[0]+']';
 
-        proc.on('close', cut);
+                log.apply(this, args);
+            })
+            .on('page', function (type) {
+
+                var args = Array.prototype.slice.call(arguments);
+
+                switch(type) {
+                    case 'error':
+                        return json.apply([500, {
+                            errorType: 'page event error',
+                            data: args
+                        }]);
+                    case 'alert':
+                    case 'prompt':
+                    case 'confirm':
+                        args[0] = "[browser:"+args[0]+"]";
+
+                        return log.apply(this, args);
+                    default:
+                }
+            })
+            .once('did-get-response-details', function (event, status, newURL, originalURL, httpResponseCode, requestMethod, referrer, headers, resourceType) {
+                // https://github.com/segmentio/nightmare#onevent-callback
+                // https://github.com/electron/electron/blob/master/docs/api/web-contents.md#class-webcontents
+                // log('did-get-response-details', Array.prototype.slice.call(arguments)[7])
+                var data = Array.prototype.slice.call(arguments);
+                data.push({
+                    doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-response-details'
+                });
+                collect['did-get-response-details'] = data;
+            })
+            .once('did-fail-load', function (event, errorCode, errorDescription, validatedURL, isMainFrame) {
+                if (isMainFrame) {
+                    var data = Array.prototype.slice.call(arguments);
+                    data.push({
+                        doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-fail-load'
+                    });
+                    collect['did-fail-load'] = data;
+                }
+            })
+            .on('did-get-redirect-request', function (event, oldURL, newURL, isMainFrame) {
+                if (isMainFrame) {
+                    if (!collect['did-get-redirect-request']) {
+                        collect['did-get-redirect-request'] = [];
+                    }
+                    var data = Array.prototype.slice.call(arguments);
+                    data.push({
+                        doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-redirect-request'
+                    });
+                    collect['did-get-redirect-request'].push(data);
+                }
+            })
+            .goto(params.url, params.headers || {})
+            .wait('body')
+            .evaluate(function (id, params) {
+
+                params = JSON.parse(params);
+
+                (function (ready) {
+
+                    if (window['nmsc'] && window['nmsc'].length) {
+                        return ready(window['nmsc'][0]);
+                    }
+
+                    window['nmsc'] = {
+                        push: ready
+                    };
+
+                    window.XMLHttpRequest.prototype.onAllFinished(function (status) {
+                        window['nmsc'] = window['nmsc'] || []; window['nmsc'].push(status);
+                    }, params.ajaxwatchdog.waitafterlastajaxresponse, params.ajaxwatchdog.longestajaxrequest);
+
+                }(function (data) {
+                    setTimeout(function () {
+                        if (document.getElementById(id)) {
+                            return;
+                        }
+                        var end = document.createElement('div');
+                        end.setAttribute('id', id);
+                        document.body.appendChild(end);
+                        window['nmsc'].ajaxwatchdogresponse = data;
+                    }, 50);
+                }));
+            }, id, JSON.stringify(params))
+            .wait('#' + id)
+            .evaluate(function (id) {
+                var readyid = document.getElementById(id);
+                readyid.parentNode.removeChild(readyid);
+                return {
+                    html: (function () {
+                        // https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
+                        // http://stackoverflow.com/a/10162353
+                        var node = document.doctype;
+                        var html = "<!DOCTYPE "
+                            + node.name
+                            + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+                            + (!node.publicId && node.systemId ? ' SYSTEM' : '')
+                            + (node.systemId ? ' "' + node.systemId + '"' : '')
+                            + '>';
+                        html += document.documentElement.outerHTML
+
+                        return html;
+                    }()),
+                    watchdog: window['nmsc'].ajaxwatchdogresponse
+                }
+            }, id)
+            .end()
+            .then(function (data) {
+
+                data.collect = collect;
+
+                if (params.returnonlyhtml) {
+
+                    return json(collect['did-get-response-details'][4], data.html)
+                }
+
+                return json(collect['did-get-response-details'][4], data);
+            })
+            .catch(function () {
+
+                var args = Array.prototype.slice.call(arguments);
+
+                json(500, {
+                    errorType: 'Nightmare crashed - exception',
+                    details: args
+                });
+            })
+        ;
+
     }
     catch (e) {
         json(500, {
@@ -229,6 +282,7 @@ app.all('/fetch', (req, res) => {
             data: e
         });
     }
+
 });
 
 app.use(express.static('static'))
