@@ -1,6 +1,6 @@
 // https://nodejs.org/dist/latest-v6.x/docs/api/synopsis.html
 
-// później obczaić:
+// check later:
 // clear cache: https://github.com/segmentio/nightmare#custom-preload-script
 
 // ajax
@@ -60,14 +60,14 @@ const defopt = {
 
 const nightmaredef = { // https://github.com/segmentio/nightmare#api
     gotoTimeout: 30000, // 20 sec [This will throw an exception if the .goto()]
-    loadTimeout: 35000, // 10 sec [powinien być dłuższy czas niż gotoTimeout inaczej exception from gotoTimeout będzie zduszony]
+    loadTimeout: 35000, // 10 sec [loadTimeout should be longer then gotoTimeout otherwise exception from gotoTimeout will be thrown]
 
     waitTimeout: 30000, // 20 sec [This will throw an exception if the .wait() didn't return true within the set timeframe.]
     pollInterval: 60, // How long to wait between checks for the .wait() condition to be successful.
     executionTimeout: 30000, // 10 sec [The maxiumum amount of time to wait for an .evaluate() statement to complete.]
     'ignore-certificate-errors': true,
-    show: true,
-    dock: true,
+    show: false,
+    dock: false,
     // openDevTools: { // to enable developer tools
     //     mode: 'detach'
     // },
@@ -154,63 +154,6 @@ app.all('/fetch', (req, res) => {
             params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
         }
 
-
-        // return json(500, params)
-
-        // const proc = spawn('ls', ['-la'], {
-        //     timeout: params.timeout
-        // });
-        //
-        // proc.stdout.on('data', (data) => {
-        //
-        //     var obj = data.toString('ascii');
-        //
-        //     return log(obj);
-        //
-        //     if (obj.flag === 'exit') {
-        //         clearTimeout(handler);
-        //     }
-        //
-        //     ret[obj.flag].apply(this, obj.data);
-        // });
-
-        // return log(objToBase64({raz: 'dwa'})) // eyJyYXoiOiJkd2EifQ==
-
-                    // const proc = spawn('node', ['fork.jsx', 'eyJyYXoiOiJkd2EifQ==']);
-                    //
-                    // proc.stdout.on('data', (data) => {
-                    //
-                    //     var obj = base64ToObj(data.toString('ascii'));
-                    //
-                    //     log(obj);
-                    // });
-                    //
-                    // var handler;
-                    //
-                    // if (params.timeout) {
-                    //     handler = setTimeout(() => {
-                    //
-                    //         proc.kill('SIGKILL');
-                    //
-                    //         log('process killed - timeout for url: ' + params.timeout);
-                    //
-                    //         return json(500, {
-                    //             errorType: 'process killed - timeout',
-                    //             data: params
-                    //         });
-                    //     }, 3000);
-                    // }
-                    //
-                    // return log('extyi');
-
-        // return log(`node fork.jsx ` + objToBase64(params) + ' plain');
-
-        // simple.html
-        // node fork.jsx eyJoZWFkZXJzIjp7fSwibm1zYyI6Im5tc2MiLCJyZXR1cm5vbmx5aHRtbCI6ZmFsc2UsImFqYXh3YXRjaGRvZyI6eyJ3YWl0YWZ0ZXJsYXN0YWpheHJlc3BvbnNlIjoxMDAwLCJsb25nZXN0YWpheHJlcXVlc3QiOjUwMDB9LCJ0aW1lb3V0IjoxNTAwMCwidXJsIjoiaHR0cDovL2h0dHBkLnBsL3NpbXBsZS5odG1sIiwibmlnaHRtYXJlIjp7ImdvdG9UaW1lb3V0Ijo0MDAwLCJ3YWl0VGltZW91dCI6NDAwMCwicG9sbEludGVydmFsIjo2MCwiZXhlY3V0aW9uVGltZW91dCI6NDAwMCwibG9hZFRpbWVvdXQiOjYwMDAsImlnbm9yZS1jZXJ0aWZpY2F0ZS1lcnJvcnMiOnRydWUsInNob3ciOnRydWUsImRvY2siOnRydWUsImFsd2F5c09uVG9wIjpmYWxzZSwid2ViUHJlZmVyZW5jZXMiOnsicHJlbG9hZCI6Ii9Wb2x1bWVzL3RjL3ZhZ3JhbnQvc3BhcmsvcnVudGltZS9wdWJsaWNfaHRtbC9zdGF0aWMvbGlicy9vbkFsbEZpbmlzaGVkLmpzIn19LCJyZWFkeWlkIjoicmVhZHlpZF8xNDg0MDgzODExODE2In0= plain
-
-        // ajax.html
-        // node fork.jsx eyJoZWFkZXJzIjp7fSwibm1zYyI6Im5tc2MiLCJyZXR1cm5vbmx5aHRtbCI6dHJ1ZSwiYWpheHdhdGNoZG9nIjp7IndhaXRhZnRlcmxhc3RhamF4cmVzcG9uc2UiOjEwMDAsImxvbmdlc3RhamF4cmVxdWVzdCI6NTAwMH0sInRpbWVvdXQiOjE1MDAwLCJ1cmwiOiJodHRwOi8vbG9jYWxob3N0L2FqYXguaHRtbCIsIm5pZ2h0bWFyZSI6eyJnb3RvVGltZW91dCI6NDAwMCwid2FpdFRpbWVvdXQiOjQwMDAsInBvbGxJbnRlcnZhbCI6NjAsImV4ZWN1dGlvblRpbWVvdXQiOjQwMDAsImxvYWRUaW1lb3V0Ijo2MDAwLCJpZ25vcmUtY2VydGlmaWNhdGUtZXJyb3JzIjp0cnVlLCJzaG93Ijp0cnVlLCJkb2NrIjp0cnVlLCJhbHdheXNPblRvcCI6ZmFsc2UsIndlYlByZWZlcmVuY2VzIjp7InByZWxvYWQiOiIvVm9sdW1lcy90Yy92YWdyYW50L3NwYXJrL3J1bnRpbWUvcHVibGljX2h0bWwvc3RhdGljL2xpYnMvb25BbGxGaW5pc2hlZC5qcyJ9fSwicmVhZHlpZCI6InJlYWR5aWRfMTQ4NDA4NDU3MTM4OCJ9 plain
-
         proc = spawn('node', ['fork.jsx', objToBase64(params)], {
             maxBuffer: 200*1024,
             timeout: params.timeout,
@@ -218,17 +161,17 @@ app.all('/fetch', (req, res) => {
             shell: true
         });
 
-        // if (params.timeout) {
-        //     handler = setTimeout(() => {
-        //
-        //         log('process killed - timeout for url: ' + params.timeout);
-        //
-        //         return json(500, {
-        //             errorType: 'process killed - timeout',
-        //             data: params
-        //         });
-        //     }, params.timeout + 100);
-        // }
+        if (params.timeout) {
+            handler = setTimeout(() => {
+
+                log('process killed because of timeout for url: ' + params.url);
+
+                return json(500, {
+                    errorType: 'process killed - timeout',
+                    data: params
+                });
+            }, params.timeout + 100);
+        }
 
         var i, tmp, buff = '', delen = params.delimiter.length;
 
@@ -272,22 +215,13 @@ app.all('/fetch', (req, res) => {
         });
 
         proc.stderr.on('data', (data) => {
-
             return json(500, {
                 errorType: 'child process stderr',
                 data: data.toString('utf-8')
             });
         });
 
-        proc.on('close', (code) => {
-
-            cut();
-
-            // return json(500, {
-            //     errorType: 'child process closed',
-            //     data: params
-            // });
-        });
+        proc.on('close', cut);
     }
     catch (e) {
         json(500, {

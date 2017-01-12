@@ -78,214 +78,234 @@ if (typeof require !== 'undefined') {
 }
 
 
-
 (function () {
 
-    if (window.XMLHttpRequest.prototype.list) {
-        return log('window.XMLHttpRequest.prototype.list already defined');
-    }
-
-    function capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    function over(method, on, off) {
-
-        var old = window.XMLHttpRequest.prototype[method];
-
-        if (!old.old) {
-
-            var stack = [];
-
-            window.XMLHttpRequest.prototype[on] = function (fn) {
-                if (typeof fn === 'function') {
-                    stack.push(fn);
-                }
-            }
-
-            window.XMLHttpRequest.prototype[off] = function (fn) {
-                for (var i = 0, l = stack.length ; i < l ; i += 1 ) {
-                    if (stack[i] === fn) {
-                        stack.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-
-            window.XMLHttpRequest.prototype[method] = function () {
-                var args = Array.prototype.slice.call(arguments);
-
-                for (var i = 0, l = stack.length ; i < l ; i += 1 ) {
-                    stack[i].apply(this, args);
-                }
-
-                return old.apply(this, args);
-            }
-
-            window.XMLHttpRequest.prototype[method].old = old;
-        }
-    }
-
-    var list = [], c, on, off, t;
-    for (var i in XMLHttpRequest.prototype) {
-        try {
-            t = typeof XMLHttpRequest.prototype[i];
-            if (t === 'function') {
-
-                c = capitalizeFirstLetter(i);
-
-                on  = 'on' + c;
-
-                off = 'off' + c;
-
-                over(i, on, off);
-
-                list.push(on);
-                log('overrided: ', i);
-            }
-            else {
-                //                        log("can't override - not function: ", i)
-            }
-        }
-        catch (e) {
-            //                    log("can't extend: ", i);
-        }
-    }
-
-    window.XMLHttpRequest.prototype.list = list;
-
-    //            window.XMLHttpRequest.prototype.list.forEach(function (i) {
-    //                XMLHttpRequest.prototype[i](function () {
-    //                    log(i + ' called', Array.prototype.slice.call(arguments));
-    //                });
-    //            });
-
-}());
-
-(function () {
-
-    if (window.XMLHttpRequest.prototype.onAllFinished) {
-        return;
-    }
-
-    window.XMLHttpRequest.prototype.onAllFinished = function (finishedfn, debouncetime /* 1000 */, fusetime /* 1500 */) {
-
-        if (typeof debouncetime === 'undefined') {
-            debouncetime = 1000;
-        }
-
-        if (debouncetime < 100) {
-            debouncetime = 100;
-        }
-
-        if (typeof fusetime === 'undefined' || fusetime < debouncetime) {
-            fusetime = debouncetime + 500;
-        }
-
-        function debounce(fn, delay) {
-            var timer = null;
-            return function () {
-                var context = this, args = arguments;
-                clearTimeout(timer);
-                timer = setTimeout(function () {
-                    fn.apply(context, args);
-                }, delay);
-            };
-        };
-
-        (function () {
-
-            var urls = {};
-
-            var counter = 0;
-            function up (key) {
-                counter += 1;
-                initEmergency(key);
-            }
-            function down(key) {
-                counter -= 1;
-                delete urls[key];
-                initEmergency(key);
-            }
-            var emergency;
-            function initEmergency(key) {
-                if (!emergency) {
-                    emergency = debounce(function () {
-                        if (finishedfn) {
-                            var tmp = [];
-                            for (var i in urls) {
-                                tmp.push(urls[i]);
-                            }
-                            finishedfn({
-                                notFinishedAsynchronousResponses: tmp,
-                                flow: 'incomplete',
-                                counter: counter
-                            });
-                        }
-                        finishedfn = false;
-                    }, fusetime);
-                }
-                emergency();
-            }
-            var i = 0, onReady = debounce(function () {
-                if (counter === 0) {
-                    finishedfn && finishedfn({
-                        notFinishedAsynchronousResponses: [],
-                        flow: 'correct',
-                        counter: counter
-                    });
-                    finishedfn = false;
-                }
-            }, debouncetime);
-
-            (function (old) {
-                if (old && !old.old) {
-                    fetch = function (url) {
-
-                        var key = i + '_' + ((new Date()).getTime());
-                        urls[key] = url;
-                        i += 1;
-                        up(key)
-
-                        var args = Array.prototype.slice.call(arguments);
-                        var promise = old.apply(this, args);
-                        promise = promise.then(function () {
-                            down(key);
-                        });
-                        return promise;
-                    }
-                    fetch.old = old;
-                }
-            }(window.fetch));
-
-            XMLHttpRequest.prototype.onOpen(function (method, url) {
-
-                var key = i + '_' + ((new Date()).getTime());
-                urls[key] = url;
-                i += 1;
-
-                up(key);
-                var xhr = this;
-                this.addEventListener('readystatechange', function (e) {
-                    if (xhr.readyState === 4) {
-                        down(key)
-                        if (counter === 0) {
-                            onReady();
-                        }
-                    }
-                })
+    function unique(pattern) {
+        pattern || (pattern = 'xyxyxyxyxyxyxyxyxy');
+        return pattern.replace(/[xy]/g,
+            function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
             });
-
-            onReady();
-        }())
     };
 
-    if (!window.__nightmare) {
-        // only for browser mode to et
-        window.XMLHttpRequest.prototype.onAllFinished(function (status) {
-            log('onAllFinished', status)
-        }, 1000, 3000);
-    }
+    (function () {
 
-    // normally it shouldn't be called here, it's only for testing
+        if (window.XMLHttpRequest.prototype.list) {
+            return log('window.XMLHttpRequest.prototype.list already defined');
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function over(method, on, off) {
+
+            var old = window.XMLHttpRequest.prototype[method];
+
+            if (!old.old) {
+
+                var stack = [];
+
+                window.XMLHttpRequest.prototype[on] = function (fn) {
+                    if (typeof fn === 'function') {
+                        stack.push(fn);
+                    }
+                }
+
+                window.XMLHttpRequest.prototype[off] = function (fn) {
+                    for (var i = 0, l = stack.length ; i < l ; i += 1 ) {
+                        if (stack[i] === fn) {
+                            stack.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+
+                window.XMLHttpRequest.prototype[method] = function () {
+                    var args = Array.prototype.slice.call(arguments);
+
+                    for (var i = 0, l = stack.length ; i < l ; i += 1 ) {
+                        stack[i].apply(this, args);
+                    }
+
+                    return old.apply(this, args);
+                }
+
+                window.XMLHttpRequest.prototype[method].old = old;
+            }
+        }
+
+        var list = [], c, on, off, t;
+        for (var i in XMLHttpRequest.prototype) {
+            try {
+                t = typeof XMLHttpRequest.prototype[i];
+                if (t === 'function') {
+
+                    c = capitalizeFirstLetter(i);
+
+                    on  = 'on' + c;
+
+                    off = 'off' + c;
+
+                    over(i, on, off);
+
+                    list.push(on);
+                    log('overrided: ', i);
+                }
+                else {
+                    //                        log("can't override - not function: ", i)
+                }
+            }
+            catch (e) {
+                //                    log("can't extend: ", i);
+            }
+        }
+
+        window.XMLHttpRequest.prototype.list = list;
+
+    }());
+
+    (function () {
+
+        if (window.XMLHttpRequest.prototype.onAllFinished) {
+            return;
+        }
+
+        window.XMLHttpRequest.prototype.onAllFinished = function (finishedfn, debouncetime /* 1000 */, fusetime /* 1500 */) {
+
+            if (typeof debouncetime === 'undefined') {
+                debouncetime = 1000;
+            }
+
+            if (debouncetime < 100) {
+                debouncetime = 100;
+            }
+
+            if (typeof fusetime === 'undefined' || fusetime < debouncetime) {
+                fusetime = debouncetime + 500;
+            }
+
+            function debounce(fn, delay) {
+                var timer = null;
+                return function () {
+                    var context = this, args = arguments;
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        fn.apply(context, args);
+                    }, delay);
+                };
+            };
+
+            (function () {
+
+                var urls = {};
+
+                var counter = 0;
+                function up (key, url) {
+
+                    // log('up:   ' + url, JSON.stringify(urls, null, 2))
+
+                    urls[key] = url;
+
+                    counter += 1;
+
+                    initEmergency(key);
+                }
+                function down(key) {
+                    counter -= 1;
+                    delete urls[key];
+                    log('down: ' + counter)
+                    initEmergency(key);
+                    if (counter === 0) {
+                        onReady();
+                    }
+                }
+                var emergency;
+                function initEmergency(key) {
+                    if (!emergency) {
+                        emergency = debounce(function () {
+                            if (finishedfn) {
+                                log('emergency logic - and reset')
+                                var tmp = [];
+                                for (var i in urls) {
+                                    tmp.push(urls[i]);
+                                }
+                                finishedfn({
+                                    notFinishedAsynchronousResponses: tmp,
+                                    flow: 'incomplete',
+                                    counter: counter
+                                });
+                            }
+                            finishedfn = false;
+                        }, fusetime);
+                    }
+                    emergency();
+                }
+                var onReady = debounce(function () {
+                    log('onReady: ' + counter);
+
+                    if (counter === 0) {
+                        finishedfn && finishedfn({
+                            notFinishedAsynchronousResponses: [],
+                            flow: 'correct',
+                            counter: counter
+                        });
+                        finishedfn = false;
+                    }
+                }, debouncetime);
+
+                (function (old) {
+                    if (old && !old.old) {
+                        log("override fetch")
+                        fetch = function (url) {
+
+                            var key = unique();
+
+                            up(key, url)
+
+                            var promise = old.apply(this, Array.prototype.slice.call(arguments));
+                            promise = promise.then(function () {
+                                // log('fetch down: ' +  url, JSON.stringify(urls, null, 2))
+                                down(key);
+                            });
+                            return promise;
+                        }
+                        fetch.old = old;
+                    }
+                    else {
+                        log("don't override fetch")
+                    }
+                }(window.fetch));
+
+                XMLHttpRequest.prototype.onOpen(function (method, url) {
+
+                    var key = unique();
+
+                    up(key, url);
+
+                    var xhr = this;
+                    this.addEventListener('readystatechange', function (e) {
+                        if (xhr.readyState === 4) {
+                            down(key);
+                        }
+                    })
+                });
+
+                onReady();
+            }())
+        };
+
+        if (!window.__nightmare) {
+            // only for browser mode to et
+            window.XMLHttpRequest.prototype.onAllFinished(function (status) {
+                log('onAllFinished', status)
+            }, 1000, 3000);
+        }
+
+        // normally it shouldn't be called here, it's only for testing
+    }())
+
 }())
+

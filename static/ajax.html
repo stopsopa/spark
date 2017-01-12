@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <button id="ajax">moreajax</button>
+    <button id="ajax">ajax</button>
     <button id="fetch">fetch</button>
     <button id="ajaxwrong">ajaxwrong</button>
     <button id="fetchwrong">fetchwrong</button>
@@ -69,32 +69,33 @@
             var pre = document.querySelector('pre');
 
             function ajaxJQ(l, fn) {
+                l = 'jq ' + l
                 $.ajax('/json?_' + l)
                     .done(function (data) {
-                        pre.innerHTML += l + "\n";
-                        log(l, data);
+//                        pre.innerHTML += l + "\n";
                         fn && fn();
                     })
                 ;
             }
 
             function ajaxN(l, fn) {
-                ajaxNative('/json?_n_' + l, {}, function (data) {
-                    log(l, data);
+                l = 'nt ' + l;
+                ajaxNative('/json?_' + l, {}, function (data) {
+//                    pre.innerHTML += l + "\n";
                     fn && fn();
                 })
             }
 
             setTimeout(function () {
 
-                ajaxJQ('a1', function () {
-                    ajaxJQ('a2', function () {
-                        ajaxJQ('a3', function () {
-                            ajaxJQ('a4', function () {
+                ajaxJQ(i + ' ' + 1, function () {
+                    ajaxJQ(i + ' ' + 2, function () {
+                        ajaxJQ(i + ' ' + 3, function () {
+                            ajaxJQ(i + ' ' + 4, function () {
                                 setTimeout(function () {
-                                    ajaxJQ('b1', function () {
-                                        ajaxN('b2', function () {
-                                            log('bx', i, ' end')
+                                    ajaxJQ(i + ' after tm ' + 5, function () {
+                                        ajaxN(i + ' after tm ' + 6, function () {
+//                                            pre.innerHTML += 'jq first ' + i + ' end' + "\n";
                                         });
                                     });
                                 }, 300);
@@ -104,11 +105,11 @@
                 });
 
                 setTimeout(function () {
-                    ajaxJQ('c1', function () {
-                        ajaxJQ('c2', function () {
-                            ajaxN('c3', function () {
-                                ajaxN('c4', function () {
-                                    log('cx_', i, ' end')
+                    ajaxJQ(i + ' sm ' + 1, function () {
+                        ajaxJQ(i + ' sm ' + 2, function () {
+                            ajaxN(i + ' sm ' + 3, function () {
+                                ajaxN(i + ' sm ' + 4, function () {
+//                                    pre.innerHTML += 'jq sm ' + i + ' end' + "\n";
                                 })
                             })
                         });
@@ -122,14 +123,15 @@
                 var i = 0;
 
                 $('#ajax').on('click', function () {
-                    ajaxJQ('a1_'+i, function () {
-                        ajaxJQ('a2_'+i, function () {
-                            ajaxJQ('a3_'+i, function () {
-                                ajaxJQ('a4_'+i, function () {
+                    i += 1;
+                    ajaxJQ(i + ' ' + 1, function () {
+                        ajaxJQ(i + ' ' + 2, function () {
+                            ajaxJQ(i + ' ' + 3, function () {
+                                ajaxJQ(i + ' ' + 4, function () {
                                     setTimeout(function () {
-                                        ajaxJQ('b1_'+i, function () {
-                                            ajaxN('b2_'+i, function () {
-                                                log('ax_', i, ' end')
+                                        ajaxJQ(i + ' ' + 5, function () {
+                                            ajaxN(i + ' ' + 6, function () {
+//                                                pre.innerHTML += 'ajax manual ' + i + ' end' + "\n";
                                             });
                                         });
                                     }, 300);
@@ -137,7 +139,6 @@
                             });
                         });
                     });
-                    i += 1;
                 });
 
                 (function () {
@@ -152,39 +153,42 @@
             (function () {
                 var i = 0;
                 function fetchN(l, fn) {
-                    var f = fetch('/json?fetch_' + l)
-
-                    log('fetchN sent', l)
+                    l = 'fe ' + l;
+                    var f = fetch('/json?_' + l)
                     if (typeof fn === 'function') {
-                        f.then(function (data) {
-                            log(l)
-                            fn && fn(data)
+                        f.then(function () {
+                            pre.innerHTML += l + "\n";
+                            fn()
                         });
                     }
                 }
                 $('#fetch').on('click', function () {
-                    fetchN('fetch1_' + i, function (data) {
-                        fetchN('fetch2_' + i, function (data) {
-                            fetchN('fetch3_' + i, function (data) {
-                                fetchN('fetch4_' + i, function (data) {
-                                    fetchN('fetch5_' + i, function (data) {
-                                        fetchN('fetch6_' + i, function (data) {
-                                            log('fetch_', i, ' end')
-                                        });
+
+                    i += 1;
+
+                    var fn = (function (i) {
+                        return function (data) {
+                            pre.innerHTML += 'fetch manual ' + i + ' end' + "\n";
+                        }
+                    }(i));
+
+                    var k = i;
+                    fetchN(k +' new fetch ' + 1, function (data) {
+                        fetchN(k +' new fetch ' + 2, function (data) {
+                            fetchN(k +' new fetch ' + 3, function (data) {
+                                fetchN(k +' new fetch ' + 4, function (data) {
+                                    fetchN(k +' new fetch ' + 5, function (data) {
+                                        fetchN(k +' new fetch ' + 6, fn);
                                     });
                                 });
                             });
                         });
                     });
-                    i += 1;
                 });
 
-
-                var wrong = function () {
-                    fetch('/ajaxwrong?_fetch_'+i)
-                };
-                $('#fetchwrong').on('click', wrong);
-//                wrong();
+                $('#fetchwrong').on('click', function () {
+                    fetch('/ajaxwrong?_fetch_' + i)
+                });
             }());
 
         });

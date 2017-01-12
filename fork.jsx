@@ -22,8 +22,6 @@ function ret(flag, data) {
 
     log(JSON.stringify(data) + params.delimiter);
 
-    // log(plain ? JSON.stringify(data) : objToBase64(data));
-
     return 0;
 }
 
@@ -31,14 +29,7 @@ function ret(flag, data) {
 
 try {
 
-    // var config = {webPreferences : params.nightmare.webPreferences};
-
     var night = Nightmare(params.nightmare);
-
-    // if (params.timeout > 0) {
-    //
-    // }
-    // var night = Nightmare(config);
 
     var collect = {};
 
@@ -56,10 +47,6 @@ try {
 
                 switch(type) {
                     case 'error':
-                        // return json(500, {
-                        //     errorType: 'page event error',
-                        //     data: args
-                        // })
                         return ret('json', [500, {
                             errorType: 'page event error',
                             data: args
@@ -67,9 +54,7 @@ try {
                     case 'alert':
                     case 'prompt':
                     case 'confirm':
-
                         args[0] = "[browser:"+args[0]+"]";
-                        // return log.apply(this, args);
                         return ret('log', args);
                     default:
                 }
@@ -179,7 +164,6 @@ try {
 
             var data = {
                 html: (function () {
-
                     // https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
                     // http://stackoverflow.com/a/10162353
                     var node = document.doctype;
@@ -204,19 +188,13 @@ try {
         .end() // end nightmare instance
         .then(function (data) {
 
-            // return ret('log', [200, []])
-
             data.collect = collect;
 
             if (params.returnonlyhtml) {
 
-                // res.setHeader('Content-Type', 'text/html; charset=utf-8');
-
-                // return json(collect['did-get-response-details'][4], data.html);
                 return ret('json', [collect['did-get-response-details'][4], data.html])
             }
 
-            // return json(collect['did-get-response-details'][4], data)
             return ret('json', [collect['did-get-response-details'][4], data]);
         })
         .catch(function () {

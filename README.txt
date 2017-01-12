@@ -1,4 +1,19 @@
 
+---- installation of electron --- vvv
+    sudo dpkg --add-architecture i386
+    sudo apt-get update
+
+    then:
+    sudo apt-get install libgtk2.0-0:i386 libxss1 libxi6 libgconf-2-4 libnss3-dev
+
+    and then
+
+    sudo yarn global add electron
+    sudo yarn global add electron-prebuilt
+
+    DEBUG=nightmare:* node test.jsx
+---- installation of electron --- ^^^
+
 yarn install
 
 npm run test

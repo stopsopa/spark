@@ -23,17 +23,11 @@ import Slider from 'material-ui/Slider';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
 import ajax from 'lib/ajax';
 
-import ActionAndroid from 'material-ui/svg-icons/action/android';
-import ActionFlightTakeoff from 'material-ui/svg-icons/action/flight-takeoff';
-// import IcCludDownload from 'material-ui/svg-icons/action/3d-rotation';
 import IcCludDownload from 'material-ui/svg-icons/file/cloud-download';
 import IcSave from 'material-ui/svg-icons/content/save';
 const IcCludDownloadIcon = <IcCludDownload />
 
-var ic_account_balance = <FontIcon className="material-icons md-18" color={red500}>ic_account_balance</FontIcon>
-
-
-
+var ic_account_balance = <FontIcon className="material-icons md-18" color={red500}>ic_account_balance</FontIcon>;
 
 export default class Sandbox extends React.Component {
     static PropTypes = {
@@ -54,11 +48,16 @@ export default class Sandbox extends React.Component {
                 waitafterlastajaxresponse: 1000,
                 longestajaxrequest: 5000,
 
+            request: '',
+            html: '',
+            json: '',
+            printscreen: '',
+
             errorUrl: ''
         };
 
-        this.onChangeLAR = debounce(this.onChangeLAR.bind(this), 150);
-        this.onChangeWALAR = debounce(this.onChangeWALAR.bind(this), 150);
+        this.onChangeLAR    = debounce(this.onChangeLAR.bind(this), 150);
+        this.onChangeWALAR  = debounce(this.onChangeWALAR.bind(this), 150);
     }
     @autobind
     onChangeUrl(e) {
@@ -84,6 +83,10 @@ export default class Sandbox extends React.Component {
             ajaxwatchdog: value
         });
     }
+    @autobind
+    updateTab() {
+
+    }
     onFetch(method, e) {
 
         if (!trim(this.state.url)) {
@@ -105,7 +108,6 @@ export default class Sandbox extends React.Component {
         })
         .done((json) => {
             log('data', json);
-            
         })
         .always(() => {
             this.setState({
