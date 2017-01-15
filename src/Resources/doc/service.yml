@@ -1,0 +1,30 @@
+imports:
+#    - { resource: admin.yml }
+
+parameters:
+
+    spark.cache.provider.service: Cms\CoreBundle\Service\PrerenderProvider
+    spark.cache.storage: spark.cache.mysql.storage
+    spark.urls.provider: spark.cache.sitemap.provider
+    spark.cache.service.endpoint: http://192.168.1.2/fetch
+    spark.cache.mysql.storage.service: Stopsopa\SparkBundle\Services\Storages\SparkMysqlService
+    spark.cache.mysql.storage.em: doctrine.orm.entity_manager
+    spark.cache.mysql.storage.entity: Stopsopa\SparkBundle\Entity\SparkCache
+
+services:
+
+    spark.cache.sitemap.provider:
+        class: %spark.cache.provider.service%
+
+    spark.cache.mysql.storage:
+        class: %spark.cache.mysql.storage.service%
+        arguments:
+            - @service_container
+            - %spark.cache.mysql.storage.em%
+            - %spark.cache.mysql.storage.entity%
+
+    spark.prerender.eventlistener:
+        class: Stopsopa\SparkBundle\EventListener\PrerenderReplacerListener
+        arguments: ["@service_container"]
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelResponse }

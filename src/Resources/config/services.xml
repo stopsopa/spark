@@ -4,13 +4,47 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <!--
+    <parameters>
+
+        <parameter key="spark.cache.service.class">Stopsopa\SparkBundle\Services\SparkService</parameter>
+
+        <!-- for main service -->
+            <parameter key="spark.cache.storage">spark.cache.mysql.storage</parameter>
+            <parameter key="spark.urls.provider">spark.cache.sitemap.provider</parameter>
+            <!--<parameter key="spark.cache.service.endpoint">http://192.168.1.3/fetch</parameter>-->
+
+        <!-- for service spark.cache.mysql.storage -->
+            <!--<parameter key="spark.cache.mysql.storage.service">Stopsopa\SparkBundle\Services\Storages\SparkMysqlService</parameter>-->
+            <!--<parameter key="spark.cache.mysql.storage.em">doctrine.orm.entity_manager</parameter>-->
+            <!--<parameter key="spark.cache.mysql.storage.entity">Stopsopa\SparkBundle\Entity\SparkCache</parameter>-->
+
+        <!-- for service spark.cache.mysql.storage -->
+            <!--<parameter key="spark.cache.provider.service">Cms\CoreBundle\Service\PrerenderProvider</parameter>-->
+
+    </parameters>
+
     <services>
-        <service id="stopsopa_spark.example" class="Stopsopa\SparkBundle\Example">
-            <argument type="service" id="service_id" />
-            <argument>plain_value</argument>
-            <argument>%parameter_name%</argument>
+
+        <service id="spark.cache.service" class="%spark.cache.service.class%">
+            <argument type="service" id="service_container" />
         </service>
+
+        <!--<service id="spark.cache.mysql.storage" class="%spark.cache.mysql.storage.service%">-->
+            <!--<argument type="service" id="service_container" />-->
+            <!--<argument>%spark.cache.mysql.storage.em%</argument>-->
+            <!--<argument>%spark.cache.mysql.storage.entity%</argument>-->
+        <!--</service>-->
+
+        <!--<service id="spark.cache.sitemap.provider" class="%spark.cache.provider.service%" />-->
+
+
+        <service id="spark.prerender.eventlistener" class="Stopsopa\SparkBundle\EventListener\PrerenderReplacerListener">
+            <argument type="service" id="service_container" />
+            <tag name="kernel.event_listener" method="onKernelResponse" event="kernel.request" />
+        </service>
+
     </services>
-    -->
+
+
+
 </container>

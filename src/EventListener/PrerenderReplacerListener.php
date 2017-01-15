@@ -2,9 +2,16 @@
 
 namespace Stopsopa\SparkBundle\EventListener;
 
+use Doctrine\DBAL\Connection;
+use Stopsopa\SparkBundle\Services\SparkService;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 
+/**
+ * @package Stopsopa\SparkBundle\EventListener\PrerenderReplacerListener
+ */
 class PrerenderReplacerListener
 {
     protected $container;
@@ -14,17 +21,27 @@ class PrerenderReplacerListener
         $this->container = $container;
     }
 
-    public function onKernelResponse(FilterResponseEvent $event)
+    public function onKernelResponse(GetResponseEvent $event)
     {
         $request = $event->getRequest();
 
-        if ($event->isMasterRequest() && ($this->container->getParameter('kernel.environment') === 'dev' || $request->cookies->has('debug'))) {
+        if ($event->isMasterRequest() && $this->container->getParameter('kernel.environment') === 'prod' && !$request->cookies->has('debug')) {
 
-            $response = $event->getResponse();
+            $service = $this->container->get(SparkService::SERVICE);
 
-            $response->headers->set('X-z.route', '"' . $request->get('_route') . '"' );
+            $entity = $service->has($request->getUri());
 
-            $response->headers->set('X-z.controller', '"' . $request->get('_controller') . '"' );
+            if ($entity) {
+
+                if ($entity['status'] == 200) {
+
+                    $response = new Response($entity['html']);
+
+                    $response->headers->set('X-prerendered', $entity['id']);
+
+                    $event->setResponse($response);
+                }
+            }
         }
     }
 }
