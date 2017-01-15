@@ -138,7 +138,7 @@ app.all('/fetch', (req, res) => {
 
         var night = Nightmare(params.nightmare);
 
-        var collect = {};
+        var meta = {};
 
         night
             .on('console', function () {
@@ -175,7 +175,7 @@ app.all('/fetch', (req, res) => {
                 data.push({
                     doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-response-details'
                 });
-                collect['did-get-response-details'] = data;
+                meta['did-get-response-details'] = data;
             })
             .once('did-fail-load', function (event, errorCode, errorDescription, validatedURL, isMainFrame) {
                 if (isMainFrame) {
@@ -183,19 +183,19 @@ app.all('/fetch', (req, res) => {
                     data.push({
                         doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-fail-load'
                     });
-                    collect['did-fail-load'] = data;
+                    meta['did-fail-load'] = data;
                 }
             })
             .on('did-get-redirect-request', function (event, oldURL, newURL, isMainFrame) {
                 if (isMainFrame) {
-                    if (!collect['did-get-redirect-request']) {
-                        collect['did-get-redirect-request'] = [];
+                    if (!meta['did-get-redirect-request']) {
+                        meta['did-get-redirect-request'] = [];
                     }
                     var data = Array.prototype.slice.call(arguments);
                     data.push({
                         doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-redirect-request'
                     });
-                    collect['did-get-redirect-request'].push(data);
+                    meta['did-get-redirect-request'].push(data);
                 }
             })
             .goto(params.url, params.headers || {})
@@ -255,14 +255,14 @@ app.all('/fetch', (req, res) => {
             .end()
             .then(function (data) {
 
-                data.collect = collect;
+                data.meta = meta;
 
                 if (params.returnonlyhtml) {
 
-                    return json(collect['did-get-response-details'][4], data.html)
+                    return json(meta['did-get-response-details'][4], data.html)
                 }
 
-                return json(collect['did-get-response-details'][4], data);
+                return json(meta['did-get-response-details'][4], data);
             })
             .catch(function () {
 
