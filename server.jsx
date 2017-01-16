@@ -74,39 +74,13 @@ app.all('/fetch', (req, res) => {
     var
         id = 'readyid_' + (new Date()).getTime(),
         params = req.query,
-        error = false
+        error = false,
+        json
     ;
 
     try {
 
-        if (req.method === 'POST') { // http://expressjs.com/en/api.html#req
-
-            // interesting failure: req.body is not object when urlencoded post ???
-            // log('post: ', req.body, req.method, isObject(req.body), typeof req.body, req.body.constructor);
-            Object.assign(params, req.body);
-        }
-
-        params = Object.assign({}, defopt, params);
-
-        params.nightmare = Object.assign(params.nightmare || {}, nightmaredef);
-
-        if (!params.url) {
-            error = "specify 'url' param (in get or post or json method)";
-        }
-
-        if (error) {
-            return json(404, error);
-        }
-
-        if (!params.readyid) {
-            params.readyid = 'readyid_' + (new Date()).getTime();
-        }
-
-        if (typeof params.returnonlyhtml === 'string') {
-            params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
-        }
-
-        var json = (function () {
+        json = (function () {
             var stop = false;
             return function (code, data) {
 
@@ -135,6 +109,33 @@ app.all('/fetch', (req, res) => {
                 stop = true;
             }
         }());
+
+        if (req.method === 'POST') { // http://expressjs.com/en/api.html#req
+
+            // interesting failure: req.body is not object when urlencoded post ???
+            // log('post: ', req.body, req.method, isObject(req.body), typeof req.body, req.body.constructor);
+            Object.assign(params, req.body);
+        }
+
+        params = Object.assign({}, defopt, params);
+
+        params.nightmare = Object.assign(params.nightmare || {}, nightmaredef);
+
+        if (!params.url) {
+            error = "specify 'url' param (in get or post or json method)";
+        }
+
+        if (error) {
+            return json(404, error);
+        }
+
+        if (!params.readyid) {
+            params.readyid = 'readyid_' + (new Date()).getTime();
+        }
+
+        if (typeof params.returnonlyhtml === 'string') {
+            params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
+        }
 
         var night = Nightmare(params.nightmare);
 
