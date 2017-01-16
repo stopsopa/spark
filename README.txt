@@ -12,6 +12,8 @@
     sudo yarn global add electron-prebuilt
 
     DEBUG=nightmare:* node test.jsx
+
+    sudo npm run supervisor 0.0.0.0 8080
 ---- installation of electron --- ^^^
 
 yarn install

@@ -4,11 +4,14 @@
 body {
     padding: 20px;
 }
-
-
 body #parent {
     @include border-radius(5px);
 }
+.buttons > div {
+    margin-right: 10px;
+}
+
+
 .buttons {
     display: flex;
     margin-bottom: 10px;
@@ -25,3 +28,4 @@ body #parent {
         flex-basis: 88px;
     }
 }
+

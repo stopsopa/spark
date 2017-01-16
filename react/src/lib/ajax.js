@@ -37,11 +37,7 @@
 
     function promise(url, options, manipulatexhrbeforesend) {
 
-        if ( ! isObject(options)) {
-            throw "'options' must be object";
-        }
-
-        options = Object.assign({}, def, options);
+        options = Object.assign({}, def, options || {});
 
         options.method = options.method.toUpperCase();
 
@@ -129,11 +125,7 @@
 
     exports.get = function (url, options, manipulatexhrbeforesend) {
 
-        if ( ! isObject(options)) {
-            throw "'options' must be object";
-        }
-
-        options = Object.assign({}, def, options, {
+        options = Object.assign({}, def, options || {}, {
             method: 'get',
         });
 
@@ -155,11 +147,7 @@
 
     exports.post = function (url, options, manipulatexhrbeforesend) {
 
-        if ( ! isObject(options)) {
-            throw "'options' must be object";
-        }
-
-        options = Object.assign({}, def, options, {
+        options = Object.assign({}, def, options || {}, {
             method: 'post',
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
         });
@@ -185,11 +173,7 @@
 
     exports.json = function (url, options, manipulatexhrbeforesend) {
 
-        if ( ! isObject(options)) {
-            throw "'options' must be object";
-        }
-
-        options = Object.assign({}, def, options, {
+        options = Object.assign({}, def, options || {}, {
             method: 'post',
             contentType: 'application/json; charset=utf-8'
         });

@@ -1,0 +1,59 @@
+
+body {
+    padding: 20px;
+    margin: 20px;
+}
+.auto {
+    margin-left: auto;
+}
+[mode="indeterminate"] {
+    margin-left: 51px !important;
+}
+
+.buttons {
+    display: flex;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.row {
+    display: flex;
+    align-items: center;
+    & > * {
+        margin-left: 5px;
+    }
+}
+.buttons > div {
+  margin-right: 10px;
+}
+.slider-label {
+    margin: 0 0 1px 0;
+}
+.urlbox {
+    display: flex;
+    & > button {
+        flex-basis: 88px;
+    }
+}
+.status {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    -webkit-box-shadow: 0 0 5px gray;
+    -moz-box-shadow:  0 0 5px gray;
+    box-shadow:  0 0 5px gray;
+
+    margin-top: 5px;
+    margin-right: 50px;
+    margin-left: 30px;
+    &.unknown {
+        background-color: blue;
+    }
+    &.green {
+        background-color: green;
+    }
+    &.red {
+        background-color: red;
+    }
+}
