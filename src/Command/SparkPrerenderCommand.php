@@ -23,6 +23,7 @@ class SparkPrerenderCommand extends ContainerAwareCommand
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        /* @var $service SparkService */
         $service = $this->getContainer()->get(SparkService::SERVICE);
 
         $perPage = intval($input->getOption('perpage'));

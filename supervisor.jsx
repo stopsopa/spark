@@ -49,7 +49,7 @@ function response(res, data, code) {
 app.all('/status', (req, res) => {
 
     // ps aux | grep "node server.js" | grep -v grep
-    proc = spawn('bash', ['supervisor.sh'], {
+    proc = spawn('bash', ['status.sh'], {
         maxBuffer: 200*1024,
         timeout: 5000,
         killSignal: 'SIGTERM',
