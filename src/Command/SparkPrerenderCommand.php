@@ -18,6 +18,7 @@ class SparkPrerenderCommand extends ContainerAwareCommand
             ->setDescription('Prerender entire list of pages')
             ->addOption('perpage', null, InputOption::VALUE_OPTIONAL, 'Chunk size', 100)
             ->addOption('skipgood', null, InputOption::VALUE_OPTIONAL, "Prerender only not status 200", false)
+            ->addOption('dryrun', null, InputOption::VALUE_OPTIONAL, "Don't prerender anything, just iterate through list", false)
         ;
     }
 
@@ -32,6 +33,8 @@ class SparkPrerenderCommand extends ContainerAwareCommand
 
         $skipgood = ! ($input->getOption('skipgood') === false);
 
+        $dryrun = ! ($input->getOption('dryrun') === false);
+
         do {
 
             $list = $service->getChunk($perPage);
@@ -44,16 +47,16 @@ class SparkPrerenderCommand extends ContainerAwareCommand
 
                     if ($status === 200) {
 
-                        $output->writeln("(skipping because of status $status): $url");
+                        $dryrun || $output->writeln("(skipping because of status $status): $url");
 
                         continue;
                     }
                 }
 
-                $output->writeln("Rendering: $url");
+                $output->writeln($dryrun ? $url : "Rendering: $url");
 
                 try {
-                    $service->prerender($url);
+                    $dryrun || $service->prerender($url);
                 }
                 catch (SparkServiceException $e) {
                     $output->writeln("<error>".$e->getMessage()."</error>");
