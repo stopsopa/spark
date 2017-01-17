@@ -16,6 +16,20 @@ yarn install
 npm run supervisor 0.0.0.0 8080 &
 npm run start 0.0.0.0 80 &
 
+# vagrant for testing
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.synced_folder ".", "/vagrant/vbox"
+  config.vm.network "private_network", ip: ENV["VM_TEST"] || "172.28.121.1"
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "vagrant-nightmare"
+    vb.memory = "2524"
+    # vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+  end
+  config.vm.hostname = "vagrant-nightmare"
+end
+
 ---- installation of nightmare with xvfb --- ^^^
 
 
