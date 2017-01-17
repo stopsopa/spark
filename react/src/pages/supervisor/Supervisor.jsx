@@ -81,7 +81,8 @@ export default class Supervisor extends React.Component {
     onStart() {
 
         this.setState({
-            loading: true
+            loading: true,
+            status: null
         });
 
         var state = {};
@@ -89,21 +90,22 @@ export default class Supervisor extends React.Component {
         ajax.json('/start', {
             data: this.state
         })
-            .always(() => {
-                this.setState(Object.assign({
-                    loading: false
-                }, state));
-            })
-            .done(() => {
-                setTimeout(this.onCheck, 1000)
-            })
+        .always(() => {
+            this.setState(Object.assign({
+                loading: false
+            }, state));
+        })
+        .done(() => {
+            setTimeout(this.onCheck, 1000)
+        })
         ;
     }
     @autobind
     onStop() {
 
         this.setState({
-            loading: true
+            loading: true,
+            status: null
         });
 
         var state = {};
@@ -111,14 +113,14 @@ export default class Supervisor extends React.Component {
         ajax.json('/stop', {
             data: this.state
         })
-            .always(() => {
-                this.setState(Object.assign({
-                    loading: false
-                }, state));
-            })
-            .done(() => {
-                setTimeout(this.onCheck, 1000)
-            })
+        .always(() => {
+            this.setState(Object.assign({
+                loading: false
+            }, state));
+        })
+        .done(() => {
+            setTimeout(this.onCheck, 1000)
+        })
         ;
     }
     @autobind
@@ -135,6 +137,7 @@ export default class Supervisor extends React.Component {
     }
     render() {
         let href = location.protocol + "//" + location.hostname + ':' + this.state.port + '/sandbox.html';
+
         return (
             <MuiThemeProvider muiTheme={getMuiTheme(theme)}>
                 <div>
@@ -188,7 +191,7 @@ export default class Supervisor extends React.Component {
                         <FlatButton
                             onClick={this.onStart}
                             label="Start"
-                            disabled={ ! (this.state.status === false) || this.state.loading }
+                            disabled={ (! (this.state.status === false)) || this.state.loading }
                             style={{
                                 marginLeft: 20
                             }}
@@ -196,7 +199,7 @@ export default class Supervisor extends React.Component {
                         <FlatButton
                             onClick={this.onStop}
                             label="Stop"
-                            disabled={ ! (this.state.status === true) || this.state.loading }
+                            disabled={ (! (this.state.status === true)) || this.state.loading }
                         ></FlatButton>
                     </div>
                     {this.state.status && <a href={href} target="_blank">sandbox</a>}
