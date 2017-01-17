@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SparkService implements SparkStorageInterface, SparkProviderInterface {
 
     const SERVICE = 'spark.cache.service';
+    const XHEADER = 'X-prerendered';
     /**
      * @var SparkStorageInterface
      */
@@ -26,6 +27,8 @@ class SparkService implements SparkStorageInterface, SparkProviderInterface {
     protected $container;
 
     protected $endpoint;
+
+    protected $headersToPass;
 
     public function __construct(ContainerInterface $container)
     {
@@ -150,6 +153,8 @@ class SparkService implements SparkStorageInterface, SparkProviderInterface {
 
         $ch = curl_init();
 
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT , 10);
+
         curl_setopt($ch, CURLOPT_ENCODING, '');
 
 //        curl_setopt($ch, CURLOPT_USERPWD, $this->user.':'.$this->password);
@@ -218,4 +223,23 @@ class SparkService implements SparkStorageInterface, SparkProviderInterface {
 
         return $data;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getHeadersToPass()
+    {
+        return $this->headersToPass;
+    }
+
+    /**
+     * @param mixed $headersToPass
+     * @return SparkService
+     */
+    public function setHeadersToPass($headersToPass)
+    {
+        $this->headersToPass = $headersToPass;
+        return $this;
+    }
+
 }

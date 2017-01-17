@@ -37,11 +37,15 @@
 
         <!--<service id="spark.cache.sitemap.provider" class="%spark.cache.provider.service%" />-->
 
+        <!--<service id="spark.prerender.eventlistener" class="Stopsopa\SparkBundle\EventListener\PrerenderReplacerListener">-->
+            <!--<argument type="service" id="service_container" />-->
+            <!--<tag name="kernel.event_listener" method="onKernelResponse" event="kernel.request" />-->
+        <!--</service>-->
 
-        <service id="spark.prerender.eventlistener" class="Stopsopa\SparkBundle\EventListener\PrerenderReplacerListener">
-            <argument type="service" id="service_container" />
-            <tag name="kernel.event_listener" method="onKernelResponse" event="kernel.request" />
-        </service>
+        <!--<service id="spark.prerenderafter.eventlistener" class="Stopsopa\SparkBundle\EventListener\PrerenderReplacerAfterListener">-->
+            <!--<argument type="service" id="service_container" />-->
+            <!--<tag name="kernel.event_listener" method="onKernelResponse" event="kernel.response" />-->
+        <!--</service>-->
 
     </services>
 

@@ -2,6 +2,7 @@
 
 namespace Stopsopa\SparkBundle\EventListener;
 
+use Cms\CoreBundle\Libs\App;
 use Doctrine\DBAL\Connection;
 use Stopsopa\SparkBundle\Services\SparkService;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,22 +26,40 @@ class PrerenderReplacerListener
     {
         $request = $event->getRequest();
 
-        if ($event->isMasterRequest() && $this->container->getParameter('kernel.environment') === 'prod' && !$request->cookies->has('debug')) {
+        if ($event->isMasterRequest() && !$request->cookies->has('debug')) {
 
             $service = $this->container->get(SparkService::SERVICE);
 
-            $entity = $service->has($request->getUri());
+            if ($this->container->getParameter('kernel.environment') === 'prod') {
 
-            if ($entity) {
+                $entity = $service->has($request->getUri());
 
-                if ($entity['status'] == 200) {
+                if ($entity) {
 
-                    $response = new Response($entity['html']);
+                    if ($entity['status'] == 200) {
 
-                    $response->headers->set('X-prerendered', $entity['id']);
+                        $response = new Response($entity['html']);
 
-                    $event->setResponse($response);
+                        $response->headers->set(SparkService::XHEADER, $entity['id']);
+
+                        $event->setResponse($response);
+                    }
+                    else {
+                        $service->setHeadersToPass(array(
+                            SparkService::XHEADER => 'status-' . $entity['status']
+                        ));
+                    }
                 }
+                else {
+                    $service->setHeadersToPass(array(
+                        SparkService::XHEADER => 'notfound'
+                    ));
+                }
+            }
+            else {
+                $service->setHeadersToPass(array(
+                    SparkService::XHEADER => 'devmode'
+                ));
             }
         }
     }
