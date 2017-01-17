@@ -180,7 +180,7 @@ class SparkService implements SparkStorageInterface, SparkProviderInterface {
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-//        curl_setopt($ch, CURLOPT_VERBOSE, true); // dobre do debugowania
+//        curl_setopt($ch, CURLOPT_VERBOSE, true); // good for debugging
 
         curl_setopt($ch, CURLOPT_HEADER, 1);
 
