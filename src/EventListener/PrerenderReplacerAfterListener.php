@@ -31,10 +31,13 @@ class PrerenderReplacerAfterListener
 
             $list = $service->getHeadersToPass();
 
-            $response = $event->getResponse();
+            if (is_array($list)) {
+                
+                $response = $event->getResponse();
 
-            foreach ($list as $name => $value) {
-                $response->headers->set($name, $value);
+                foreach ($list as $name => $value) {
+                    $response->headers->set($name, $value);
+                }
             }
         }
     }
