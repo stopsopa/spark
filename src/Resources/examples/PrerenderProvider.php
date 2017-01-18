@@ -20,7 +20,7 @@ class PrerenderProvider implements SparkProviderInterface {
 
     public function __construct()
     {
-        $this->origin = SitemapXmlCommand::$host[App::getParam('site')];
+        $this->origin = App::getOrigin();
         $this->router = App::get('router');
         $this->em     = App::getODMManager();
     }
