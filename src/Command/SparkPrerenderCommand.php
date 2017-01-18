@@ -41,8 +41,7 @@ class SparkPrerenderCommand extends ContainerAwareCommand
 
             foreach ($list as $url) {
 
-                if ($skipgood) {
-
+                if (!$dryrun && $skipgood) {
                     $status = $service->getStatus($url);
 
                     if ($status === 200) {
