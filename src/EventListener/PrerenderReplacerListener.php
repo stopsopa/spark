@@ -38,6 +38,8 @@ class PrerenderReplacerListener
 
                     if ($entity['status'] == 200) {
 
+                        $entity['html'] = str_replace('</body>', '</body><div style="position:fixed;left:0;bottom:0;background-color:green;height:1px;width:2px;z-index:10000"></div>', $entity['html']);
+
                         $response = new Response($entity['html']);
 
                         $response->headers->set(SparkService::XHEADER, 'hash-' . $entity['id']);

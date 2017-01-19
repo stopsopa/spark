@@ -17,7 +17,7 @@ class SparkCheckerCommand extends ContainerAwareCommand
             ->setName('stopsopa:prerender:check')
             ->setDescription('Prerender headers checker')
             ->addOption('perpage', null, InputOption::VALUE_OPTIONAL, 'Chunk size', 100)
-            ->addOption('dryrun', null, InputOption::VALUE_OPTIONAL, "Don't prerender anything, just iterate through list", false)
+            ->addOption('dryrun', null, InputOption::VALUE_OPTIONAL, "Don't prerender anything, just iterate through list (showall flag doesn't matter if you turn on this)", false)
             ->addOption('showall', null, InputOption::VALUE_OPTIONAL, "Show only pages with wrong header", false)
         ;
     }

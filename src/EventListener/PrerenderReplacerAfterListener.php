@@ -35,6 +35,19 @@ class PrerenderReplacerAfterListener
                 
                 $response = $event->getResponse();
 
+                $ct = $response->headers->get('content-type');
+
+                file_put_contents(App::getRootDir() . '/app/cache/log.log', json_encode($ct, JSON_PRETTY_PRINT), FILE_APPEND);
+
+                if (!$ct || ($ct && strpos($ct, 'text/html') !== false)) {
+
+                    $content = $response->getContent();
+
+                    $content = str_replace('</body>', '</body><div style="position:fixed;left:0;bottom:0;background-color:red;height:1px;width:2px;z-index:10000"></div>', $content);
+
+                    $response->setContent($content);
+                }
+
                 foreach ($list as $name => $value) {
                     $response->headers->set($name, $value);
                 }
