@@ -55,7 +55,7 @@ class SparkCheckerCommand extends ContainerAwareCommand
                         }
                         else {
 
-                            $output->write("\r$i");
+                            $output->write("\rurl: $i");
 
                             $service->check($url);
                         }
