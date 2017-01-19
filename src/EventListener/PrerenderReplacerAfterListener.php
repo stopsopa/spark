@@ -43,7 +43,7 @@ class PrerenderReplacerAfterListener
 
                     $content = $response->getContent();
 
-                    $content = str_replace('</body>', '</body><div style="position:fixed;left:0;bottom:0;background-color:red;height:1px;width:2px;z-index:10000"></div>', $content);
+                    $content = str_replace('</body>', '<div style="position:fixed;left:0;bottom:0;background-color:red;height:1px;width:2px;z-index:10000"></div></body>', $content);
 
                     $response->setContent($content);
                 }
