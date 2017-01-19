@@ -124,6 +124,91 @@ class SparkService implements SparkStorageInterface, SparkProviderInterface {
     {
         return $this->getProvider()->getChunk($perPage);
     }
+    public function check($url) {
+
+        $data = $this->fetch($url);
+
+        if (!array_key_exists('headers', $data)) {
+            throw new SparkServiceException("Didn't found headers");
+        }
+
+        $tmp = array();
+        foreach ($data['headers'] as $key => $value) {
+            $tmp[strtolower($key)] = $value;
+        }
+
+        $data['headers'] = $tmp;
+
+        $lheader = strtolower(static::XHEADER);
+
+        if (array_key_exists($lheader, $data['headers'])) {
+
+            $xheader = $data['headers'][$lheader];
+
+            if (strpos($xheader, 'hash-') === 0) {
+
+                return $xheader;
+            }
+
+            throw new SparkServiceException($xheader);
+        }
+
+        throw new SparkServiceException("Header " . static::XHEADER. " not found");
+    }
+    protected function fetch($url) {
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT , 10);
+
+        curl_setopt($ch, CURLOPT_ENCODING, '');
+
+//        curl_setopt($ch, CURLOPT_USERPWD, $this->user.':'.$this->password);
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+//        curl_setopt($ch, CURLOPT_VERBOSE, true); // good for debugging
+
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+
+        $response = null;
+
+        $response = curl_exec($ch);
+
+        // Then, after your curl_exec call:
+        $header_size    = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+
+        $header         = substr($response, 0, $header_size);
+
+        $data = array();
+
+        $data['status'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if ($data['status'] === 0) {
+            throw new SparkServiceException("Unable to connect to $url");
+        }
+
+        curl_close($ch);
+
+        $header = explode("\n", $header);
+
+        $hlist = array();
+        foreach ($header as &$d) {
+
+            $dd = explode(':', $d, 2);
+
+            if (count($dd) === 2) {
+                $hlist[$dd[0]] = trim($dd[1]);
+            }
+        }
+
+        $data['headers'] = $hlist;
+
+        return $data;
+
+    }
     public function prerender($url)
     {
         $json = $this->api($url);
@@ -219,7 +304,7 @@ class SparkService implements SparkStorageInterface, SparkProviderInterface {
             }
         }
 
-        $data['header'] = $hlist;
+        $data['headers'] = $hlist;
 
         return $data;
     }

@@ -40,7 +40,7 @@ class PrerenderReplacerListener
 
                         $response = new Response($entity['html']);
 
-                        $response->headers->set(SparkService::XHEADER, $entity['id']);
+                        $response->headers->set(SparkService::XHEADER, 'hash-' . $entity['id']);
 
                         $event->setResponse($response);
                     }
