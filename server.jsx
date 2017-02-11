@@ -294,7 +294,7 @@ app.all('/fetch', (req, res) => {
                             return h;
                         }).reverse().filter(function (e, i, arr) {
                             return arr.indexOf(e, i+1) === -1;
-                        }).reverse().sort()
+                        }).reverse().sort().filter(function (h) {return h !== '/'})
                     }),
                     watchdog: window['nmsc'].ajaxwatchdogresponse
                 }

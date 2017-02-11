@@ -1,18 +1,40 @@
 
----- installation of electron --- vvv
-    sudo dpkg --add-architecture i386
-    sudo apt-get update
+---- installation of nightmare with xvfb --- vvv
 
-    then:
-    sudo apt-get install libgtk2.0-0:i386 libxss1 libxi6 libgconf-2-4 libnss3-dev
+apt-get update &&\
+    apt-get install -y libgtk2.0-0 libgconf-2-4 \
+    libasound2 libxtst6 libxss1 libnss3 xvfb    
 
-    and then
+Xvfb -ac -screen scrn 1280x2000x24 :9.0 &
+export DISPLAY=:9.0
 
-    sudo yarn global add electron
-    sudo yarn global add electron-prebuilt
+git clone https://github.com/stopsopa/spark.git spark
+cd spark
+npm install -g yarn
+yarn install
 
-    DEBUG=nightmare:* node test.jsx
----- installation of electron --- ^^^
+npm run supervisor 0.0.0.0 8080 &
+npm run start 0.0.0.0 80 &
+
+# vagrant for testing
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.synced_folder ".", "/vagrant/vbox"
+  config.vm.network "private_network", ip: ENV["VM_TEST"] || "172.28.121.1"
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "vagrant-nightmare"
+    vb.memory = "2524"
+    # vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+  end
+  config.vm.hostname = "vagrant-nightmare"
+end
+
+---- installation of nightmare with xvfb --- ^^^
+
+
+
+
 
 yarn install
 
@@ -21,8 +43,6 @@ npm run start
 http://localhost/sandbox.html
 
 npm run start 0.0.0.0 80
-
-killall node
 
 (sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run start 0.0.0.0 80
 

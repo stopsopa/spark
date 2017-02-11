@@ -1,0 +1,14 @@
+{
+  "name": "stopsopa/spark",
+  "license": "MIT",
+  "description": "prerender.io but based on nightmare.js (newer version of phantom.js)",
+  "authors": [
+    {
+      "name": "Szymon Działowski",
+      "email": "szymon.dzialowski@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": { "Stopsopa\\SparkBundle\\": "src/" }
+  }
+}
