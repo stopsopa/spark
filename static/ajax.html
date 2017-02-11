@@ -72,7 +72,7 @@
                 l = 'jq ' + l
                 $.ajax('/json?_' + l)
                     .done(function (data) {
-//                        pre.innerHTML += l + "\n";
+                        pre.innerHTML += l + "\n";
                         fn && fn();
                     })
                 ;
@@ -81,7 +81,7 @@
             function ajaxN(l, fn) {
                 l = 'nt ' + l;
                 ajaxNative('/json?_' + l, {}, function (data) {
-//                    pre.innerHTML += l + "\n";
+                    pre.innerHTML += l + "\n";
                     fn && fn();
                 })
             }
@@ -95,7 +95,7 @@
                                 setTimeout(function () {
                                     ajaxJQ(i + ' after tm ' + 5, function () {
                                         ajaxN(i + ' after tm ' + 6, function () {
-//                                            pre.innerHTML += 'jq first ' + i + ' end' + "\n";
+                                            pre.innerHTML += 'jq first ' + i + ' end' + "\n";
                                         });
                                     });
                                 }, 300);
@@ -109,7 +109,7 @@
                         ajaxJQ(i + ' sm ' + 2, function () {
                             ajaxN(i + ' sm ' + 3, function () {
                                 ajaxN(i + ' sm ' + 4, function () {
-//                                    pre.innerHTML += 'jq sm ' + i + ' end' + "\n";
+                                    pre.innerHTML += 'jq sm ' + i + ' end' + "\n";
                                 })
                             })
                         });
@@ -131,7 +131,7 @@
                                     setTimeout(function () {
                                         ajaxJQ(i + ' ' + 5, function () {
                                             ajaxN(i + ' ' + 6, function () {
-//                                                pre.innerHTML += 'ajax manual ' + i + ' end' + "\n";
+                                                pre.innerHTML += 'ajax manual ' + i + ' end' + "\n";
                                             });
                                         });
                                     }, 300);

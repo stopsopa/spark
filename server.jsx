@@ -69,6 +69,16 @@ const nightmaredef = { // https://github.com/segmentio/nightmare#api
     }
 };
 
+function unique(pattern) {
+    pattern || (pattern = 'xyx');
+    return pattern.replace(/[xy]/g,
+        function(c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+}
+
 app.all('/fetch', (req, res) => {
 
     var
@@ -76,6 +86,36 @@ app.all('/fetch', (req, res) => {
         params = req.query,
         error = false
     ;
+
+    var json = (function () {
+        var stop = false;
+        return function (code, data) {
+
+            if (stop) {
+                return;
+            }
+
+            try {
+
+                res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+                res.statusCode = code;
+
+                if (typeof data === 'string') {
+
+                    return res.end(data);
+                }
+
+                res.end(JSON.stringify(data));
+
+            }
+            catch (e) {
+                log('express error: ', e)
+            }
+
+            stop = true;
+        }
+    }());
 
     try {
 
@@ -87,6 +127,8 @@ app.all('/fetch', (req, res) => {
         }
 
         params = Object.assign({}, defopt, params);
+
+        params.u = unique();
 
         params.nightmare = Object.assign(params.nightmare || {}, nightmaredef);
 
@@ -106,36 +148,6 @@ app.all('/fetch', (req, res) => {
             params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
         }
 
-        var json = (function () {
-            var stop = false;
-            return function (code, data) {
-
-                if (stop) {
-                    return;
-                }
-
-                try {
-
-                    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-                    res.statusCode = code;
-
-                    if (typeof data === 'string') {
-
-                        return res.end(data);
-                    }
-
-                    res.end(JSON.stringify(data));
-
-                }
-                catch (e) {
-                    log('express error: ', e)
-                }
-
-                stop = true;
-            }
-        }());
-
         var night = Nightmare(params.nightmare);
 
         var collect = {};
@@ -144,7 +156,7 @@ app.all('/fetch', (req, res) => {
             .on('console', function () {
                 var args = Array.prototype.slice.call(arguments);
 
-                args[0] = '[browser:'+args[0]+']';
+                args[0] = '[browser:'+params.u+':'+args[0]+']';
 
                 log.apply(this, args);
             })
@@ -161,7 +173,7 @@ app.all('/fetch', (req, res) => {
                     case 'alert':
                     case 'prompt':
                     case 'confirm':
-                        args[0] = "[browser:"+args[0]+"]";
+                        args[0] = '[browser:'+params.u+':'+args[0]+']';
 
                         return log.apply(this, args);
                     default:
@@ -245,10 +257,45 @@ app.all('/fetch', (req, res) => {
                             + (!node.publicId && node.systemId ? ' SYSTEM' : '')
                             + (node.systemId ? ' "' + node.systemId + '"' : '')
                             + '>';
-                        html += document.documentElement.outerHTML
+                        html += document.documentElement.outerHTML;
 
                         return html;
                     }()),
+                    internalLinks: Object.assign({}, location, {
+                        links: Array.prototype.slice.call(document.getElementsByTagName('a')).map(function (a) {
+                            return a.getAttribute('href');
+                        }).filter(function (h) {
+
+                            if (h) {
+                                return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
+                            }
+
+                            return false;
+                        }).filter(function (h) {
+
+                            if (h[0] === '/') {
+                                if (h[1] && h[1] === '/') {
+                                    return false;
+                                }
+                                return true;
+                            }
+
+                            if (h.indexOf(location.origin) === 0) {
+                                return true;
+                            }
+
+                            return false;
+                        }).map(function (h) {
+
+                            if (h.indexOf(location.origin) === 0) {
+                                return h.substring(location.origin.length);
+                            }
+
+                            return h;
+                        }).reverse().filter(function (e, i, arr) {
+                            return arr.indexOf(e, i+1) === -1;
+                        }).reverse().sort()
+                    }),
                     watchdog: window['nmsc'].ajaxwatchdogresponse
                 }
             }, id)
@@ -257,12 +304,62 @@ app.all('/fetch', (req, res) => {
 
                 data.collect = collect;
 
-                if (params.returnonlyhtml) {
+                var status = collect['did-get-response-details'][4];
 
-                    return json(collect['did-get-response-details'][4], data.html)
+                try {
+                    status = collect['did-get-redirect-request'][0][4];
+                }
+                catch (e) {
                 }
 
-                return json(collect['did-get-response-details'][4], data);
+                data.internalLinks.links = data.internalLinks.links.concat((function () {
+                    var redirect = [];
+
+                    if (collect['did-get-redirect-request']) {
+                        redirect = redirect.concat(collect['did-get-redirect-request'].map(function (r) {
+                            return r[2];
+                        }));
+                    }
+
+                    return redirect;
+                }())).filter(function (h) {
+
+                    if (h) {
+                        return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
+                    }
+
+                    return false;
+                }).filter(function (h) {
+
+                    if (h[0] === '/') {
+                        if (h[1] && h[1] === '/') {
+                            return false;
+                        }
+                        return true;
+                    }
+
+                    if (h.indexOf(data.internalLinks.origin) === 0) {
+                        return true;
+                    }
+
+                    return false;
+                }).map(function (h) {
+
+                    if (h.indexOf(data.internalLinks.origin) === 0) {
+                        return h.substring(data.internalLinks.origin.length);
+                    }
+
+                    return h;
+                }).reverse().filter(function (e, i, arr) {
+                    return arr.indexOf(e, i+1) === -1;
+                }).reverse().sort();
+
+                if (params.returnonlyhtml) {
+
+                    return json(status, data.html)
+                }
+
+                return json(status, data);
             })
             .catch(function () {
 
@@ -282,10 +379,9 @@ app.all('/fetch', (req, res) => {
             data: e
         });
     }
-
 });
 
-app.use(express.static('static'))
+app.use(express.static('static'));
 
 app.get('/json', (req, res) => {
 
@@ -298,7 +394,7 @@ app.get('/json', (req, res) => {
         }));
 
     }, 300)
-})
+});
 
 app.get('/ajaxwrong', (req, res) => {
 
