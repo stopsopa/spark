@@ -9,6 +9,10 @@ Xvfb -ac -screen scrn 1280x2000x24 :9.0 &
 oraz    BARDZO WAŻNE ABY DODAĆ TO DO .bashrc
 export DISPLAY=:9.0
 
+diagnose:
+    sudo apt-get install x11-utils
+    xdpyinfo -display :9.0 >/dev/null 2>&1 && echo "In use" || echo "Free"
+
 git clone https://github.com/stopsopa/spark.git spark
 cd spark
 npm install -g yarn
