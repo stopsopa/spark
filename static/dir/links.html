@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var noorigin = location.href.substring(location.origin.length)
+            var nooriginwithouthash = noorigin;
+
+            if (noorigin.indexOf('#') > -1) {
+                nooriginwithouthash = noorigin.split('#');
+                nooriginwithouthash = nooriginwithouthash[0];
+            }
+
+            document.getElementById('withdomainandhash').setAttribute('href', location.href);
+            document.getElementById('withoutdomain').setAttribute('href', noorigin);
+            document.getElementById('nodomainnohash').setAttribute('href', nooriginwithouthash);
+        })
+    </script>
+</head>
+<body>
+<a href="?parameter#andhash">start link</a>
+<hr>
+
+<a href="/link/slash at the beginning">lash at the beginning</a>
+<br>
+<a href="no slash at the beginning">no slash at the beginning</a>
+<br>
+<a href="http://httpd.pl/md5">md5</a>
+<br>
+<a href="#id hash">d has</a>
+<br>
+<a href="?onlyparameter">onlyparameter</a>
+<br>
+<a href="/">/</a>
+<br>
+<a href="" id="withdomainandhash">withdomainandhash</a>
+<br>
+<a href="" id="withoutdomain">withoutdomain</a>
+<br>
+<a href="" id="nodomainnohash">nodomainnohash</a>
+</body>
+</html>

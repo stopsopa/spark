@@ -6,6 +6,7 @@ apt-get update &&\
     libasound2 libxtst6 libxss1 libnss3 xvfb    
 
 Xvfb -ac -screen scrn 1280x2000x24 :9.0 &
+oraz    BARDZO WAŻNE ABY DODAĆ TO DO .bashrc
 export DISPLAY=:9.0
 
 git clone https://github.com/stopsopa/spark.git spark
@@ -45,6 +46,11 @@ http://localhost/sandbox.html
 npm run start 0.0.0.0 80
 
 (sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run start 0.0.0.0 80
+
+#kill and run for tests
+    ((kill $(ps aux | grep "killme" | grep -v grep | grep -v sh | head -1 | awk '{print $2}')) && echo 'killed' || echo 'nothing to kill') && npm run start 0.0.0.0 81 killme & disown
+    and then
+    http://xxxx:81/sandbox.html
 
 window.nmsc = window.nmsc || []; nmsc.push(true);
 

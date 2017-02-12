@@ -79,7 +79,6 @@ app.all('/status', (req, res) => {
 app.all('/start', (req, res) => {
 
     // ps aux | grep "node server.js" | grep -v grep
-
     proc = spawn('bash', ['start.sh', req.body.ip, req.body.port], {
         maxBuffer: 200*1024,
         timeout: 5000,
@@ -95,8 +94,6 @@ app.all('/start', (req, res) => {
 app.all('/stop', (req, res) => {
 
     // kill -SIGTERM $(ps aux | grep "server.jsx" | grep -v grep | head -1 | awk '{print $2}')
-
-
     proc = spawn('bash', ['stop.sh'], {
         maxBuffer: 200*1024,
         timeout: 5000,

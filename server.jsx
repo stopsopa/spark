@@ -262,39 +262,74 @@ app.all('/fetch', (req, res) => {
                         return html;
                     }()),
                     internalLinks: Object.assign({}, location, {
-                        links: Array.prototype.slice.call(document.getElementsByTagName('a')).map(function (a) {
-                            return a.getAttribute('href');
-                        }).filter(function (h) {
+                        links: (function () {
 
-                            if (h) {
-                                return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
+                            var h, links = [];
+
+                            var path = location.pathname.split('/');
+                            path.pop();
+                            path = path.join('/');
+
+                            var noorigin = location.href.substring(location.origin.length)
+                            var nooriginwithouthash = noorigin;
+
+                            if (noorigin.indexOf('#') > -1) {
+                                nooriginwithouthash = noorigin.split('#');
+                                nooriginwithouthash = nooriginwithouthash[0];
                             }
 
-                            return false;
-                        }).filter(function (h) {
+                            var list = Array.prototype.slice.call(document.getElementsByTagName('a')).map(function (a) {
+                                return a.getAttribute('href');
+                            }).filter(function (h) {
 
-                            if (h[0] === '/') {
-                                if (h[1] && h[1] === '/') {
-                                    return false;
+                                if (h) {
+                                    return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
                                 }
-                                return true;
+
+                                return false;
+                            });
+
+                            // http://origin/directory/link
+                            // /directory/link
+                            // directory/link
+                            // not //origin/directory/link
+                            // not #hash
+                            for (var i = 0, l = list.length ; i < l ; i += 1 ) {
+                                h = list[i];
+
+                                if (h === location.href || h === noorigin || h === nooriginwithouthash) {
+                                    continue;
+                                }
+
+                                if (h[0] === '?') {
+                                    links.push(location.pathname + h);
+                                    continue;
+                                }
+
+                                if (h[0] === '#') {
+                                    continue;
+                                }
+
+                                if (h[0] === '/') {
+                                    if (h[1] && h[1] === '/') {
+                                        continue;
+                                    }
+                                    links.push(h);
+                                    continue;
+                                }
+
+                                if (h.indexOf(location.origin) === 0) {
+                                    links.push(h.substring(location.origin.length));
+                                    continue;
+                                }
+
+                                if (!/^https?:\/\//i.test(h) && h[0] !== '/') {
+                                    links.push(path + '/' + h);
+                                }
                             }
 
-                            if (h.indexOf(location.origin) === 0) {
-                                return true;
-                            }
-
-                            return false;
-                        }).map(function (h) {
-
-                            if (h.indexOf(location.origin) === 0) {
-                                return h.substring(location.origin.length);
-                            }
-
-                            return h;
-                        }).reverse().filter(function (e, i, arr) {
-                            return arr.indexOf(e, i+1) === -1;
-                        }).reverse().sort().filter(function (h) {return h !== '/'})
+                            return links;
+                        }())
                     }),
                     watchdog: window['nmsc'].ajaxwatchdogresponse
                 }
@@ -312,47 +347,82 @@ app.all('/fetch', (req, res) => {
                 catch (e) {
                 }
 
-                data.internalLinks.links = data.internalLinks.links.concat((function () {
-                    var redirect = [];
+                data.internalLinks.links = (function () {
 
-                    if (collect['did-get-redirect-request']) {
-                        redirect = redirect.concat(collect['did-get-redirect-request'].map(function (r) {
-                            return r[2];
-                        }));
+                    var h, links = [];
+
+                    var path = data.internalLinks.pathname.split('/');
+                    path.pop();
+                    path = path.join('/');
+
+                    var noorigin = data.internalLinks.href.substring(data.internalLinks.origin.length)
+                    var nooriginwithouthash = noorigin;
+
+                    if (noorigin.indexOf('#') > -1) {
+                        nooriginwithouthash = noorigin.split('#');
+                        nooriginwithouthash = nooriginwithouthash[0];
                     }
 
-                    return redirect;
-                }())).filter(function (h) {
+                    var list = data.internalLinks.links.concat((function () {
+                        var redirect = [];
 
-                    if (h) {
-                        return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
-                    }
-
-                    return false;
-                }).filter(function (h) {
-
-                    if (h[0] === '/') {
-                        if (h[1] && h[1] === '/') {
-                            return false;
+                        if (collect['did-get-redirect-request']) {
+                            redirect = redirect.concat(collect['did-get-redirect-request'].map(function (r) {
+                                return r[2];
+                            }));
                         }
-                        return true;
+
+                        return redirect;
+                    }())).filter(function (h) {
+
+                        if (h) {
+                            return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
+                        }
+
+                        return false;
+                    });
+
+                    // http://origin/directory/link
+                    // /directory/link
+                    // directory/link
+                    // not //origin/directory/link
+                    // not #hash
+                    for (var i = 0, l = list.length ; i < l ; i += 1 ) {
+                        h = list[i];
+
+                        if (h === data.internalLinks.href || h === noorigin || h === nooriginwithouthash) {
+                            continue;
+                        }
+
+                        if (h[0] === '?') {
+                            links.push(data.internalLinks.pathname + h);
+                            continue;
+                        }
+
+                        if (h[0] === '#') {
+                            continue;
+                        }
+
+                        if (h[0] === '/') {
+                            if (h[1] && h[1] === '/') {
+                                continue;
+                            }
+                            links.push(h);
+                            continue;
+                        }
+
+                        if (h.indexOf(data.internalLinks.origin) === 0) {
+                            links.push(h.substring(data.internalLinks.origin.length));
+                            continue;
+                        }
+
+                        if (!/^https?:\/\//i.test(h) && h[0] !== '/') {
+                            links.push(path + '/' + h);
+                        }
                     }
 
-                    if (h.indexOf(data.internalLinks.origin) === 0) {
-                        return true;
-                    }
-
-                    return false;
-                }).map(function (h) {
-
-                    if (h.indexOf(data.internalLinks.origin) === 0) {
-                        return h.substring(data.internalLinks.origin.length);
-                    }
-
-                    return h;
-                }).reverse().filter(function (e, i, arr) {
-                    return arr.indexOf(e, i+1) === -1;
-                }).reverse().sort();
+                    return links;
+                }());
 
                 if (params.returnonlyhtml) {
 
