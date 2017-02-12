@@ -32,7 +32,10 @@ class PrerenderReplacerListener
 
             if ($this->container->getParameter('kernel.environment') === 'prod') {
 
-                $entity = $service->has($request->getUri());
+                // for some reason in sf3 for homepage getUri() return wrong link
+                //$entity = $service->has($request->getUri());              
+
+                $entity = $service->has($_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
 
                 if ($entity) {
 
