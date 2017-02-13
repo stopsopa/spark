@@ -329,7 +329,9 @@ app.all('/fetch', (req, res) => {
                             }
 
                             return links;
-                        }())
+                        }()).reverse().filter(function (e, i, arr) {
+                            return arr.indexOf(e, i+1) === -1;
+                        }).reverse().sort()
                     }),
                     watchdog: window['nmsc'].ajaxwatchdogresponse
                 }
@@ -422,7 +424,9 @@ app.all('/fetch', (req, res) => {
                     }
 
                     return links;
-                }());
+                }()).reverse().filter(function (e, i, arr) {
+                    return arr.indexOf(e, i+1) === -1;
+                }).reverse().sort();
 
                 if (params.returnonlyhtml) {
 
