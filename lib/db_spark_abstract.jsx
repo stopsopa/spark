@@ -1,9 +1,9 @@
 'use strict';
 
-var path        = require('path');
-var mysql       = require('mysql');
-var Promise     = require("bluebird")
-var log         = rootRequire(path.join('react', 'webpack', 'log.js'));
+const path      = require('path');
+const mysql     = require('mysql');
+const Promise   = require("bluebird")
+const log       = rootRequire(path.join('react', 'webpack', 'log.js'));
 
 function abstract(table, connection) {
     this.table          = table;
@@ -17,8 +17,11 @@ function values(object) {
     }
     return list;
 }
+function isObject(a) {
+    return (!!a) && (a.constructor === Object);
+};
 
-abstract.prototype.create = function (list) {
+abstract.prototype.insert = function (list) {
 
     var query = 'INSERT INTO `'+ this.table+'` ';
 
@@ -33,8 +36,62 @@ abstract.prototype.create = function (list) {
 
     return new Promise((resolve, reject) => {
         this.connection.query(query, values(list), function (error, results, fields) {
-            if (error) throw error;
-            resolve(results.insertId);
+            error ? reject(error) : resolve(results.insertId);
+        });
+    });
+}
+
+abstract.prototype.update = function (list, id) {
+
+    if (!isObject(id)) {
+        id = {id: id};
+    }
+
+    var query = 'UPDATE `'+ this.table+'` SET ';
+
+    var columns = [];
+
+    for (var i in list) {
+        columns.push('`' + i + '` = ?');
+    }
+
+    var ids = [];
+
+    for (var i in id) {
+        ids.push('`' + i + '` = ?')
+    }
+
+    query += columns.join(', ') + ' WHERE ' + ids.join(' AND ');
+
+    return new Promise((resolve, reject) => {
+        this.connection.query(query, values(list).concat(values(id)), function (error, results, fields) {
+            error ? reject(error) : resolve(results);
+        });
+    });
+}
+
+abstract.prototype.select = function (id) {
+
+    var query = 'SELECT * FROM `'+ this.table+'` ';
+
+    if (id) {
+
+        if (!isObject(id)) {
+            id = {id: id};
+        }
+
+        var ids = [];
+
+        for (var i in id) {
+            ids.push('`' + i + '` = ?')
+        }
+
+        query += 'WHERE ' + ids.join(' AND ');
+    }
+
+    return new Promise((resolve, reject) => {
+        this.connection.query(query, id && values(id), function (error, results, fields) {
+            error ? reject(error) : resolve(results);
         });
     });
 }

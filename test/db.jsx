@@ -20,14 +20,36 @@ const path          = require("path");
 const mysql         = require('mysql');
 const db            = rootRequire(path.join('lib', 'db_spark.jsx'));
 const log           = rootRequire(path.join('react', 'webpack', 'log.js'));
+const moment        = require('moment');
 
-db.cache.create({
-    id: 'idhash',
+var id = 'idhash' + (new Date()).getTime();
+// var id = 'idhash1487196660236';
+
+db.cache.insert({
+    id: id,
     url: 'http://jakisurl',
-    html: '<pre>pre</pre>'
+    html: '<pre>pre</pre>',
+    created: db.now(),
+    updated: db.now()
 
-}).then(function (id) {
-    log('inserted id: ', id)
+}).then(function (newid) {
+    log('inserted id: ', newid)
+    db.cache.cachenew();
+    setTimeout(function () {
+        db.cache.update({
+            url: 'http://urlchanged updated',
+            html: '<pre>updated pre</pre>',
+            updated: db.now()
+        }, id).then(function () {
+
+            db.cache.select().then(function (list) {
+                log(list)
+                log('all done...', moment().format('YYYY-MM-DD HH:mm:ss'))
+                setTimeout(() => db.db.end(), 1000);
+            })
+        })
+    }, 2000);
+
 });
 // db.cache.cachenew();
 
