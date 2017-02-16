@@ -37,7 +37,7 @@ class PrerenderReplacerAfterListener
 
                 $ct = $response->headers->get('content-type');
 
-                file_put_contents(App::getRootDir() . '/app/cache/log.log', json_encode($ct, JSON_PRETTY_PRINT), FILE_APPEND);
+                //file_put_contents(App::getRootDir() . '/app/cache/log.log', json_encode($ct, JSON_PRETTY_PRINT), FILE_APPEND);
 
                 if (!$ct || ($ct && strpos($ct, 'text/html') !== false)) {
 
