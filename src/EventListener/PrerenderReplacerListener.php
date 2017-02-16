@@ -41,7 +41,7 @@ class PrerenderReplacerListener
 
                     if ($entity['status'] == 200) {
 
-                        $entity['html'] = str_replace('</body>', '<div style="position:fixed;left:0;bottom:0;background-color:green;height:1px;width:2px;z-index:10000"></div></body>', $entity['html']);
+                        $entity['html'] = str_replace('</body>', '<div style="position:fixed;left:3px;bottom:1px;background-color:green;height:2px;width:2px;z-index:10000;"></div></body>', $entity['html']);
 
                         $response = new Response($entity['html']);
 
