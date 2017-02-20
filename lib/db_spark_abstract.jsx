@@ -2,7 +2,6 @@
 
 const path      = require('path');
 const mysql     = require('mysql');
-const Promise   = require("bluebird")
 const log       = rootRequire(path.join('react', 'webpack', 'log.js'));
 
 function abstract(table, pool) {
