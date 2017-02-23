@@ -213,7 +213,7 @@ class SparkService implements SparkStorageInterface, SparkProviderInterface {
     }
     public function prerender($url)
     {
-        $json = $this->api($url);
+        $json = $this->api($url . '?_');
 
         if (!isset($json['body']['html'])) {
 
