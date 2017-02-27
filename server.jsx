@@ -42,8 +42,8 @@ const defopt = {
     // readyselector : '[class="text-lowercase ng-binding"]', // first priority
     returnonlyhtml: false,
     ajaxwatchdog: {
-        waitafterlastajaxresponse: 1000, // 1 sec
-        longestajaxrequest: 5000 // 5 sec
+        waitafterlastajaxresponse: 3000, // 1 sec
+        longestajaxrequest: 15000 // 5 sec
     }, // second priority (only if readyselector is not specified) - enabled by default
     timeout: 36000, // general fork process timeout
 };
@@ -64,8 +64,9 @@ const nightmaredef = { // https://github.com/segmentio/nightmare#api
 
     alwaysOnTop: false,
     webPreferences: {
-        preload: path.resolve('static', 'libs', "onAllFinished.js") // (custom preload script preload.js) https://github.com/segmentio/nightmare#custom-preload-script
+        preload: path.resolve('static', 'libs', "onAllFinished.js"), // (custom preload script preload.js) https://github.com/segmentio/nightmare#custom-preload-script
         //alternative: preload: "absolute/path/to/custom-script.js"
+        partition: 'nopersist' // always clear cache
     }
 };
 
@@ -78,6 +79,17 @@ function unique(pattern) {
             return v.toString(16);
         });
 }
+
+Nightmare.action('clearCache',
+    function(name, options, parent, win, renderer, done) {
+        parent.respondTo('clearCache', function(done) {
+            win.webContents.session.clearCache(done);
+        });
+        done();
+    },
+    function(done) {
+        this.child.call('clearCache', done);
+    });
 
 app.all('/fetch', (req, res) => {
 
@@ -148,6 +160,8 @@ app.all('/fetch', (req, res) => {
             params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
         }
 
+        log('[browser:'+params.u+':init]: ' + params.url)
+
         var night = Nightmare(params.nightmare);
 
         var collect = {};
@@ -156,7 +170,19 @@ app.all('/fetch', (req, res) => {
             .on('console', function () {
                 var args = Array.prototype.slice.call(arguments);
 
-                args[0] = '[browser:'+params.u+':'+args[0]+']';
+                var type = args[0];
+
+                args[0] = '[browser:'+params.u+':'+type+']';
+
+                if (!collect.console) {
+                    collect.console = {};
+                }
+
+                if (!collect.console[type]) {
+                    collect.console[type] = [];
+                }
+
+                collect.console[type].push(args);
 
                 log.apply(this, args);
             })
@@ -173,7 +199,7 @@ app.all('/fetch', (req, res) => {
                     case 'alert':
                     case 'prompt':
                     case 'confirm':
-                        args[0] = '[browser:'+params.u+':'+args[0]+']';
+                        args[0] = '[browser:'+params.u+':'+args[0]+':type:'+type+']';
 
                         return log.apply(this, args);
                     default:
@@ -210,6 +236,7 @@ app.all('/fetch', (req, res) => {
                     collect['did-get-redirect-request'].push(data);
                 }
             })
+            // .clearCache()
             .goto(params.url, params.headers || {})
             .wait('body')
             .evaluate(function (id, params) {
@@ -252,10 +279,12 @@ app.all('/fetch', (req, res) => {
                         // http://stackoverflow.com/a/10162353
                         var node = document.doctype;
                         var html = "<!DOCTYPE "
-                            + node.name
-                            + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
-                            + (!node.publicId && node.systemId ? ' SYSTEM' : '')
-                            + (node.systemId ? ' "' + node.systemId + '"' : '')
+                            + (node ? (
+                                node.name
+                                + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+                                + (!node.publicId && node.systemId ? ' SYSTEM' : '')
+                                + (node.systemId ? ' "' + node.systemId + '"' : '')
+                            ) : 'nonode')
                             + '>';
                         html += document.documentElement.outerHTML;
 
@@ -343,10 +372,34 @@ app.all('/fetch', (req, res) => {
 
                 var status = collect['did-get-response-details'][4];
 
+                var notHtmlMime = false;
                 try {
                     status = collect['did-get-redirect-request'][0][4];
+                    var tmp = collect['did-get-redirect-request'][0][7];
+
+                    var ct;
+                    for (var i in tmp) {
+                        if (i === 'content-type') {
+                            ct = tmp[i]['content-type'];
+                            break;
+                        }
+                    }
+
+                    if (ct) {
+                        for (var i = 0, l = ct.length ; i < l ; i += 1 ) {
+                            if (typeof ct[i] === 'string' && ct[i].indexOf('text/html') > -1) {
+                                notHtmlMime = ct[i];
+                                break;
+                            }
+                        }
+                    }
+
                 }
                 catch (e) {
+                }
+
+                if (notHtmlMime) {
+                    throw "mime type '" +notHtmlMime+ "'";
                 }
 
                 data.internalLinks.links = (function () {

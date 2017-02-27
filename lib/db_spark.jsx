@@ -3,11 +3,11 @@
 var path        = require('path');
 var mysql       = require('mysql');
 var log         = rootRequire(path.join('react', 'webpack', 'log.js'));
-var abstract    = require(path.resolve(__dirname, 'db_spark_abstract.jsx'));
+var abstract    = require(path.resolve(__dirname, 'db_abstract.jsx'));
 
 var connection;
 
-var config      = require(path.resolve(__dirname, '..', 'db_config.js'));
+var config      = require(path.resolve(__dirname, '..', 'config.js'));
 
 const moment    = require('moment');
 
