@@ -18,6 +18,7 @@ config = {
     },
     crawler: {
         waitBeforeCrawlNextPage: 300, // ms
+        continueIdleAfter: 5000, // ms
         acceptMime: [
 
         ],
