@@ -35,7 +35,7 @@ function values(object) {
  *     log('rej', rej)
  * })
  *
- * @param query
+ * @param query - use inside :table:
  * @param object (if ":col_name" inside) | array (if '?' used inside)
  *
  * return
@@ -62,6 +62,10 @@ abstract.prototype.query = function (query) {
 
     var queryParams = values(params);
 
+    if (query.indexOf(':table:') > -1) {
+        query = query.replace(/:table:/g, '`' + this.table + '`');
+    }
+
     if (isObject(params) && queryParams.length && query.indexOf(':') > -1) {
 
         var queryParams = [];
@@ -84,31 +88,46 @@ abstract.prototype.query = function (query) {
             return '?';
         });
 
-        log('query', query, queryParams)
     }
 
-    return new Promise((resolve, reject) => {
-        this.pool.getConnection(function(error, connection) {
-            log('connection.threadId: ', connection.threadId); // https://github.com/mysqljs/mysql#getting-the-connection-id
-            if (error) {
-                connection && connection.release();
-                reject({message:'connection error', error:error})
-            }
-            else {
-                connection.query(query, queryParams, function (error, results, fields) {
+    // log.line('query', query, queryParams)
+
+    return new Promise((resolveParent, rejectParent) => {
+        new Promise((resolve, reject) => {
+            this.pool.getConnection(function(error, connection) {
+                // log('connection.threadId: ', connection.threadId); // https://github.com/mysqljs/mysql#getting-the-connection-id
+                if (error) {
                     connection && connection.release();
-                    error ? reject({message:'query error', error:error}) : resolve(results);
-                });
-            }
+                    reject({message:'connection error', error:error})
+                }
+                else {
+                    connection.query(query, queryParams, function (error, results, fields) {
+                        connection && connection.release();
+                        if (error) {
+                            error.query = query;
+                            error.params = queryParams;
+                            reject({message:'query error', error:error})
+                        }
+                        else {
+                            resolve(results);
+                        }
+                    });
+                }
+            })
         })
-    });
+        .then(resolveParent, rejectParent)
+        .catch(function (e) {
+            rejectParent({message:'general promise query error', error:e})
+        });
+    })
+
 }
 /**
  * @param list - object
  */
 abstract.prototype.insert = function (list) {
 
-    var query = 'INSERT INTO `'+ this.table+'` ';
+    var query = 'INSERT INTO :table: ';
 
     var columns = [], marks = [];
 
@@ -135,7 +154,7 @@ abstract.prototype.update = function (list, id) {
         id = {id: id};
     }
 
-    var query = 'UPDATE `'+ this.table+'` SET ';
+    var query = 'UPDATE :table: SET ';
 
     var columns = [];
 
@@ -166,7 +185,7 @@ abstract.prototype.count = function () {
 
     var params = (arguments.length > -1) ? arguments[0] : false;
 
-    var query = 'SELECT COUNT(*) AS c FROM `' + this.table + '`';
+    var query = 'SELECT COUNT(*) AS c FROM :table:';
 
     if (params) {
 
@@ -187,6 +206,22 @@ abstract.prototype.count = function () {
         }
 
         throw "Count(*) not work for query: '" + query + "'";
+    }, function (a) {
+        return a
+    });
+}
+
+abstract.prototype.fetchOne = function (query) {
+    return new Promise((resolve, reject) => {
+        this.query.apply(this, arguments).then(function (rows) {
+            if (rows.length === 1) {
+                return resolve(rows[0]);
+            }
+
+            reject({message:'fetchOne query error', error:'found ' + rows.length + ' rows'})
+        }, function (a) {
+            return a
+        });
     });
 }
 

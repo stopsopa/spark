@@ -1,0 +1,199 @@
+'use strict';
+
+// select id, url, created, updated, updateRequest, statusCode, warning, errorCounter from spark_cache
+
+(function () { // https://gist.github.com/branneman/8048520#6-the-hack
+    // how to use: rootRequire(path.join('lib', 'db_spark.jsx'))
+    if (!global.rootRequire) {
+
+        const path          = require("path");
+
+        const args = Array.prototype.slice.call(arguments);
+
+        process.env.NODE_PATH = path.resolve.apply(this, args);
+
+        global.rootRequire = function (name) {
+            return require(path.resolve.apply(this, args.concat([name])));
+        }
+    }
+}(__dirname, '.'));
+
+const http          = require('http');
+const path          = require('path');
+const sha1          = require('sha1');
+const log           = rootRequire(path.join('lib', 'log.jsx'));
+const spark         = rootRequire(path.join('lib', 'curljson.jsx')).spark;
+const db            = rootRequire(path.join('lib', 'db_spark.jsx'));
+const config        = rootRequire(path.join('config'));
+
+function hash(url) {
+
+    if (/^https?:\/\//i.test(url)) {
+        url = url.replace(/^https?:\/\/[^\/\?\#&=]+(.*)$/i, '$1');
+    }
+
+    return sha1(url);
+}
+
+function searchForWarning(json) {
+    return null;
+}
+
+function insertNewLinks(origin, list, callback) {
+
+    if (!list || !list.length) {
+        return callback();
+    }
+
+    (function pop() {
+        var url = list.pop();
+
+        if (url) {
+            db.cache.insert({
+                id: hash(url),
+                url: origin + url,
+                created: db.now()
+            })
+            .then(pop, function (d) {
+                try {
+                    if (d.error.code !== 'ER_DUP_ENTRY') {
+                        log.json(d)
+                    }
+                }
+                catch (e) {
+                    log.json(e)
+                }
+                pop();
+            })
+            .catch(function (e) {
+                log.json(e)
+            });
+        }
+        else {
+            callback();
+        }
+    }())
+}
+
+var free = true;
+function crawl() {
+
+    db.cache.fetchOne("select * from :table: WHERE statusCode is null limit 1")
+        .then(function (row) {
+
+            log(db.now(), row.url);
+
+            spark(row.url)
+                .then(function (res) {
+
+                    var list = [], origin;
+
+                    try {
+                        list    = res.json.internalLinks.links
+                        origin  = res.json.internalLinks.origin;
+                    }
+                    catch (e) {
+                        log.line('links not found');
+                    }
+
+                    var html = '';
+                    try {
+                        html = res.json.html;
+                        delete res.json.html;
+                    }
+                    catch (e) {
+                    }
+
+                    if (res.statusCode === 200) {
+
+                        insertNewLinks(origin, list, function () {
+
+                            var upd = {
+                                html            : html,
+                                updated         : db.now(),
+                                statusCode      : res.statusCode,
+                                updateRequest     : null,
+                                json            : JSON.stringify(res.json, null, '  ') || '-empty-',
+                                warning         : searchForWarning(res.json),
+                                errorCounter    : null
+                            };
+
+                            db.cache.update(upd, row.id)
+                                .then(function (res) {
+                                    setTimeout(function() {
+                                        free = true
+                                    }, config.crawler.waitBeforeCrawlNextPage);
+                                }, function (e) {
+                                    log.json('error')
+                                    log.json(e)
+                                    log.json(upd)
+                                })
+                                .catch(function () {
+                                    log.json('error')
+                                    log.json(e)
+                                });
+                        });
+                    }
+                    else {
+                        db.cache.query(`
+UPDATE :table: SET  html            = :html,
+                    updated         = :updated,
+                    statusCode      = :statusCode,
+                    updateRequest     = null,
+                    json            = :json,
+                    warning         = null,
+                    errorCounter    = errorCounter + 1
+WHERE               id = :id                         
+`,                      {
+                            id          : row.id,
+                            html        : html,
+                            updated     : db.now(),
+                            updateRequest     : null,
+                            statusCode  : res.statusCode,
+                            json        : JSON.stringify(res.json, null, '  ') || '-empty-'
+                        })
+                        .then(function (res) {
+                            log.json('res')
+                            setTimeout(function() {
+                                free = true
+                            }, config.crawler.waitBeforeCrawlNextPage);
+                        }, function (e) {
+                            log.json('error')
+                            log.json(e)
+                            setTimeout(function() {
+                                free = true
+                            }, config.crawler.waitBeforeCrawlNextPage);
+                        })
+                        .catch(function (e) {
+                            log.json('error')
+                            log.json(e)
+                            setTimeout(function() {
+                                free = true
+                            }, config.crawler.waitBeforeCrawlNextPage);
+                        });
+                    }
+                }, function (e) {
+                    log.line('spark cant crawl : ' + row.url, e);
+                })
+                .catch(function (e) {
+                    log.json(e)
+                });
+
+        }, function (e) {
+            log.json(e)
+            setTimeout(function() {
+                free = true
+            }, config.crawler.waitBeforeCrawlNextPage);
+        })
+        .catch(function (e) {
+            log.json(e)
+        });
+}
+
+
+setInterval(function () {
+    if (free) {
+        free = false;
+        crawl();
+    }
+}, 100);
