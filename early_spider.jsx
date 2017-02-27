@@ -180,13 +180,20 @@ WHERE               id = :id
                 });
 
         }, function (e) {
-            log.json(e)
-            setTimeout(function() {
-                free = true
-            }, config.crawler.waitBeforeCrawlNextPage);
+            if (e.error === 'found 0 rows') {
+                setTimeout(function() {
+                    free = true
+                }, config.crawler.continueIdleAfter);
+            }
+            else {
+                log.json(e)
+            }
         })
         .catch(function (e) {
             log.json(e)
+            setTimeout(function() {
+                free = true
+            }, config.crawler.continueIdleAfter);
         });
 }
 
