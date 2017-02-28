@@ -78,7 +78,7 @@ function insertNewLinks(origin, list, callback) {
 var free = true;
 function crawl() {
 
-    db.cache.fetchOne("select * from :table: WHERE statusCode is null limit 1")
+    db.cache.fetchOne("select * from :table: WHERE statusCode is null ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
 
             log(db.now(), row.url);
@@ -89,16 +89,17 @@ function crawl() {
                     var list = [], origin;
 
                     try {
-                        list    = res.json.internalLinks.links
+                        list    = res.json.internalLinks.links;
                         origin  = res.json.internalLinks.origin;
                     }
                     catch (e) {
-                        log.line('links not found');
                     }
 
                     var html = '';
                     try {
-                        html = res.json.html;
+                        if (res.json.html) {
+                            html = res.json.html;
+                        }
                         delete res.json.html;
                     }
                     catch (e) {
@@ -142,7 +143,7 @@ UPDATE :table: SET  html            = :html,
                     updateRequest     = null,
                     json            = :json,
                     warning         = null,
-                    errorCounter    = errorCounter + 1
+                    errorCounter    = if(errorCounter, errorCounter, 0) + 1
 WHERE               id = :id                         
 `,                      {
                             id          : row.id,
@@ -153,7 +154,6 @@ WHERE               id = :id
                             json        : JSON.stringify(res.json, null, '  ') || '-empty-'
                         })
                         .then(function (res) {
-                            log.json('res')
                             setTimeout(function() {
                                 free = true
                             }, config.crawler.waitBeforeCrawlNextPage);

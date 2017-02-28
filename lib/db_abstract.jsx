@@ -72,8 +72,9 @@ abstract.prototype.query = function (query) {
 
         query = query.replace(/:([a-z0-9]+)/ig, function (all, match) {
 
-            if (!params[match]) {
-                throw "Param '" + match + "' not found in object: " + JSON.stringify(params);
+            if (typeof params[match] === 'undefined') {
+                throw "Param '" + match + "' not found in object: " + JSON.stringify(params)
+                    + ' for request: '+ query;
             }
 
             if (isArray(params[match])) {

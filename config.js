@@ -7,9 +7,7 @@ config = {
         database : 'spark'
     },
     curl: {
-        host: '138.68.156.126',
-        port: 80,
-        path: '/fetch',
+        url: 'http://138.68.156.126/fetch',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json; charset=utf-8',

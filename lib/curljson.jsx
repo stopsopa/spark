@@ -4,6 +4,7 @@
 const http          = require('http');
 const path          = require('path');
 const Nightmare     = require('nightmare');
+const url           = require('url');
 const log           = console.log;
 const config        = require(path.resolve(__dirname, '..', 'config.js'));
 
@@ -11,7 +12,15 @@ function curljson(data, headers) {
 
     return new Promise(function (resolve, reject) {
 
-        var req = http.request(config.curl, function(res) {
+        var uri = url.parse(config.curl.url);
+
+        var options = Object.assign({}, config.curl, {
+            host    : uri.hostname,
+            port    : uri.port,
+            path    : uri.path
+        });
+
+        var req = http.request(options, function(res) {
 
             res.setEncoding('utf8');
 
