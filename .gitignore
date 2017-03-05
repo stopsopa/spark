@@ -4,3 +4,4 @@ node_modules/
 /.vagrant
 *.tar
 *.tar.gz
+/prerender.io/

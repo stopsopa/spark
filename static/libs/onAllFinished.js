@@ -1,6 +1,26 @@
 // source https://github.com/segmentio/nightmare/blob/master/lib/preload.js
 // or file in node modules preload.js
-window.log = (function () {try {return console.log;}catch (e) {return function () {}}}());
+
+(function () {
+    var cache = [];
+    document.addEventListener('DOMContentLoaded', function () {
+        window.log = (function () {
+            try {
+                return console.log;
+            }catch (e) {
+                return function () {}
+            }
+        }());
+        var c;
+        while (c = cache.shift()) {
+            log.apply(this, c);
+        }
+    });
+
+    window.log = function () {
+        cache.push(Array.prototype.slice.call(arguments));
+    };
+}());
 
 if (typeof require !== 'undefined') {
     window.__nightmare = {};
