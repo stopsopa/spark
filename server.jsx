@@ -205,6 +205,12 @@ app.all('/fetch', (req, res) => {
 
         log('[browser:'+params.u+':init]: ' + params.url)
 
+
+        // hardcoded for now
+        params.ajaxwatchdog = 8000;
+
+
+
         curl(params.url, params.firstrequesttype, params.firstrequestheaders)
             .then(function (res) {
 
@@ -327,6 +333,10 @@ app.all('/fetch', (req, res) => {
 
                         (function (ready) {
 
+                            function trigger(status) {
+                                window[params.nmsc] = window[params.nmsc] || []; window[params.nmsc].push(status);
+                            };
+
                             if (window[params.nmsc] && window[params.nmsc].length) {
                                 return ready(window[params.nmsc][0]);
                             }
@@ -335,10 +345,27 @@ app.all('/fetch', (req, res) => {
                                 push: ready
                             };
 
+                            // log('test dog: ', params)
+
                             if (params.ajaxwatchdog) {
-                                window.XMLHttpRequest.prototype.onAllFinished(function (status) {
-                                    window[params.nmsc] = window[params.nmsc] || []; window[params.nmsc].push(status);
-                                }, params.ajaxwatchdog.waitafterlastajaxresponse, params.ajaxwatchdog.longestajaxrequest);
+
+                                if (typeof params.ajaxwatchdog === 'number') {
+                                    log('use ajaxwatchdog timeout');
+                                    setTimeout(trigger, params.ajaxwatchdog);
+                                }
+
+                                if (typeof params.ajaxwatchdog === 'object') {
+                                    log('use ajaxwatchdog counter')
+                                    window.XMLHttpRequest.prototype.onAllFinished(
+                                        trigger,
+                                        params.ajaxwatchdog.waitafterlastajaxresponse,
+                                        params.ajaxwatchdog.longestajaxrequest
+                                    );
+                                }
+
+                            }
+                            else {
+                                log('params.ajaxwatchdog - disabled (manual mode)')
                             }
 
                         }(function (data) {
@@ -374,7 +401,7 @@ app.all('/fetch', (req, res) => {
                                             + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
                                             + (!node.publicId && node.systemId ? ' SYSTEM' : '')
                                             + (node.systemId ? ' "' + node.systemId + '"' : '')
-                                        ) : 'nonode')
+                                        ) : 'nodoctype')
                                         + '>';
                                     html += document.documentElement.outerHTML;
 
@@ -619,7 +646,21 @@ app.all('/fetch', (req, res) => {
 
 app.use(express.static('static'));
 
-app.get('/json', (req, res) => {
+app.all('/json', (req, res) => {
+
+    var params = {
+        timeout: 300
+    }
+
+    if (req.query.timeout > 0) {
+        params = Object.assign(params, req.query);
+    }
+
+    if (req.body.timeout > 0) {
+        params = Object.assign(params, req.body);
+    }
+
+    params.timeout = parseInt(params.timeout, 10);
 
     setTimeout(() => {
 
@@ -629,7 +670,7 @@ app.get('/json', (req, res) => {
             ok: true
         }));
 
-    }, 300)
+    }, params.timeout)
 });
 
 app.get('/ajaxwrong', (req, res) => {

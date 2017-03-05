@@ -66,3 +66,8 @@ https://docs.travis-ci.com/user/gui-and-headless-browsers/
 
 ---- further research ----
 https://github.com/oliviertassinari/react-swipeable-views
+
+
+---- further research ----- vvv
+grab html : lib\server.js:400
+---- further research ----- ^^^
