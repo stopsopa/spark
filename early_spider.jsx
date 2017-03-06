@@ -2,24 +2,10 @@
 
 // select id, url, created, updated, updateRequest, statusCode, warning, errorCounter from spark_cache
 
-(function () { // https://gist.github.com/branneman/8048520#6-the-hack
-    // how to use: rootRequire(path.join('lib', 'db_spark.jsx'))
-    if (!global.rootRequire) {
-
-        const path          = require("path");
-
-        const args = Array.prototype.slice.call(arguments);
-
-        process.env.NODE_PATH = path.resolve.apply(this, args);
-
-        global.rootRequire = function (name) {
-            return require(path.resolve.apply(this, args.concat([name])));
-        }
-    }
-}(__dirname, '.'));
+const path          = require('path');
+require(path.resolve(__dirname, 'lib', 'rootRequire.jsx'))(__dirname, '.');
 
 const http          = require('http');
-const path          = require('path');
 const sha1          = require('sha1');
 const log           = rootRequire(path.join('lib', 'log.jsx'));
 const spark         = rootRequire(path.join('lib', 'curljson.jsx')).spark;
@@ -52,7 +38,8 @@ function insertNewLinks(origin, list, callback) {
             db.cache.insert({
                 id: hash(url),
                 url: origin + url,
-                created: db.now()
+                created: db.now(),
+                html: ''
             })
             .then(pop, function (d) {
                 try {
@@ -80,6 +67,8 @@ function crawl() {
 
     db.cache.fetchOne("select * from :table: WHERE statusCode is null ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
+
+            row.url += '?_noprerender';
 
             log(db.now(), row.url);
 
@@ -110,7 +99,7 @@ function crawl() {
                         insertNewLinks(origin, list, function () {
 
                             var upd = {
-                                html            : html,
+                                html            : html || '',
                                 updated         : db.now(),
                                 statusCode      : res.statusCode,
                                 updateRequest     : null,
@@ -147,7 +136,7 @@ UPDATE :table: SET  html            = :html,
 WHERE               id = :id                         
 `,                      {
                             id          : row.id,
-                            html        : html,
+                            html        : html || '',
                             updated     : db.now(),
                             updateRequest     : null,
                             statusCode  : res.statusCode,
@@ -198,6 +187,7 @@ WHERE               id = :id
 }
 
 
+log(db.now(), 'start...');
 setInterval(function () {
     if (free) {
         free = false;
