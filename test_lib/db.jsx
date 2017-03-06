@@ -1,20 +1,6 @@
 'use strict';
 
-(function () { // https://gist.github.com/branneman/8048520#6-the-hack
-    // how to use: rootRequire(path.join('lib', 'db_spark.jsx'))
-    if (!global.rootRequire) {
-
-        const path          = require("path");
-
-        const args = Array.prototype.slice.call(arguments);
-
-        process.env.NODE_PATH = path.resolve.apply(this, args);
-
-        global.rootRequire = function (name) {
-            return require(path.resolve.apply(this, args.concat([name])));
-        }
-    }
-}(__dirname, '..'));
+require(path.resolve(__dirname, 'lib', 'rootRequire.jsx'))(__dirname, '..');
 
 const path          = require("path");
 const mysql         = require('mysql');

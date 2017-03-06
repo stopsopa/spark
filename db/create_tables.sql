@@ -12,13 +12,16 @@
 
 -- Dumping structure for table spark.spark_cache
 CREATE TABLE IF NOT EXISTS `spark_cache` (
-  `id` varchar(40) NOT NULL,
-  `url` longtext NOT NULL,
-  `html` longtext NOT NULL,
-  `updated` datetime NOT NULL,
+  `id` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `url` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `html` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `updateRequest` datetime DEFAULT NULL,
   `statusCode` int(10) unsigned DEFAULT NULL,
   `json` longtext,
-  `attempts` int(4) NOT NULL DEFAULT '0',
+  `warning` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `errorCounter` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `hash_index` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

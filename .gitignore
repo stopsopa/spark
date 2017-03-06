@@ -2,3 +2,6 @@
 node_modules/
 /tmp/
 /.vagrant
+*.tar
+*.tar.gz
+/prerender.io/
