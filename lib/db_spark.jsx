@@ -38,9 +38,16 @@ const moment    = require('moment');
 
 var pool  = mysql.createPool(config.db);
 
-pool.on('connection', function (connection) {
-    connection.query('SET NAMES utf8')
-});
+pool
+    .on('connection', function (connection) {
+        connection
+            .query('SET NAMES utf8')
+            .on('error', function(err) {
+                log.json(err); // 'ER_BAD_DB_ERROR'
+            })
+        ;
+    })
+;
 
 function extend(table, more) {
     function cache() {

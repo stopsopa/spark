@@ -51,7 +51,7 @@ http://localhost/sandbox.html
 
 npm run start 0.0.0.0 80
 
-(sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run start 0.0.0.0 80
+(sudo killall electron && echo 'killed' || echo 'nothing to node') && (sudo killall node && echo 'killed' || echo 'nothing to node') && sudo npm run start 0.0.0.0 80
 
 #kill and run for tests
     ((kill $(ps aux | grep "killme" | grep -v grep | grep -v sh | head -1 | awk '{print $2}')) && echo 'killed' || echo 'nothing to kill') && npm run start 0.0.0.0 81 killme & disown
@@ -71,3 +71,8 @@ https://github.com/oliviertassinari/react-swipeable-views
 ---- further research ----- vvv
 grab html : lib\server.js:400
 ---- further research ----- ^^^
+
+--- manual work ---- vvv
+delete from spark_cache where id != '42099b4af021e53fd8fd4e056c2568d7c2e3ffa8'
+node early_spider.jsx
+--- manual work ---- ^^^

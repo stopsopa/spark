@@ -4,7 +4,8 @@ config = {
         host     : 'localhost',
         user     : 'root',
         password : '6yhn',
-        database : 'spark'
+        database : 'spark',
+        connectTimeout: 3000
     },
     curl: {
         url: 'http://138.68.156.126/fetch',
