@@ -3,11 +3,11 @@
 var path        = require('path');
 var mysql       = require('mysql');
 var log         = rootRequire(path.join('react', 'webpack', 'log.js'));
-var abstract    = require(path.resolve(__dirname, 'db_spark_abstract.jsx'));
+var abstract    = require(path.resolve(__dirname, 'db_abstract.jsx'));
 
 var connection;
 
-var config      = require(path.resolve(__dirname, '..', 'db_config.js'));
+var config      = require(path.resolve(__dirname, '..', 'config.js'));
 
 const moment    = require('moment');
 
@@ -38,9 +38,16 @@ const moment    = require('moment');
 
 var pool  = mysql.createPool(config.db);
 
-pool.on('connection', function (connection) {
-    connection.query('SET NAMES utf8')
-});
+pool
+    .on('connection', function (connection) {
+        connection
+            .query('SET NAMES utf8')
+            .on('error', function(err) {
+                log.json(err); // 'ER_BAD_DB_ERROR'
+            })
+        ;
+    })
+;
 
 function extend(table, more) {
     function cache() {
