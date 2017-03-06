@@ -456,6 +456,14 @@ app.all('/fetch', (req, res) => {
                                             continue;
                                         }
 
+                                        if (/^file:/.test(h[0])) {
+                                            continue;
+                                        }
+
+                                        if (/^mailto:/.test(h[0])) {
+                                            continue;
+                                        }
+
                                         if (h[0] === '#') {
                                             continue;
                                         }
@@ -572,6 +580,14 @@ app.all('/fetch', (req, res) => {
 
                                 if (h[0] === '?') {
                                     links.push(data.internalLinks.pathname + h);
+                                    continue;
+                                }
+
+                                if (/^file:/.test(h[0])) {
+                                    continue;
+                                }
+
+                                if (/^mailto:/.test(h[0])) {
                                     continue;
                                 }
 
