@@ -3,14 +3,14 @@
 // select id, url, created, updated, updateRequest, statusCode, warning, errorCounter from spark_cache
 
 const path          = require('path');
-require(path.resolve(__dirname, 'lib', 'rootRequire.jsx'))(__dirname, '.');
+require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
 
 const http          = require('http');
 const sha1          = require('sha1');
-const log           = rootRequire(path.join('lib', 'log.jsx'));
-const spark         = rootRequire(path.join('lib', 'curljson.jsx')).spark;
-const db            = rootRequire(path.join('lib', 'db_spark.jsx'));
-const config        = rootRequire(path.join('config'));
+const log           = rootrequire(path.join('lib', 'log.jsx'));
+const spark         = rootrequire(path.join('lib', 'curljson.jsx')).spark;
+const db            = rootrequire(path.join('lib', 'db_spark.jsx'));
+const config        = rootrequire(path.join('config'));
 
 function hash(url) {
 

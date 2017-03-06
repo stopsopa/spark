@@ -2,7 +2,7 @@
 
 const path      = require('path');
 const mysql     = require('mysql');
-const log       = rootRequire(path.join('react', 'webpack', 'log.js'));
+const log       = rootrequire(path.join('react', 'webpack', 'log.js'));
 
 function abstract(table, pool) {
     this.table          = table;

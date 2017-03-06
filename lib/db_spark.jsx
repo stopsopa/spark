@@ -2,7 +2,7 @@
 
 var path        = require('path');
 var mysql       = require('mysql');
-var log         = rootRequire(path.join('react', 'webpack', 'log.js'));
+var log         = rootrequire(path.join('react', 'webpack', 'log.js'));
 var abstract    = require(path.resolve(__dirname, 'db_abstract.jsx'));
 
 var connection;
