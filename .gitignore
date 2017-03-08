@@ -5,3 +5,4 @@ node_modules/
 *.tar
 *.tar.gz
 /prerender.io/
+/nightmare/
