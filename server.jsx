@@ -206,8 +206,12 @@ app.all('/fetch', (req, res) => {
         log('[browser:'+params.u+':init]: ' + params.url)
 
 
+
+
+
         // hardcoded for now
         params.ajaxwatchdog = 8000;
+
 
 
 
@@ -337,6 +341,7 @@ app.all('/fetch', (req, res) => {
                                 window[params.nmsc] = window[params.nmsc] || []; window[params.nmsc].push(status);
                             };
 
+
                             if (window[params.nmsc] && window[params.nmsc].length) {
                                 return ready(window[params.nmsc][0]);
                             }
@@ -345,7 +350,6 @@ app.all('/fetch', (req, res) => {
                                 push: ready
                             };
 
-                            // log('test dog: ', params)
 
                             if (params.ajaxwatchdog) {
 
