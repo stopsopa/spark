@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "electron": "^1.6.1"
+  },
+  "scripts": {
+    "winrun" : ".\\node_modules\\.bin\\electron .",
+    "lxrun" : "./node_modules/.bin/electron ."
+  }
+}
