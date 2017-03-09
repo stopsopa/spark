@@ -170,6 +170,8 @@ app.all('/fetch', (req, res) => {
 
         params                  = Object.assign({}, defopt, params);
 
+        params.defopt           = Object.assign({}, defopt);
+
         params.u                = unique();
 
         params.nightmare        = Object.assign({}, nightmaredef, params.nightmare || {});
@@ -186,6 +188,7 @@ app.all('/fetch', (req, res) => {
             error = "provide absolute path that beginning from http[s]://...";
         }
 
+        // @todo - i think i forget port here - check later how to add
         params.url = (function () {
             var uri = url.parse(params.url);
             return uri.protocol + '//' + uri.host + uri.path;
@@ -200,11 +203,10 @@ app.all('/fetch', (req, res) => {
         }
 
         if (!params.readyid) {
-            params.readyid = 'readyid_' + (new Date()).getTime();
+            params.readyid = 'readyid_' + unique();
         }
 
-        log('[browser:'+params.u+':init]: ' + params.url)
-
+        log('[browser:'+params.u+':init]: ' + params.url);
 
 
 
@@ -282,6 +284,7 @@ app.all('/fetch', (req, res) => {
 
                         switch(type) {
                             case 'error':
+                                // @todo - check if js error really stop browser, i think it shouldn't
                                 return json(500, {
                                     error: 'client',
                                     code: 'page-general-error',
@@ -328,7 +331,6 @@ app.all('/fetch', (req, res) => {
                             events['did-get-redirect-request'].push(data);
                         }
                     })
-                    // .clearCache()
                     .goto(params.url, params.headers || {})
                     .wait('body')
                     .evaluate(function (params) {
@@ -341,7 +343,6 @@ app.all('/fetch', (req, res) => {
                                 window[params.nmsc] = window[params.nmsc] || []; window[params.nmsc].push(status);
                             };
 
-
                             if (window[params.nmsc] && window[params.nmsc].length) {
                                 return ready(window[params.nmsc][0]);
                             }
@@ -349,7 +350,6 @@ app.all('/fetch', (req, res) => {
                             window[params.nmsc] = {
                                 push: ready
                             };
-
 
                             if (params.ajaxwatchdog) {
 
@@ -362,8 +362,8 @@ app.all('/fetch', (req, res) => {
                                     log('use ajaxwatchdog counter')
                                     window.XMLHttpRequest.prototype.onAllFinished(
                                         trigger,
-                                        params.ajaxwatchdog.waitafterlastajaxresponse,
-                                        params.ajaxwatchdog.longestajaxrequest
+                                        params.ajaxwatchdog.waitafterlastajaxresponse || params.defopt.ajaxwatchdog.waitafterlastajaxresponse,
+                                        params.ajaxwatchdog.longestajaxrequest || params.defopt.ajaxwatchdog.longestajaxrequest
                                     );
                                 }
 

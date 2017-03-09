@@ -77,3 +77,5 @@ grab html : lib\server.js:400
 delete from spark_cache where id != '42099b4af021e53fd8fd4e056c2568d7c2e3ffa8'
 node early_spider.jsx
 --- manual work ---- ^^^
+
+411 pages within 31 minut [1860 sek] => 4.52 sek per page
