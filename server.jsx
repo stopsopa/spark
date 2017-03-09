@@ -210,7 +210,7 @@ app.all('/fetch', (req, res) => {
 
 
         // hardcoded for now
-        params.ajaxwatchdog = 8000;
+        // params.ajaxwatchdog = 8000;
 
 
 
