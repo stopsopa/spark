@@ -65,7 +65,7 @@ function insertNewLinks(origin, list, callback) {
 var free = true;
 function crawl() {
 
-    db.cache.fetchOne("select * from :table: WHERE statusCode is null ORDER BY updateRequest DESC LIMIT 1")
+    db.cache.fetchOne("select * from :table: WHERE updateRequest is not null ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
 
             row.url += '?_noprerender';
@@ -186,11 +186,26 @@ WHERE               id = :id
         });
 }
 
-
 log(db.now(), 'start...');
+
 setInterval(function () {
     if (free) {
         free = false;
         crawl();
     }
 }, 100);
+
+(function () {
+    function run() {
+
+        var now = db.now();
+
+        log(now, 'reset updateRequest');
+
+        db.cache.query('update :table: set updateRequest = :now', {
+            now: now
+        });
+    }
+    run();
+    setTimeout(run, 3 * 60 * 60 * 1000); // 10800000
+}());
