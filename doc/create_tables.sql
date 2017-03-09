@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `spark_cache` (
   `updated` datetime DEFAULT NULL,
   `updateRequest` datetime DEFAULT NULL,
   `statusCode` int(10) unsigned DEFAULT NULL,
-  `json` longtext,
+  `json` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `warning` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `errorCounter` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
