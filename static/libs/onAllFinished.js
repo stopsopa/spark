@@ -95,7 +95,7 @@ if (typeof require !== 'undefined') {
 
     log('preload.js');
 
-}
+};
 
 
 (function () {
@@ -157,7 +157,7 @@ if (typeof require !== 'undefined') {
             }
         }
 
-        var list = [], c, on, off, t;
+        var list = {}, c, on, off, t;
         for (var i in XMLHttpRequest.prototype) {
             try {
                 t = typeof XMLHttpRequest.prototype[i];
@@ -171,7 +171,7 @@ if (typeof require !== 'undefined') {
 
                     over(i, on, off);
 
-                    list.push(on);
+                    list[i] = [on, off];
                     log('overrided: ', i);
                 }
                 else {
@@ -185,25 +185,35 @@ if (typeof require !== 'undefined') {
 
         window.XMLHttpRequest.prototype.list = list;
 
+        log('list: ', list)
+
     }());
 
     (function () {
 
         if (window.XMLHttpRequest.prototype.onAllFinished) {
-            return;
+            return log('onAllFinished is already defined');
         }
 
         window.XMLHttpRequest.prototype.onAllFinished = function (finishedfn, debouncetime /* 1000 */, fusetime /* 1500 */) {
 
+            // to prevent bind two times
+            window.XMLHttpRequest.prototype.onAllFinished = function () {
+                log('second attempt to use onAllFinished - aborted');
+            };
+
             if (typeof debouncetime === 'undefined') {
+                log('debouncetime is not defined')
                 debouncetime = 1000;
             }
 
             if (debouncetime < 100) {
+                log('debouncetime is smaller then debouncetime');
                 debouncetime = 100;
             }
 
             if (typeof fusetime === 'undefined' || fusetime < debouncetime) {
+                log('automatically setup fusetime')
                 fusetime = debouncetime + 500;
             }
 
@@ -223,17 +233,20 @@ if (typeof require !== 'undefined') {
                 var urls = {};
 
                 var counter = 0;
-                function up (key, url) {
 
-                    // log('up:   ' + url, JSON.stringify(urls, null, 2))
+                function up (key, args) {
 
-                    urls[key] = url;
+                    log('up', key, args)
+
+                    urls[key] = args;
 
                     counter += 1;
 
                     initEmergency(key);
                 }
                 function down(key) {
+
+                    log('down', key)
                     counter -= 1;
                     delete urls[key];
                     initEmergency(key);
@@ -250,6 +263,7 @@ if (typeof require !== 'undefined') {
                                 for (var i in urls) {
                                     tmp.push(urls[i]);
                                 }
+                                log('onAllFinished fired - incomplete')
                                 finishedfn({
                                     notFinishedAsynchronousResponses: tmp,
                                     flow: 'incomplete',
@@ -263,11 +277,14 @@ if (typeof require !== 'undefined') {
                 }
                 var onReady = debounce(function () {
                     if (counter === 0) {
-                        finishedfn && finishedfn({
-                            notFinishedAsynchronousResponses: [],
-                            flow: 'correct',
-                            counter: counter
-                        });
+                        if (finishedfn) {
+                            log('onAllFinished fired - correct')
+                            finishedfn({
+                                notFinishedAsynchronousResponses: [],
+                                flow: 'correct',
+                                counter: counter
+                            });
+                        }
                         finishedfn = false;
                     }
                 }, debouncetime);
@@ -275,18 +292,20 @@ if (typeof require !== 'undefined') {
                 (function (old) {
                     if (old && !old.old) {
                         // log("override fetch")
-                        fetch = function (url) {
+                        fetch = function () {
+
+                            args = Array.prototype.slice.call(arguments);
+                            args = ['fetch'].concat(args);
 
                             var key = unique();
 
-                            up(key, url)
+                            up(key, args)
 
                             var promise = old.apply(this, Array.prototype.slice.call(arguments));
-                            promise = promise.then(function () {
+                            return promise.then(function () {
                                 // log('fetch down: ' +  url, JSON.stringify(urls, null, 2))
                                 down(key);
                             });
-                            return promise;
                         }
                         fetch.old = old;
                     }
@@ -295,11 +314,17 @@ if (typeof require !== 'undefined') {
                     }
                 }(window.fetch));
 
-                XMLHttpRequest.prototype.onOpen(function (method, url) {
+                var args;
+                XMLHttpRequest.prototype.onOpen(function () {
+                    args = Array.prototype.slice.call(arguments);
+                    args = ['xhr'].concat(args);
+                });
+
+                XMLHttpRequest.prototype.onSend(function () {
 
                     var key = unique();
 
-                    up(key, url);
+                    up(key, args);
 
                     var xhr = this;
                     this.addEventListener('readystatechange', function (e) {
@@ -317,7 +342,7 @@ if (typeof require !== 'undefined') {
             // only for browser mode to et
             window.XMLHttpRequest.prototype.onAllFinished(function (status) {
                 log('onAllFinished', status)
-            }, 1000, 3000);
+            }, 3000, 3000);
         }
 
         // normally it shouldn't be called here, it's only for testing

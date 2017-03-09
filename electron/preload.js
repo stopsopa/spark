@@ -1,5 +1,3 @@
-// alert('go preload');
-
 // source https://github.com/segmentio/nightmare/blob/master/lib/preload.js
 // or file in node modules preload.js
 
@@ -24,80 +22,80 @@
     };
 }());
 
-// if (typeof require !== 'undefined') {
-//     window.__nightmare = {};
-//     __nightmare.ipc = require('electron').ipcRenderer;
-//     __nightmare.sliced = require('sliced');
-//
-//     // Listen for error events
-//     window.addEventListener('error', function(e) {
-//         __nightmare.ipc.send('page', 'error', e.message, e.error.stack);
-//     });
-//
-//     (function(){
-//         // prevent 'unload' and 'beforeunload' from being bound
-//         var defaultAddEventListener = window.addEventListener;
-//         window.addEventListener = function (type) {
-//             if (type === 'unload' || type === 'beforeunload') {
-//                 return;
-//             }
-//             defaultAddEventListener.apply(window, arguments);
-//         };
-//
-//         // prevent 'onunload' and 'onbeforeunload' from being set
-//         Object.defineProperties(window, {
-//             onunload: {
-//                 enumerable: true,
-//                 writable: false,
-//                 value: null
-//             },
-//             onbeforeunload: {
-//                 enumerable: true,
-//                 writable: false,
-//                 value: null
-//             }
-//         });
-//
-//         // listen for console.log
-//         var defaultLog = console.log;
-//         console.log = function() {
-//             __nightmare.ipc.send('console', 'log', __nightmare.sliced(arguments));
-//             return defaultLog.apply(this, arguments);
-//         };
-//
-//         // listen for console.warn
-//         var defaultWarn = console.warn;
-//         console.warn = function() {
-//             __nightmare.ipc.send('console', 'warn', __nightmare.sliced(arguments));
-//             return defaultWarn.apply(this, arguments);
-//         };
-//
-//         // listen for console.error
-//         var defaultError = console.error;
-//         console.error = function() {
-//             __nightmare.ipc.send('console', 'error', __nightmare.sliced(arguments));
-//             return defaultError.apply(this, arguments);
-//         };
-//
-//         // overwrite the default alert
-//         window.alert = function(message){
-//             __nightmare.ipc.send('page', 'alert', message);
-//         };
-//
-//         // overwrite the default prompt
-//         window.prompt = function(message, defaultResponse){
-//             __nightmare.ipc.send('page', 'prompt', message, defaultResponse);
-//         }
-//
-//         // overwrite the default confirm
-//         window.confirm = function(message, defaultResponse){
-//             __nightmare.ipc.send('page', 'confirm', message, defaultResponse);
-//         }
-//     })()
-//
-//     log('preload.js');
-//
-// }
+if (typeof require !== 'undefined') {
+    window.__nightmare = {};
+    __nightmare.ipc = require('electron').ipcRenderer;
+    __nightmare.sliced = require('sliced');
+
+    // Listen for error events
+    window.addEventListener('error', function(e) {
+        __nightmare.ipc.send('page', 'error', e.message, e.error.stack);
+    });
+
+    (function(){
+        // prevent 'unload' and 'beforeunload' from being bound
+        var defaultAddEventListener = window.addEventListener;
+        window.addEventListener = function (type) {
+            if (type === 'unload' || type === 'beforeunload') {
+                return;
+            }
+            defaultAddEventListener.apply(window, arguments);
+        };
+
+        // prevent 'onunload' and 'onbeforeunload' from being set
+        Object.defineProperties(window, {
+            onunload: {
+                enumerable: true,
+                writable: false,
+                value: null
+            },
+            onbeforeunload: {
+                enumerable: true,
+                writable: false,
+                value: null
+            }
+        });
+
+        // listen for console.log
+        var defaultLog = console.log;
+        console.log = function() {
+            __nightmare.ipc.send('console', 'log', __nightmare.sliced(arguments));
+            return defaultLog.apply(this, arguments);
+        };
+
+        // listen for console.warn
+        var defaultWarn = console.warn;
+        console.warn = function() {
+            __nightmare.ipc.send('console', 'warn', __nightmare.sliced(arguments));
+            return defaultWarn.apply(this, arguments);
+        };
+
+        // listen for console.error
+        var defaultError = console.error;
+        console.error = function() {
+            __nightmare.ipc.send('console', 'error', __nightmare.sliced(arguments));
+            return defaultError.apply(this, arguments);
+        };
+
+        // overwrite the default alert
+        window.alert = function(message){
+            __nightmare.ipc.send('page', 'alert', message);
+        };
+
+        // overwrite the default prompt
+        window.prompt = function(message, defaultResponse){
+            __nightmare.ipc.send('page', 'prompt', message, defaultResponse);
+        }
+
+        // overwrite the default confirm
+        window.confirm = function(message, defaultResponse){
+            __nightmare.ipc.send('page', 'confirm', message, defaultResponse);
+        }
+    })()
+
+    log('preload.js');
+
+};
 
 
 (function () {
@@ -159,7 +157,7 @@
             }
         }
 
-        var list = [], c, on, off, t;
+        var list = {}, c, on, off, t;
         for (var i in XMLHttpRequest.prototype) {
             try {
                 t = typeof XMLHttpRequest.prototype[i];
@@ -173,7 +171,7 @@
 
                     over(i, on, off);
 
-                    list.push(on);
+                    list[i] = [on, off];
                     log('overrided: ', i);
                 }
                 else {
@@ -187,30 +185,36 @@
 
         window.XMLHttpRequest.prototype.list = list;
 
+        log('list: ', list)
+
     }());
 
     (function () {
 
         if (window.XMLHttpRequest.prototype.onAllFinished) {
-            return;
+            return log('onAllFinished is already defined');
         }
 
+        window.XMLHttpRequest.prototype.onAllFinished = function (finishedfn, debouncetime /* 1000 */, fusetime /* 1500 */) {
 
-        // params.ajaxwatchdog.waitafterlastajaxresponse,
-        //     params.ajaxwatchdog.longestajaxrequest
+            // to prevent bind two times
+            window.XMLHttpRequest.prototype.onAllFinished = function () {
+                log('second attempt to use onAllFinished - aborted');
+            };
 
-        window.XMLHttpRequest.prototype.onAllFinished = function (finishedfn, waitafterlastajaxresponse /* 1000 */, longestajaxrequest /* 1500 */) {
-
-            if (typeof waitafterlastajaxresponse === 'undefined') {
-                waitafterlastajaxresponse = 1000;
+            if (typeof debouncetime === 'undefined') {
+                log('debouncetime is not defined')
+                debouncetime = 1000;
             }
 
-            if (waitafterlastajaxresponse < 100) {
-                waitafterlastajaxresponse = 100;
+            if (debouncetime < 100) {
+                log('debouncetime is smaller then debouncetime');
+                debouncetime = 100;
             }
 
-            if (typeof longestajaxrequest === 'undefined' || longestajaxrequest < waitafterlastajaxresponse) {
-                longestajaxrequest = waitafterlastajaxresponse + 500;
+            if (typeof fusetime === 'undefined' || fusetime < debouncetime) {
+                log('automatically setup fusetime')
+                fusetime = debouncetime + 500;
             }
 
             function debounce(fn, delay) {
@@ -229,17 +233,20 @@
                 var urls = {};
 
                 var counter = 0;
-                function up(key, url) {
 
-                    // log('up:   ' + url, JSON.stringify(urls, null, 2))
+                function up (key, args) {
 
-                    urls[key] = url;
+                    log('up', key, args)
+
+                    urls[key] = args;
 
                     counter += 1;
 
                     initEmergency(key);
                 }
                 function down(key) {
+
+                    log('down', key)
                     counter -= 1;
                     delete urls[key];
                     initEmergency(key);
@@ -263,7 +270,7 @@
                                 });
                             }
                             finishedfn = false;
-                        }, longestajaxrequest);
+                        }, fusetime);
                     }
                     emergency();
                 }
@@ -276,23 +283,25 @@
                         });
                         finishedfn = false;
                     }
-                }, waitafterlastajaxresponse);
+                }, debouncetime);
 
                 (function (old) {
                     if (old && !old.old) {
                         // log("override fetch")
-                        fetch = function (url) {
+                        fetch = function () {
+
+                            args = Array.prototype.slice.call(arguments);
+                            args = ['fetch'].concat(args);
 
                             var key = unique();
 
-                            up(key, url)
+                            up(key, args)
 
                             var promise = old.apply(this, Array.prototype.slice.call(arguments));
-                            promise = promise.then(function () {
+                            return promise.then(function () {
                                 // log('fetch down: ' +  url, JSON.stringify(urls, null, 2))
                                 down(key);
                             });
-                            return promise;
                         }
                         fetch.old = old;
                     }
@@ -301,16 +310,20 @@
                     }
                 }(window.fetch));
 
-                XMLHttpRequest.prototype.onOpen(function (method, url) {
+                var args;
+                XMLHttpRequest.prototype.onOpen(function () {
+                    args = Array.prototype.slice.call(arguments);
+                    args = ['xhr'].concat(args);
+                });
 
-                    log('onOpen')
+                XMLHttpRequest.prototype.onSend(function () {
+
                     var key = unique();
 
-                    up(key, url);
+                    up(key, args);
 
                     var xhr = this;
                     this.addEventListener('readystatechange', function (e) {
-                        log('readystatechange')
                         if (xhr.readyState === 4) {
                             down(key);
                         }
@@ -325,7 +338,7 @@
             // only for browser mode to et
             window.XMLHttpRequest.prototype.onAllFinished(function (status) {
                 log('onAllFinished', status)
-            }, 3000, 3000);
+            }, 1000, 3000);
         }
 
         // normally it shouldn't be called here, it's only for testing

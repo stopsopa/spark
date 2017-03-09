@@ -4,7 +4,7 @@ const url = require('url')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+let win;
 
 function createWindow () {
     // Create the browser window.
@@ -12,13 +12,14 @@ function createWindow () {
     win = new BrowserWindow({
         width: 1366, height: 768,
         webPreferences: {
-            preload: path.resolve("preload.js"),
-            images: false,
+            preload: path.resolve('..', 'static', 'libs', "onAllFinished.js"),
+            // images: false,
+            allowRunningInsecureContent: false,
             // experimentalFeatures: true,
             // experimentalCanvasFeatures : true,
 
-            sandbox: true,
-            // contextIsolation: true
+            sandbox: false,
+            contextIsolation: false
         },
         backgroundColor: '#2e2c29',
         // kiosk: true, // fullscreen
@@ -36,7 +37,8 @@ function createWindow () {
     //     protocol: 'http:',
     //     slashes: true
     // }))
-    win.loadURL('http://www.lymphomahub.com/')
+    // win.loadURL('http://www.lymphomahub.com/')
+    win.loadURL('http://www.lymphomahub.com/therapies')
     // win.loadURL('http://138.68.156.126/fetchwrong.html')
 
     // Open the DevTools.
