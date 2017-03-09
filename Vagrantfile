@@ -56,8 +56,6 @@ Vagrant.configure(2) do |config|
     # service mysql restart
     # mysqldump -C -h source_host -u source_user -psource_pass source_db | mysql -h localhost -u root -ptarget_pass vagrant_beta_absolvent_pl
 
-    jeśli od razu jest potrzebna wersja 5.6.25 dobrze jest jednak przeprowadzić instalację poprzedniej wersji normalnie i nastepie 
-    zrobić poniższy upgrade bo inaczej jest potem dodatkowy zachód aby ustawić hasło mysql root
     upgrade from 5.5.46 to 5.6.25
     sudo -i
     apt-get update        

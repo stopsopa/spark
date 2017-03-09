@@ -12,7 +12,7 @@ function createWindow () {
     win = new BrowserWindow({
         width: 1366, height: 768,
         webPreferences: {
-            preload: path.resolve('..', 'static', 'libs', "onAllFinished.js"),
+            preload: path.resolve('..', '..', 'static', 'libs', "onAllFinished.js"),
             // images: false,
             allowRunningInsecureContent: false,
             // experimentalFeatures: true,

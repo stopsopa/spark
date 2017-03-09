@@ -291,7 +291,6 @@ if (typeof require !== 'undefined') {
 
                 (function (old) {
                     if (old && !old.old) {
-                        // log("override fetch")
                         fetch = function () {
 
                             args = Array.prototype.slice.call(arguments);
