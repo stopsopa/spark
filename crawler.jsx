@@ -163,6 +163,8 @@ WHERE               id = :id
                     }
                 }, function (e) {
                     log.line('spark cant crawl : ' + row.url, e);
+
+                    // @todo - send email
                 })
                 .catch(function (e) {
                     log.json(e)

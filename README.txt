@@ -23,6 +23,7 @@ yarn install
 npm run supervisor 0.0.0.0 8080 &
 npm run start 0.0.0.0 80 &
 echo '<head><meta http-equiv="refresh" content="4"></head><body><pre>' > static/log.html && node crawler.jsx &>> static/log.html & disown
+echo '<pre>' > static/log.html && node crawler.jsx &>> static/log.html & disown
 
 # vagrant for testing
 
