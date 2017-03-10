@@ -207,5 +207,5 @@ setInterval(function () {
         });
     }
     run();
-    setTimeout(run, 3 * 60 * 60 * 1000); // 10800000
+    setInterval(run, 3 * 60 * 60 * 1000); // 10800000
 }());
