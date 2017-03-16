@@ -207,6 +207,10 @@ setInterval(function () {
         db.cache.query('update :table: set updateRequest = :now', {
             now: now
         });
+        
+        setTimeout(function() {
+            free = true
+        }, config.crawler.continueIdleAfter);
     }
     run();
     setInterval(run, 3 * 60 * 60 * 1000); // 10800000
