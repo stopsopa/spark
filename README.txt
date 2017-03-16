@@ -41,8 +41,7 @@ end
 
 ---- installation of nightmare with xvfb --- ^^^
 
-
-
+update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))
 
 
 yarn install
