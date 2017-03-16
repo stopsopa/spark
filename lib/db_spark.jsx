@@ -49,7 +49,7 @@ pool
     })
 ;
 
-function extend(table, more) {
+function extend(table, id, more) {
     function cache() {
         abstract.apply(this, arguments);
     }
@@ -58,12 +58,12 @@ function extend(table, more) {
 
     Object.assign(cache.prototype, more);
 
-    return new cache(table, pool);
+    return new cache(table, id, pool);
 }
 
 module.exports = {
     pool: pool,
-    cache: extend('spark_cache', {
+    cache: extend('spark_cache', 'id', {
         cachenew: function () {
             log('test')
         }

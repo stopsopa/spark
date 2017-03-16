@@ -4,9 +4,10 @@ const path      = require('path');
 const mysql     = require('mysql');
 const log       = rootrequire(path.join('react', 'webpack', 'log.js'));
 
-function abstract(table, pool) {
+function abstract(table, id, pool) {
     this.table          = table;
     this.pool           = pool;
+    this.id             = id;
 }
 function isObject(a) {
     return (!!a) && (a.constructor === Object);
@@ -211,6 +212,40 @@ abstract.prototype.count = function () {
         return a
     });
 }
+
+abstract.prototype.find = function (id) {
+
+    const   args = Array.prototype.slice.call(arguments);
+    let     select = args[1];
+
+    if (args.length > 1) {
+        if (typeof select !== 'string') {
+            throw 'second argument of find method should be string';
+        }
+    }
+    else {
+        select = '*';
+    }
+
+
+    var query = 'SELECT ' + select + ' FROM :table: WHERE `' + this.id + '` = :id';
+
+
+    return new Promise((resolve, reject) => {
+        this.query(query, {
+            'id'        : id
+        }).then(function (rows) {
+
+            if (rows.length === 1) {
+                return resolve(rows[0]);
+            }
+
+            reject({message:'find query error', error:'found ' + rows.length + ' rows'})
+        }, function (a) {
+            return a
+        });
+    });
+};
 
 abstract.prototype.fetchOne = function (query) {
     return new Promise((resolve, reject) => {
