@@ -162,7 +162,7 @@ WHERE               id = :id
                         });
                     }
                 }, function (e) {
-                    log.line('spark cant crawl : ' + row.url, e);
+                    log.line('spark cant crawl : ' + row.url, JSON.stringify(e));
 
                     // @todo - send email
                 })
