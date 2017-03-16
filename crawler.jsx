@@ -62,13 +62,13 @@ function insertNewLinks(origin, list, callback) {
     }())
 }
 
-var free = true;
+var free = false; // false on start
 function crawl() {
 
     db.cache.fetchOne("select * from :table: WHERE updateRequest is not null ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
 
-            row.url += '?_noprerender';
+            row.url += '?_prerender';
 
             log(db.now(), row.url);
 
@@ -110,9 +110,9 @@ function crawl() {
 
                             db.cache.update(upd, row.id)
                                 .then(function (res) {
-                                    setTimeout(function() {
-                                        free = true
-                                    }, config.crawler.waitBeforeCrawlNextPage);
+                                            setTimeout(function() {
+                                                free = true
+                                            }, config.crawler.waitBeforeCrawlNextPage);
                                 }, function (e) {
                                     log.json('error')
                                     log.json(e)
@@ -204,10 +204,8 @@ setInterval(function () {
 
         log(now, 'reset updateRequest');
 
-        db.cache.query('update :table: set updateRequest = :now', {
-            now: now
-        });
-        
+        db.cache.query('update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))');
+
         setTimeout(function() {
             free = true
         }, config.crawler.continueIdleAfter);
