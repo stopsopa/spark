@@ -12,9 +12,9 @@ function curljson(data, headers) {
 
     return new Promise(function (resolve, reject) {
 
-        var uri = url.parse(config.curl.url);
+        var uri = url.parse(config.parser.url);
 
-        var options = Object.assign({}, config.curl, {
+        var options = Object.assign({}, config.parser, {
             host    : uri.hostname,
             port    : uri.port,
             path    : uri.path
