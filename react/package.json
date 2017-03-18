@@ -41,8 +41,8 @@
     "webpack-stream": "^3.2.0"
   },
   "scripts": {
-    "prod": "node node_modules/gulp/bin/gulp.js prod",
-    "dev": "node node_modules/gulp/bin/gulp.js watch",
+    "prod": "WEBPACK_MODE=prod node node_modules/gulp/bin/gulp.js build",
+    "dev": "WEBPACK_MODE=dev node node_modules/gulp/bin/gulp.js watch",
     "scss": "node node_modules/gulp/bin/gulp.js scss",
     "info": "webpack --display-reasons --display-modules --display-chunk --progress",
     "profile": "npm run info --profile --json >> profile.json"

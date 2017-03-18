@@ -1,10 +1,10 @@
 'use strict';
 
-require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '..');
 
 const path          = require("path");
+require(path.resolve(__dirname, '..', 'lib', 'rootrequire.jsx'))(__dirname, '..');
 const mysql         = require('mysql');
-const db            = rootrequire(path.join('lib', 'db_spark.jsx'));
+const db            = rootrequire(path.join('lib', 'db', 'mysql', 'db_spark.jsx'));
 const log           = rootrequire(path.join('react', 'webpack', 'log.js'));
 const moment        = require('moment');
 

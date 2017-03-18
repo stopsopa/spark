@@ -1,4 +1,5 @@
 node version v4.2.6 -- works well
+node version v7.6.0 -- works well
 
 ---- installation of nightmare with xvfb --- vvv
 
@@ -6,7 +7,7 @@ apt-get update &&\
     apt-get install -y libgtk2.0-0 libgconf-2-4 \
     libasound2 libxtst6 libxss1 libnss3 xvfb    
 
-Xvfb -ac -screen scrn 1280x2000x24 :9.0 & disown
+Xvfb -ac -screen scrn 1280x2000x24 :9.0 &> /dev/null & disown
 
 oraz    BARDZO WAŻNE ABY DODAĆ TO DO .bashrc
 export DISPLAY=:9.0

@@ -5,38 +5,13 @@ var mysql       = require('mysql');
 var log         = rootrequire(path.join('react', 'webpack', 'log.js'));
 var abstract    = require(path.resolve(__dirname, 'db_abstract.jsx'));
 
-var connection;
+let connection;
 
-var config      = require(path.resolve(__dirname, '..', 'config.js'));
+const config    = require(path.resolve(__dirname, '..', 'config.js'));
 
 const moment    = require('moment');
 
-// function db(level) {
-//
-//     if (!connection) {
-//
-//         connection = mysql.createConnection(config.db);
-//
-//         connection.connect(function(err) {
-//             if (err) {
-//                 throw 'error connecting: ' + err.stack;
-//             }
-//         });
-//
-//         connection.on('error', function(err) {
-//             console.log('connection error: ' + err.code); // 'ER_BAD_DB_ERROR'
-//         });
-//
-//         connection.query("SET NAMES 'UTF8'", function (error, results, fields) {
-//             if (error) throw error;
-//             // connected!
-//         });
-//     }
-//
-//     return connection;
-// }
-
-var pool  = mysql.createPool(config.db);
+const pool      = mysql.createPool(config.db.mysql);
 
 pool
     .on('connection', function (connection) {

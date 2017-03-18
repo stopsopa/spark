@@ -1,9 +1,11 @@
 'use strict';
 
-const http          = require('http');
 const path          = require('path');
+require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
+const http          = require('http');
+
 const Nightmare     = require('nightmare');
-const log           = console.log;
+const log           = rootrequire(path.join('lib', 'log.jsx'));
 const assert        = console.assert;
 const bodyParser    = require('body-parser');
 const express       = require('express');
@@ -666,37 +668,15 @@ app.all('/fetch', (req, res) => {
 
 app.use(express.static('static'));
 
-app.all('/json', (req, res) => {
-
-    var params = {
-        timeout: 300
-    }
-
-    if (req.query.timeout > 0) {
-        params = Object.assign(params, req.query);
-    }
-
-    if (req.body.timeout > 0) {
-        params = Object.assign(params, req.body);
-    }
-
-    params.timeout = parseInt(params.timeout, 10);
-
-    setTimeout(() => {
-
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-        res.end(JSON.stringify({
-            ok: true
-        }));
-
-    }, params.timeout)
-});
-
-app.get('/ajaxwrong', (req, res) => {
-
+app.all('/', (req, res) => {
+    const msg = `
+<pre>    
+${ip}:${port} parser is working...
+try /fetch?url=http://....    
+`;
+    res.end(msg)
 });
 
 app.listen(port, ip, () => {
-    console.log('Server running '+ip+':'+port)
+    console.log('Parser server is running '+ip+':'+port)
 });

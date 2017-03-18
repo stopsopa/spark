@@ -9,7 +9,7 @@ const http          = require('http');
 const sha1          = require('sha1');
 const log           = rootrequire(path.join('lib', 'log.jsx'));
 const spark         = rootrequire(path.join('lib', 'curljson.jsx')).spark;
-const db            = rootrequire(path.join('lib', 'db_spark.jsx'));
+const db            = rootrequire(path.join('lib', 'db', 'mysql', 'db_spark.jsx'));
 const config        = rootrequire(path.join('config'));
 
 function hash(url) {

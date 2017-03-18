@@ -12,6 +12,7 @@
     "mocha": "^3.2.0"
   },
   "scripts": {
+    "devenv": "/bin/bash dev.sh",
     "start": "node server.jsx",
     "supervisor": "node supervisor.jsx",
     "test": "node_modules/mocha/bin/mocha"

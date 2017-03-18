@@ -32,7 +32,9 @@ module.exports = {
             this.config = require(setup);
         }
 
-        var env = this.env();
+        // var env = this.env();
+        var env = process.env.WEBPACK_MODE;
+
 
         console.log('env: '.yellow + env.red + "\n");
 
@@ -67,25 +69,6 @@ module.exports = {
         });
 
         return tmp;
-    },
-    env: function () {
-        var t, BreakException = {};
-        try {
-            process.argv.forEach(function (abs) {
-                if (path.basename(abs) === 'webpack.js') {
-                    throw BreakException
-                }
-            });
-        } catch (e) {
-            if (e === BreakException) {
-                return 'prod';
-            }
-            else {
-                throw e;
-            }
-        }
-
-        return process.argv.indexOf('watch') > -1 ? 'dev' : 'prod';
     },
     con: function (key, from) {
 

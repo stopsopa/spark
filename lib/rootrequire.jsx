@@ -4,7 +4,7 @@
  * https://gist.github.com/branneman/8048520#6-the-hack
  *
  * const path          = require('path');
- * require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '..');
+ * require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
  */
 module.exports = function () {
 
