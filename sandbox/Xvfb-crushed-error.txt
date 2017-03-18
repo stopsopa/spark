@@ -1,0 +1,54 @@
+processes states during appearence of error
+
+/opt/spark$ ps aux | grep node
+root       798  0.0  0.0   4512   616 ?        S    Mar10   0:00 sh -c node supervisor.jsx "0.0.0.0" "8080"
+root       799  0.0  2.4 983652 24800 ?        Sl   Mar10   0:04 node supervisor.jsx 0.0.0.0 8080
+root       824  0.0  0.0   4512   644 ?        S    Mar10   0:00 sh -c node server.jsx "0.0.0.0" "80"
+root       825  0.1  3.9 1260260 40552 ?       Sl   Mar10   1:29 node server.jsx 0.0.0.0 80
+root       892  0.1  2.6 948296 27372 ?        Sl   Mar10   1:59 node crawler.jsx
+root     30522  0.0  0.0  12944  1016 pts/0    S+   07:55   0:00 grep --color=auto node
+
+lita:/opt/spark$ ps aux | grep elec
+root     30536  0.0  0.1  12944  1032 pts/0    S+   07:56   0:00 grep --color=auto elec
+
+ita:/opt/spark$ ps aux | grep vfb
+root     30562  0.0  0.0  12944  1012 pts/0    S+   07:57   0:00 grep --color=auto vfb
+
+error log.html
+2017-03-11 07:49:39 http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender
+/opt/spark/crawler.jsx:165
+spark cant crawl : http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender { [Error: socket hang up] code: 'ECONNRESET' }
+2017-03-11 07:51:44 http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender
+/opt/spark/crawler.jsx:165
+spark cant crawl : http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender { [Error: socket hang up] code: 'ECONNRESET' }
+2017-03-11 07:53:49 http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender
+/opt/spark/crawler.jsx:165
+spark cant crawl : http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender { [Error: socket hang up] code: 'ECONNRESET' }
+2017-03-11 07:55:55 http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender
+/opt/spark/crawler.jsx:165
+spark cant crawl : http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender { [Error: socket hang up] code: 'ECONNRESET' }
+2017-03-11 07:58:00 http://www.lymphomahub.com/about/scientific-advisory-board?_noprerender
+
+
+
+
+                            setTimeout(function() {
+                                free = true
+                            }, config.crawler.waitBeforeCrawlNextPage);
+                        });
+                    }
+                }, function (e) {
+                    log.line('spark cant crawl : ' + row.url, e);  <------  /opt/spark/crawler.jsx:165
+
+                    // @todo - send email due crushed Xvfb
+                })
+                .catch(function (e) {
+                    log.json(e)
+                });
+                
+after run again      
+
+Xvfb -ac -screen scrn 1280x2000x24 :9.0 &
+
+crawler is working without restart           
+

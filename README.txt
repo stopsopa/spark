@@ -52,7 +52,7 @@ http://localhost/sandbox.html
 
 npm run start 0.0.0.0 80
 
-(sudo killall electron && echo 'killed' || echo 'nothing to node') && (sudo killall node && echo 'killed' || echo 'nothing to node') && sudo npm run start 0.0.0.0 80
+(sudo killall electron && echo 'killed' || echo 'nothing to kill') && (sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run start 0.0.0.0 80
 
 #kill and run for tests
     ((kill $(ps aux | grep "killme" | grep -v grep | grep -v sh | head -1 | awk '{print $2}')) && echo 'killed' || echo 'nothing to kill') && npm run start 0.0.0.0 81 killme & disown
@@ -79,6 +79,10 @@ node early_spider.jsx
 --- manual work ---- ^^^
 
 411 pages within 31 minut [1860 sek] => 4.52 sek per page
+
+---- test --- vvv
+ npm run start 138.68.156.126 8081
+---- test --- ^^^
 
 
 === x crush log ====
