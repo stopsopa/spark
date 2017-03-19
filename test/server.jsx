@@ -32,7 +32,7 @@ app.use(bodyParser.json()); // https://github.com/expressjs/body-parser#expressc
 app.use(express.static(path.resolve(__dirname, '..', 'static')));
 
 app.all('/', (req, res) => {
-    res.end(ip + ':' + port + 'is working...');
+    res.end(ip + ':' + port + ' is working...');
 })
 
 app.all('/json', (req, res) => {

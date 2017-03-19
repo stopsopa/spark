@@ -43,7 +43,7 @@ export default class Sandbox extends React.Component {
         this.notLess = 100;
 
         this.state = {
-            url: cookies.get(key) || location.origin + '/ajax.html',
+            url: cookies.get(key) || location.origin + '/sandbox/ajax.html',
             onlyHtml: true,
             tab: 'request', // request, response, html, printscreen
             loading: false,
