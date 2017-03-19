@@ -66,7 +66,6 @@ app.get('/ajaxwrong', (req, res) => {
 
 });
 
-
 app.listen(port, ip, () => {
     console.log('Test endpoints server is running '+ip+':'+port)
 });

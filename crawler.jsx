@@ -1,7 +1,5 @@
 'use strict';
 
-// select id, url, created, updated, updateRequest, statusCode, warning, errorCounter from spark_cache
-
 const path          = require('path');
 require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
 
