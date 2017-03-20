@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Compare</title>
+    <style>
+        textarea {
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: scroll;
+        }
+        .red {
+            color: red;
+        }
+        table td {
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+    <table style="width: 98%">
+        <tbody>
+        <tr>
+            <td>
+                sitemap
+                <br>
+                <textarea style="width: 98%;" rows="5" id="sitemap"></textarea>
+                <button class="clear">clear</button>
+            </td>
+            <td>
+                list from db
+                <br>
+                <textarea style="width: 98%;" rows="5" id="prerendered">SELECT url FROM `spark_cache`</textarea>
+                <button class="clear">clear</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <script>
+        var log = (function () {try {return console.log}catch (e) {return function (){}}}());
+
+        function trim(s) {
+            return (s +'').replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1');
+        }
+
+        function sort(list) {
+            return list.sort(function (a, b) {
+                var k = a.length - b.length;
+                if (k === 0) {
+                    var tmp = [a, b].sort();
+
+                    return a === tmp[0] ? -1 : 1;
+                }
+                return k;
+            });
+        }
+        function filter(list) {
+            var fil = /^https?:\/\//;
+            var map = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} /;
+            var rep = /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+(.*)$/;
+            var precheck = /\?_prerender$/;
+            var prerep = /^(.*)\?_prerender$/;
+            return list.map(function (l) {
+
+                if (map.test(l)) {
+                    l = l.replace(rep, '$1');
+                }
+
+                if (precheck.test(l)) {
+                    l = l.replace(prerep, '$1');
+                }
+
+                return l;
+            }).filter(function (l) {
+                return fil.test(l);
+            });
+        }
+        function unique(list) {
+
+            list = filter(list);
+
+            var tmp = {};
+
+            list.forEach(function (l) {
+                tmp[l] = true;
+            });
+
+            var tmp2 = [];
+            for (var i in tmp) {
+                i && tmp2.push(i);
+            }
+
+            return sort(tmp2);
+        }
+
+        Array.prototype.diff = function(a) {
+            return this.filter(function(i) {return a.indexOf(i) < 0;});
+        };
+
+        function analyze(sm, pr) {
+
+            sm = unique(sm || []);
+            pr = unique(pr || []);
+
+            var tmp = {
+                sitemap: sm,
+                prerendered: pr,
+                notcrawlerd: sm.diff(pr),
+                notonsitemap: pr.diff(sm)
+            };
+
+            tmp.all = unique(sm.concat(pr));
+
+            var edge = tmp.notcrawlerd.concat(tmp.notonsitemap);
+
+            tmp.common = tmp.all.diff(edge);
+
+            return tmp;
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.querySelectorAll('.clear').forEach(function (e, i) {
+
+                var t = e.parentNode.querySelector('textarea');
+
+                var args = Array.prototype.slice.call(arguments);
+
+                e.addEventListener('click', function () {
+
+                    var v = trim(t.value);
+
+                    var list = []
+
+                    if (v.substring(0, 1) === '<') {
+                        v = v.match(/<loc>([^<]*?)<\/loc>/ig).map(function (p) {
+                            return p.replace(/<loc>([^<]*?)<\/loc>/ig, '$1');
+                        }).filter(function (t) {return trim(t)});
+                    }
+                    else {
+                        v = v.split("\n").map(function (r) {
+                            return r.replace(/^"(.*)"$/i, '$1');
+                        }).filter(function (t) {return trim(t)});
+                    }
+
+                    list = unique(v);
+
+                    t.value = list.join("\n");
+
+                    t.scrollTop = 0;
+                    t.scrollLeft = 0;
+                })
+            });
+
+            var statsdiv = document.querySelector('.check');
+            var pre = document.querySelector('pre');
+            var buttons = statsdiv.querySelectorAll('button');
+            buttons.forEach(function (b) {
+                b.addEventListener('click', function (e) {
+
+                    buttons.forEach(function (b) {
+                        b.classList.remove('red');
+                    });
+
+                    var sitemap     = document.getElementById('sitemap').value.split("\n");
+                    var prerendered = document.getElementById('prerendered').value.split("\n");
+
+                    var t, data = analyze(sitemap, prerendered);
+
+                    for (var i in data) {
+                        t = statsdiv.querySelector('b.' + i)
+                        t.innerHTML = (data[i].length || 0) + '';
+                    }
+
+                    pre.innerHTML = data[e.target.getAttribute('class')].join("\n");
+
+                    e.target.classList.add('red');
+                });
+            });
+
+            (function () {
+                var table= document.querySelector('table');
+
+                table.style.width = table.offsetWidth + 'px';
+
+                var tmp = [];
+
+                document.querySelectorAll('textarea').forEach(function (t) {
+                    tmp.push({
+                        e: t,
+                        w: (t.offsetWidth - 20) + 'px'
+                    })
+                });
+
+                tmp.forEach(function (e) {
+                    e.e.style.width = e.w;
+                });
+            }());
+
+
+        })
+    </script>
+    <div class="check">
+        <button class="all">all</button>: <b class="all">0</b>,
+        <button class="sitemap">sitemap</button>: <b class="sitemap">0</b>,
+        <button class="prerendered">prerendered</button>: <b class="prerendered">0</b>,
+        <button class="common">common</button>: <b class="common">0</b>
+        <br>
+        <button class="notcrawlerd">not crawled</button>: <b class="notcrawlerd">0</b>,
+        <button class="notonsitemap">not on sitemap</button>: <b class="notonsitemap">0</b>
+        <br>
+        <hr>
+        <pre></pre>
+    </div>
+</body>
+</html>
