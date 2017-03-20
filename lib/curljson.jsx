@@ -10,11 +10,13 @@ const config        = require(path.resolve(__dirname, '..', 'config.js'));
 
 function curljson(data, headers) {
 
+    (typeof data !== 'string') && (data = JSON.stringify(data) || '');
+
     return new Promise(function (resolve, reject) {
 
-        var uri = url.parse(config.curl.url);
+        var uri = url.parse(config.parser.url);
 
-        var options = Object.assign({}, config.curl, {
+        var options = Object.assign({}, config.parser, {
             host    : uri.hostname,
             port    : uri.port,
             path    : uri.path
@@ -24,16 +26,20 @@ function curljson(data, headers) {
 
             res.setEncoding('utf8');
 
-            var data = '';
+            var buff = '';
 
             res.on('data', function (chunk) {
-                data += chunk;
+                buff += chunk;
             });
 
             res.on('end', function () {
 
                 // return resolve(data)
-                res.json = JSON.parse(data)
+                try {
+                    res.json = JSON.parse(buff)
+                }
+                catch (e) {
+                }
 
                 // res.statusCode
                 // res.headers
@@ -47,7 +53,7 @@ function curljson(data, headers) {
             reject(e)
         });
 
-        req.write(JSON.stringify(data));
+        data && req.write(data);
 
         req.end();
     });

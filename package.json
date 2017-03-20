@@ -1,19 +1,20 @@
 {
-  "dependencies": {
-    "base-64": "^0.1.0",
-    "body-parser": "^1.15.2",
-    "express": "^4.14.0",
-    "moment": "^2.17.1",
-    "mysql": "^2.13.0",
-    "nightmare": "^2.8.1",
-    "sha1": "^1.1.1"
-  },
-  "devDependencies": {
-    "mocha": "^3.2.0"
-  },
-  "scripts": {
-    "start": "node server.jsx",
-    "supervisor": "node supervisor.jsx",
-    "test": "node_modules/mocha/bin/mocha"
-  }
+    "dependencies": {
+        "base-64": "^0.1.0",
+        "body-parser": "^1.15.2",
+        "express": "^4.14.0",
+        "moment": "^2.17.1",
+        "mysql": "^2.13.0",
+        "nightmare": "^2.8.1",
+        "sha1": "^1.1.1"
+    },
+    "devDependencies": {
+        "mocha": "^3.2.0"
+    },
+    "scripts": {
+        "devenv"      : "/bin/bash dev.sh",
+        "start"       : "node server.jsx",
+        "supervisor"  : "node supervisor.jsx",
+        "test"        : "node_modules/mocha/bin/mocha test/test.jsx"
+    }
 }

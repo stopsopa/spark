@@ -106,6 +106,6 @@ app.all('/stop', (req, res) => {
     });
 })
 
-app.listen(port, () => {
-    console.log('Server running 0.0.0.0:'+port)
+app.listen(port, ip, () => {
+    console.log('Server running '+ip+':'+port)
 });

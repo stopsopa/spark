@@ -1,9 +1,12 @@
 'use strict';
 
-const http          = require('http');
 const path          = require('path');
+require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
+const http          = require('http');
+
 const Nightmare     = require('nightmare');
-const log           = console.log;
+const log           = rootrequire(path.join('lib', 'log.jsx'));
+
 const assert        = console.assert;
 const bodyParser    = require('body-parser');
 const express       = require('express');
@@ -697,6 +700,15 @@ app.get('/ajaxwrong', (req, res) => {
 
 });
 
-app.listen(port, () => {
-    console.log('Server running 0.0.0.0:'+port)
+app.all('/', (req, res) => {
+    const msg = `
+<pre>    
+${ip}:${port} parser is working...
+try /fetch?url=http://....    
+`;
+    res.end(msg)
+});
+
+app.listen(port, ip, () => {
+    console.log('Parser server is running '+ip+':'+port)
 });

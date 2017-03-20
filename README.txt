@@ -1,4 +1,5 @@
 node version v4.2.6 -- works well
+node version v7.6.0 -- works well
 
 ---- installation of nightmare with xvfb --- vvv
 
@@ -6,7 +7,7 @@ apt-get update &&\
     apt-get install -y libgtk2.0-0 libgconf-2-4 \
     libasound2 libxtst6 libxss1 libnss3 xvfb    
 
-Xvfb -ac -screen scrn 1280x2000x24 :9.0 & disown
+Xvfb -ac -screen scrn 1280x2000x24 :9.0 &> /dev/null & disown
 
 oraz    BARDZO WAŻNE ABY DODAĆ TO DO .bashrc
 export DISPLAY=:9.0
@@ -52,7 +53,7 @@ http://localhost/sandbox.html
 
 npm run start 0.0.0.0 80
 
-(sudo killall electron && echo 'killed' || echo 'nothing to node') && (sudo killall node && echo 'killed' || echo 'nothing to node') && sudo npm run start 0.0.0.0 80
+(sudo killall electron && echo 'killed' || echo 'nothing to kill') && (sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run start 0.0.0.0 80
 
 #kill and run for tests
     ((kill $(ps aux | grep "killme" | grep -v grep | grep -v sh | head -1 | awk '{print $2}')) && echo 'killed' || echo 'nothing to kill') && npm run start 0.0.0.0 81 killme & disown
@@ -80,6 +81,10 @@ node early_spider.jsx
 
 411 pages within 31 minut [1860 sek] => 4.52 sek per page
 
+---- test --- vvv
+ npm run start 138.68.156.126 8081
+---- test --- ^^^
+
 
 === x crush log ====
 root     11779  0.0 22.3 390544 227116 ?       S    Mar15   1:41 Xvfb -ac -screen scrn 1280x2000x24 :9.0
@@ -101,3 +106,7 @@ root     11779  0.0 24.0 401060 244548 ?       S    Mar15   1:47 Xvfb -ac -scree
 2017-03-17-13-26-58
 2017-03-17-13-31-58
 2017-03-17-13-34-17
+
+--- about testing ---- vvv
+https://github.com/epeli/underscore.string/blob/master/package.json
+--- about testing ---- ^^^
