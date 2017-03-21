@@ -15,7 +15,7 @@ module.exports = {
     entry: utils.entry(),
     // entry: {
     //     pageA: path.join(__dirname, ".", "src", "pageA.entry.js"),
-    //     pageB: path.join(__dirname, ".", "src", "pageB.entry.jsx")
+    //     pageB: path.join(__dirname, ".", "src", "pageB.entry.js")
     // },
     output: {
         path: utils.con('js.output'),

@@ -23,8 +23,8 @@ yarn install
 
 npm run supervisor 0.0.0.0 8080 &
 npm run start 0.0.0.0 80 &
-echo '<head><meta http-equiv="refresh" content="4"></head><body><pre>' > static/log.html && node crawler.jsx &>> static/log.html & disown
-echo '<pre>' > static/log.html && node crawler.jsx &>> static/log.html & disown
+echo '<head><meta http-equiv="refresh" content="4"></head><body><pre>' > static/log.html && node crawler.js &>> static/log.html & disown
+echo '<pre>' > static/log.html && node crawler.js &>> static/log.html & disown
 
 # vagrant for testing
 
@@ -76,7 +76,7 @@ grab html : lib\server.js:400
 
 --- manual work ---- vvv
 delete from spark_cache where id != '42099b4af021e53fd8fd4e056c2568d7c2e3ffa8'
-node early_spider.jsx
+node early_spider.js
 --- manual work ---- ^^^
 
 411 pages within 31 minut [1860 sek] => 4.52 sek per page

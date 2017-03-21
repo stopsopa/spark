@@ -1,14 +1,15 @@
 'use strict';
 
 const path          = require('path');
-require(path.resolve(__dirname, '..', 'lib', 'rootrequire.jsx'))(__dirname, '..');
 const http          = require('http');
-
-const log           = rootrequire(path.join('lib', 'log.jsx'));
-const assert        = console.assert;
 const bodyParser    = require('body-parser');
 const express       = require('express');
 // const url           = require('url');
+const assert        = console.assert;
+
+require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
+const log           = rootrequire('lib', 'log.js');
+
 const app           = express();
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PARSER_HOST=$(node config.js 'test.parser.host')
-PARSER_PORT=$(node config.js 'test.parser.port')
-TESTEN_HOST=$(node config.js 'test.testendpoints.host')
-TESTEN_PORT=$(node config.js 'test.testendpoints.port')
+PARSER_HOST=$(node test/param.js  test.parser.host)
+PARSER_PORT=$(node test/param.js  test.parser.port)
+TESTEN_HOST=$(node test/param.js  test.testendpoints.host)
+TESTEN_PORT=$(node test/param.js  test.testendpoints.port)
 
 echo 'killing processes...';
 
@@ -15,7 +15,7 @@ echo -e "\n\n";
 echo 'starting servers...';
 npm run start ${PARSER_HOST} ${PARSER_PORT} testmode & disown
 cd test
-node server.jsx ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
+node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
 cd ..
 sleep 3
 echo -e "\n\n";

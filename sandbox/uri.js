@@ -4,7 +4,7 @@ const url       = require('url');
 const qs        = require('querystring');
 
 const path      = require('path');
-const log       = require(path.resolve(__dirname, '..', 'lib', 'log.jsx'));
+const log       = require(path.resolve(__dirname, '..', 'lib', 'log.js'));
 
 var u = url.parse('http://user:pass@host.com:8080/p/a/t/h?raz=dwa#test')
 

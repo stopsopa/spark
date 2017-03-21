@@ -27,7 +27,7 @@ app.use(bodyParser.json()); // https://github.com/expressjs/body-parser#expressc
 
 app.all('/fetch', (req, res) => {
 
-    proc = spawn('node', ['fork.jsx', objToBase64(params)], {
+    proc = spawn('node', ['fork.js', objToBase64(params)], {
         maxBuffer: 200*1024,
         timeout: params.timeout,
         killSignal: 'SIGTERM',
@@ -72,7 +72,7 @@ app.all('/status', (req, res) => {
     proc.on('close', () => {
         response(res, {
             response: buff || 'serwer is not running'
-        }, (buff.indexOf('server.jsx') > -1) ? 200 : 404);
+        }, (buff.indexOf('server.js') > -1) ? 200 : 404);
     });
 });
 
@@ -93,7 +93,7 @@ app.all('/start', (req, res) => {
 
 app.all('/stop', (req, res) => {
 
-    // kill -SIGTERM $(ps aux | grep "server.jsx" | grep -v grep | head -1 | awk '{print $2}')
+    // kill -SIGTERM $(ps aux | grep "server.js" | grep -v grep | head -1 | awk '{print $2}')
     proc = spawn('bash', ['stop.sh'], {
         maxBuffer: 200*1024,
         timeout: 5000,

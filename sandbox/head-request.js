@@ -3,7 +3,7 @@
 const url       = require('url');
 const http      = require('http');
 const path      = require('path');
-const log       = require(path.resolve(__dirname, '..', 'lib', 'log.jsx'));
+const log       = require(path.resolve(__dirname, '..', 'lib', 'log.js'));
 
 function curl(uri, method) {
 

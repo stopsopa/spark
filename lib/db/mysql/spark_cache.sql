@@ -1,35 +1,37 @@
 -- --------------------------------------------------------
--- Host:                         172.20.0.30
--- Server version:               5.5.54-0ubuntu0.14.04.1 - (Ubuntu)
--- Server OS:                    debian-linux-gnu
--- HeidiSQL Version:             9.3.0.4984
+-- Host:                         localhost
+-- Server version:               5.7.17-0ubuntu0.16.04.1 - (Ubuntu)
+-- Server OS:                    Linux
+-- HeidiSQL Version:             9.4.0.5125
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
--- Dumping structure for table spark.spark_cache
+-- Dumping structure for table angelita.spark_cache
+DROP TABLE IF EXISTS `spark_cache`;
 CREATE TABLE IF NOT EXISTS `spark_cache` (
-  `id` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
-  `url` longtext COLLATE utf8_unicode_ci NOT NULL,
-  `html` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `url` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `html` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `updateRequest` datetime DEFAULT NULL,
   `statusCode` int(10) unsigned DEFAULT NULL,
   `json` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `warning` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `warning` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `errorCounter` int(11) DEFAULT NULL,
+  `block` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `hash_index` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
-
-
--- Dumping structure for table spark.spark_domain
+-- Dumping structure for table angelita.spark_domain
+DROP TABLE IF EXISTS `spark_domain`;
 CREATE TABLE IF NOT EXISTS `spark_domain` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain` varchar(255) NOT NULL,
@@ -37,9 +39,8 @@ CREATE TABLE IF NOT EXISTS `spark_domain` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
-
-
--- Dumping structure for table spark.spark_settings
+-- Dumping structure for table angelita.spark_settings
+DROP TABLE IF EXISTS `spark_settings`;
 CREATE TABLE IF NOT EXISTS `spark_settings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `domain_id` int(10) unsigned NOT NULL,

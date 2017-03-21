@@ -153,7 +153,7 @@ app.all('/fetch', (req, res) => {
             params.returnonlyhtml = (params.returnonlyhtml.toLowerCase() === 'true') ? true : false;
         }
 
-        proc = spawn('node', ['fork.jsx', objToBase64(params)], {
+        proc = spawn('node', ['fork.js', objToBase64(params)], {
             maxBuffer: 200*1024,
             timeout: params.timeout,
             killSignal: 'SIGTERM',
