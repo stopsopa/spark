@@ -25,6 +25,8 @@ function searchForWarning(json) {
 
 function insertNewLinks(origin, list, callback) {
 
+    list = [].concat(list); // need to work on copy
+
     if (!list || !list.length) {
         return callback();
     }
