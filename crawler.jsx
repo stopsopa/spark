@@ -1,16 +1,14 @@
 'use strict';
 
 const path          = require('path');
+require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
+
 const http          = require('http');
-const process       = require('process');
 const sha1          = require('sha1');
-
-require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
-
-const log           = rootrequire('lib', 'log.js');
-const spark         = rootrequire('lib', 'curljson.js').spark;
-const db            = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
-const config        = rootrequire('config');
+const log           = rootrequire(path.join('lib', 'log.jsx'));
+const spark         = rootrequire(path.join('lib', 'curljson.jsx')).spark;
+const db            = rootrequire(path.join('lib', 'db', 'mysql', 'db_spark.jsx'));
+const config        = rootrequire(path.join('config'));
 
 function hash(url) {
 
@@ -40,7 +38,7 @@ function insertNewLinks(origin, list, callback) {
             db.cache.insert({
                 id: hash(url),
                 url: origin + url,
-                created: db.now(),
+                created: db.date(),
                 html: ''
             })
             .then(pop, function (d) {
@@ -74,9 +72,6 @@ function crawl() {
     }
 
     if (emercounter > 5) {
-
-        log(db.now(), 'emergency crawl, couter:' + emercounter);
-
         var emercounter = 0;
         var emergency = false;
         return;
@@ -85,9 +80,9 @@ function crawl() {
     db.cache.fetchOne("select * from :table: WHERE updateRequest is not null ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
 
-            log(db.now(), ' - ' + process.pid + ' ', row.url);
-
             row.url += '?_prerender';
+
+            log(db.now(), row.url);
 
             spark(row.url)
                 .then(function (res) {
@@ -117,7 +112,7 @@ function crawl() {
 
                             var upd = {
                                 html            : html || '',
-                                updated         : db.now(),
+                                updated         : db.date(),
                                 statusCode      : res.statusCode,
                                 updateRequest     : null,
                                 json            : JSON.stringify(res.json, null, '  ') || '-empty-',
@@ -159,7 +154,7 @@ WHERE               id = :id
 `,                      {
                             id          : row.id,
                             html        : html || '',
-                            updated     : db.now(),
+                            updated     : db.date(),
                             updateRequest     : null,
                             statusCode  : res.statusCode,
                             json        : JSON.stringify(res.json, null, '  ') || '-empty-'
@@ -232,9 +227,7 @@ setInterval(function () {
 (function () {
     function run() {
 
-        var now = db.now();
-
-        log(now, 'reset updateRequest');
+        log(db.now(), 'reset updateRequest');
 
         db.cache.query('update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))');
 

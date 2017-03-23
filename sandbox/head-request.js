@@ -35,7 +35,7 @@ function curl(uri, method) {
 
 curl('http://www.lymphomahub.com/', 'head')
     .then(function (res) {
-        log.line('status:', res.statusCode)
+        log('status:', res.statusCode)
         log.json(res.headers)
     }, function (e) {
         log.json(e)

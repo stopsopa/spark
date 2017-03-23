@@ -2,7 +2,6 @@
 
 
 const path          = require("path");
-const moment        = require('moment');
 const mysql         = require('mysql');
 
 require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
@@ -74,7 +73,6 @@ setInterval(run, 4000);
 //
 //             db.cache.select().then(function (list) {
 //                 log(list)
-//                 log('all done...', moment().format('YYYY-MM-DD HH:mm:ss'))
 //                 setTimeout(() => db.db.end(), 1000);
 //             })
 //         })
