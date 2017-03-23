@@ -36,15 +36,15 @@ overridetests('database drivers tests', engines, function (engine) {
 
         describe('insert', function (done) {
 
-            beforeEach(function () {
+            before(function () {
                 db.cache.query('truncate :table:');
             });
 
+            var id = 'test1';
+
             it('insert', function (done) {
 
-                var id = 'test1';
-
-                var upd = {
+                var ins = {
                     id              : id,
                     url             : 'http://url',
                     html            : 'html',
@@ -58,25 +58,49 @@ overridetests('database drivers tests', engines, function (engine) {
                     block           : 0
                 };
 
-                db.cache.insert(upd).then(function (res) {
+                db.cache.insert(ins).then(function () {
                     db.cache.find(id).then(function (data) {
-                        assert.deepEqual(upd, data)
+                        assert.deepEqual(ins, data)
                         done();
-                    }, function (e) {
-                        log.json(e)
-                    }).catch(function (e) {
-                        log.json(e)
-                    });
-                }, function (e) {
-                    done(e);
-                    log.json(e)
-                }).catch(function (e) {
-                    done(e);
-                    log.json(e)
-                });
+                    }, log.json).catch(log.json);
+                }, log.json).catch(log.json);
 
             });
+
+            it('update', function (done) {
+
+                var upd = {
+                    url             : 'http://url-',
+                    html            : 'html-',
+                    created         : null,
+                    updated         : null,
+                    updateRequest   : db.date(),
+                    statusCode      : 301,
+                    json            : null,
+                    warning         : null,
+                    errorCounter    : 0,
+                    block           : 1
+                };
+
+                db.cache.update(upd, id).then(function () {
+                    db.cache.find(id).then(function (data) {
+
+                        upd.id = id;
+
+                        assert.deepEqual(upd, data)
+                        done();
+                    }, log.json).catch(log.json);
+                }, log.json).catch(log.json);
+            });
         });
+
+        // describe('update', function () {
+        //
+        //     beforeEach(function () {
+        //         db.cache.query('truncate :table:');
+        //     });
+        //
+        // });
     });
 });
 
