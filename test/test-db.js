@@ -37,7 +37,7 @@ overridetests('database drivers tests', engines, function (engine) {
             });
         });
 
-        describe('insert', function (done) {
+        describe('insert, update, find, count', function (done) {
 
             before(function () {
                 db.cache.query('truncate :table:');
@@ -45,7 +45,7 @@ overridetests('database drivers tests', engines, function (engine) {
 
             var id = 'test1';
 
-            it('insert', function (done) {
+            it('insert, find', function (done) {
 
                 var ins = {
                     id              : id,
@@ -73,7 +73,7 @@ overridetests('database drivers tests', engines, function (engine) {
 
             });
 
-            it('update', function (done) {
+            it('update, find', function (done) {
 
                 var upd = {
                     url             : 'http://url-',
@@ -105,6 +105,46 @@ overridetests('database drivers tests', engines, function (engine) {
                return db.cache.count().then(function (c) {
                    assert(c === 1)
                }, log.json).catch(log.json);
+            });
+
+            it('fetchOne', function (done) {
+
+                // this.timeout(4000)
+
+                var id = '6jkfd84k5t8df';
+
+                var ins = {
+                    id: id,
+                    html: '-html-',
+                    url: 'http://url-'
+                }
+
+                db.cache.insert(ins).then(function () {
+                    db.cache.find(id).then(function (data) {
+
+                        var tmp = {
+                            id: data.id,
+                            html: data.html,
+                            url: data.url
+                        };
+
+                        assert.deepEqual(ins, tmp);2
+                        db.cache.fetchOne('select * from :table: where id = :id', {
+                            id: id
+                        }).then(function (data) {
+
+                            assert(data.id === id);
+
+                            db.cache.fetchOne('select * from :table:').then(log.json, function (e) {
+                                assert.deepEqual({
+                                    "message": "fetchOne query error",
+                                    "error": "found 2 rows"
+                                }, e)
+                                done()
+                            }).catch(log.json)
+                        }, log.json).catch(log.json);
+                    }, log.json).catch(log.json);
+                }, log.json).catch(log.json);
             });
         });
     });
