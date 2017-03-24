@@ -29,8 +29,11 @@ overridetests('database drivers tests', engines, function (engine) {
 
         it('table exist', function (done) {
             db.cache.tableExist().then(function (res) {
-                assert.equal(true, res)
+
+                assert.equal(true, res);
+
                 done();
+
             });
         });
 
@@ -60,8 +63,11 @@ overridetests('database drivers tests', engines, function (engine) {
 
                 db.cache.insert(ins).then(function () {
                     db.cache.find(id).then(function (data) {
-                        assert.deepEqual(ins, data)
+
+                        assert.deepEqual(ins, data);
+
                         done();
+
                     }, log.json).catch(log.json);
                 }, log.json).catch(log.json);
 
@@ -87,20 +93,20 @@ overridetests('database drivers tests', engines, function (engine) {
 
                         upd.id = id;
 
-                        assert.deepEqual(upd, data)
+                        assert.deepEqual(upd, data);
+
                         done();
+
                     }, log.json).catch(log.json);
                 }, log.json).catch(log.json);
             });
-        });
 
-        // describe('update', function () {
-        //
-        //     beforeEach(function () {
-        //         db.cache.query('truncate :table:');
-        //     });
-        //
-        // });
+            it('count', function () {
+               return db.cache.count().then(function (c) {
+                   assert(c === 1)
+               }, log.json).catch(log.json);
+            });
+        });
     });
 });
 
