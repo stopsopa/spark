@@ -14,10 +14,12 @@
         "mocha-lcov-reporter": "^1.3.0"
     },
     "scripts": {
-        "devenv": "/bin/bash dev.sh",
+        "prod": "/bin/bash prod.sh $$",
+        "testenv": "/bin/bash dev.sh start",
+        "test": "node_modules/mocha/bin/mocha test/test.js",
         "cover": "istanbul cover _mocha --report lcovonly test/test.js",
-        "start": "node server.js",
+        "crawler": "node server.js",
         "supervisor": "node supervisor.js",
-        "test": "node_modules/mocha/bin/mocha test/test.js"
+        "hash" : "node lib/hash.js"
     }
 }

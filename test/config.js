@@ -27,14 +27,19 @@ module.exports = Object.assign(rootrequire('config.js'), {
     //     waitBeforeCrawlNextPage: 300, // ms
     //     continueIdleAfter: 5000 // ms
     // },
-    test: {
-        parser      : {
-            host: '0.0.0.0',
-            port: '91'
-        },
-        testendpoints : {
-            host: '0.0.0.0',
-            port: '92'
-        },
-    }
+    parser      : { // https://nodejs.org/api/http.html#http_http_request_options_callback
+        hostname    : '0.0.0.0',
+        port        : 91,
+        protocol    : 'http:',
+        path        : '/fetch'
+        // change also user agent for first reuqest curl
+        // change also user agent for first reuqest curl
+        // change also user agent for first reuqest curl
+    },
+    testendpoints : { // https://nodejs.org/api/http.html#http_http_request_options_callback
+        hostname    : '0.0.0.0',
+        port        : 92,
+        protocol    : 'http:',
+        path        : '/crawler/index.html'
+    },
 });

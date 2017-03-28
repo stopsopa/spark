@@ -39,7 +39,7 @@ function createWindow () {
     // }))
     // win.loadURL('http://www.lymphomahub.com/')
     win.loadURL('http://www.lymphomahub.com/therapies')
-    // win.loadURL('http://138.68.156.126/fetchwrong.html')
+    // win.loadURL('http://localhost/fetchwrong.html')
 
     // Open the DevTools.
     win.webContents.openDevTools({detached: true})

@@ -3,27 +3,18 @@
 const path          = require('path');
 const http          = require('http');
 const process       = require('process');
-const sha1          = require('sha1');
 
 require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
 
 const log           = rootrequire('lib', 'log.js');
-const spark         = rootrequire('lib', 'curljson.js').spark;
-const db            = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
-const config        = rootrequire('config');
 
-function hash(url) {
+const config        = rootrequire(process.argv[2] || 'config');
 
-    if (/^https?:\/\//i.test(url)) {
-        url = url.replace(/^https?:\/\/[^\/\?\#&=]+(.*)$/i, '$1');
-    }
+const spark         = rootrequire('lib', 'curljson.js')(config.parser).spark;
 
-    return sha1(url);
-}
-
-function searchForWarning(json) {
-    return null;
-}
+const driver        = rootrequire('lib', 'db', 'mysql', 'driver.js');
+const cnf           = config.db.mysql;
+const db            = driver(cnf);
 
 function insertNewLinks(origin, list, callback) {
 
@@ -34,16 +25,11 @@ function insertNewLinks(origin, list, callback) {
     }
 
     (function pop() {
+
         var url = list.pop();
 
         if (url) {
-            db.cache.insert({
-                id: hash(url),
-                url: origin + url,
-                created: db.now(),
-                html: ''
-            })
-            .then(pop, function (d) {
+            db.cache.create(origin + url).then(pop, function (d) {
                 try {
                     if (d.error.code !== 'ER_DUP_ENTRY') {
                         log.json(d)
@@ -53,9 +39,6 @@ function insertNewLinks(origin, list, callback) {
                     log.json(e)
                 }
                 pop();
-            })
-            .catch(function (e) {
-                log.json(e)
             });
         }
         else {
@@ -82,7 +65,7 @@ function crawl() {
         return;
     }
 
-    db.cache.fetchOne("select * from :table: WHERE updateRequest is not null ORDER BY updateRequest DESC LIMIT 1")
+    db.cache.fetch()
         .then(function (row) {
 
             log(db.now(), ' - ' + process.pid + ' ', row.url);
@@ -111,80 +94,58 @@ function crawl() {
                     catch (e) {
                     }
 
-                    if (res.statusCode === 200) {
+                    try {
 
-                        insertNewLinks(origin, list, function () {
+                        if (res.statusCode === 200) {
+                            insertNewLinks(origin, list, function () {
+                                db.cache.success(row.id, res.json, html)
+                                    .then(function (res) {
 
-                            var upd = {
-                                html            : html || '',
-                                updated         : db.now(),
-                                statusCode      : res.statusCode,
-                                updateRequest     : null,
-                                json            : JSON.stringify(res.json, null, '  ') || '-empty-',
-                                warning         : searchForWarning(res.json),
-                                errorCounter    : null
-                            };
+                                        emergency = false;
+                                        emercounter = 0;
 
-                            db.cache.update(upd, row.id)
+                                        setTimeout(function() {
+                                            free = true
+                                        }, config.crawler.waitBeforeCrawlNextPage);
+
+                                    }, function (e) {
+                                        log.json('error')
+                                        log.json(e)
+                                        log.json(upd)
+                                    })
+                                    .catch(function () {
+                                        log.json('error')
+                                        log.json(e)
+                                    });
+                            });
+                        }
+                        else {
+                            db.cache.error(row.id, res.statusCode, res.json, html)
                                 .then(function (res) {
-
-                                    emergency = false;
-                                    emercounter = 0;
-
                                     setTimeout(function() {
                                         free = true
                                     }, config.crawler.waitBeforeCrawlNextPage);
-
                                 }, function (e) {
                                     log.json('error')
                                     log.json(e)
-                                    log.json(upd)
+                                    setTimeout(function() {
+                                        free = true
+                                    }, config.crawler.waitBeforeCrawlNextPage);
                                 })
-                                .catch(function () {
+                                .catch(function (e) {
                                     log.json('error')
                                     log.json(e)
+                                    setTimeout(function() {
+                                        free = true
+                                    }, config.crawler.waitBeforeCrawlNextPage);
                                 });
-                        });
+                        }
                     }
-                    else {
-                        db.cache.query(`
-UPDATE :table: SET  html            = :html,
-                    updated         = :updated,
-                    statusCode      = :statusCode,
-                    updateRequest     = null,
-                    json            = :json,
-                    warning         = null,
-                    errorCounter    = if(errorCounter, errorCounter, 0) + 1
-WHERE               id = :id                         
-`,                      {
-                            id          : row.id,
-                            html        : html || '',
-                            updated     : db.now(),
-                            updateRequest     : null,
-                            statusCode  : res.statusCode,
-                            json        : JSON.stringify(res.json, null, '  ') || '-empty-'
-                        })
-                        .then(function (res) {
-                            setTimeout(function() {
-                                free = true
-                            }, config.crawler.waitBeforeCrawlNextPage);
-                        }, function (e) {
-                            log.json('error')
-                            log.json(e)
-                            setTimeout(function() {
-                                free = true
-                            }, config.crawler.waitBeforeCrawlNextPage);
-                        })
-                        .catch(function (e) {
-                            log.json('error')
-                            log.json(e)
-                            setTimeout(function() {
-                                free = true
-                            }, config.crawler.waitBeforeCrawlNextPage);
-                        });
+                    catch (e) {
+                        log(e)
                     }
                 }, function (e) {
-                    log('spark cant crawl : ' + row.url, JSON.stringify(e));
+                    log.line('spark cant crawl : ' + row.url, JSON.stringify(e));
 
                     if (!emergency) {
                         emercounter = 0;

@@ -4,13 +4,17 @@ const path          = require('path');
 const http          = require('http');
 const bodyParser    = require('body-parser');
 const express       = require('express');
-// const url           = require('url');
 const assert        = console.assert;
 
 require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
 const log           = rootrequire('lib', 'log.js');
 
 const app           = express();
+
+app.use(function(req, res, next) {
+    req.headers['if-none-match'] = 'no-match-for-this';
+    next();
+});
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 

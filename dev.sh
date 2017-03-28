@@ -1,27 +1,39 @@
 #!/bin/bash
 
-PARSER_HOST=$(node test/param.js  test.parser.host)
-PARSER_PORT=$(node test/param.js  test.parser.port)
-TESTEN_HOST=$(node test/param.js  test.testendpoints.host)
-TESTEN_PORT=$(node test/param.js  test.testendpoints.port)
+PARSER_HOST=$(node test/param.js  parser.hostname)
+PARSER_PORT=$(node test/param.js  parser.port)
+TESTEN_HOST=$(node test/param.js  testendpoints.hostname)
+TESTEN_PORT=$(node test/param.js  testendpoints.port)
 
 echo 'killing processes...';
 
 kill -SIGTERM $(ps aux | grep "testmode" | grep -v grep | head -1 | awk '{print $2}') &> /dev/null && echo 'killed' || echo 'nothing to kill'
 kill -SIGTERM $(ps aux | grep "testmode" | grep -v grep | head -1 | awk '{print $2}') &> /dev/null
 kill -SIGTERM $(ps aux | grep "testmode" | grep -v grep | head -1 | awk '{print $2}') &> /dev/null
-echo -e "\n\n";
-
-echo 'starting servers...';
-npm run start ${PARSER_HOST} ${PARSER_PORT} testmode & disown
-cd test
-node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
-cd ..
-sleep 3
-echo -e "\n\n";
 
 
-echo 'testing servers...';
+if [ "$#" == 0 ] || [ "$#" -gt 1 ] ; then
+	echo "call: /bin/bash $0 start";
+else
+    echo 'starting servers...';
+    npm run start ${PARSER_HOST} ${PARSER_PORT} testmode & disown
+    cd test
+    node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
+    # http://localhost:92/crawler/index.html
+    cd ..
+    sleep 3
 
-curl "${PARSER_HOST}:${PARSER_PORT}" &> /dev/null && echo 'PARSER     : working' || echo 'PARSER     : not working';
-curl "${TESTEN_HOST}:${TESTEN_PORT}" &> /dev/null && echo 'TESTSERVER : working' || echo 'TESTSERVER : not working';
+    echo 'testing servers...';
+
+    curl "${PARSER_HOST}:${PARSER_PORT}" &> /dev/null && echo 'PARSER     : working' || echo 'PARSER     : not working';
+    curl "${TESTEN_HOST}:${TESTEN_PORT}" &> /dev/null && echo 'TESTSERVER : working' || echo 'TESTSERVER : not working';
+
+#    node crawler.js test/config.js
+    node crawler.js
+    # node crawler.js &>> static/log.html & disown
+
+#     curl 'http://138.68.156.126:91/fetch?url=http://localhost:92/crawler/index.html' \
+#     -H 'Content-type: application/json; charset=UTF-8' \
+#     --data-binary '{"returnonlyhtml":true}' --compressed
+fi
+

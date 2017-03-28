@@ -82,7 +82,7 @@ node early_spider.js
 411 pages within 31 minut [1860 sek] => 4.52 sek per page
 
 ---- test --- vvv
- npm run start 138.68.156.126 8081
+ npm run start 0.0.0.0 8081
 ---- test --- ^^^
 
 

@@ -3,13 +3,17 @@
 const assert        = require('assert');
 const path          = require('path');
 const glob          = require("glob");
+const fs            = require('fs');
 
 require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
 
 const overridetests = rootrequire('lib', 'overridetests.js');
 const config        = rootrequire('test', 'config.js');
+const log           = rootrequire('lib', 'log.js');
 
-var engines = glob.sync(path.resolve(__dirname, '..', 'lib', 'db', '*')).map(function (path) {
+var engines = glob.sync(path.resolve(__dirname, '..', 'lib', 'db', '*')).filter(function (p) {
+    return fs.lstatSync(p).isDirectory();
+}).map(function (path) {
     return path.replace(/^.*\/([^\/]+)$/, '$1');
 });
 
@@ -68,8 +72,8 @@ overridetests('database drivers tests', engines, function (engine) {
 
                         done();
 
-                    }, log.json).catch(log.json);
-                }, log.json).catch(log.json);
+                    }, log.json);
+                }, log.json);
 
             });
 
@@ -97,14 +101,14 @@ overridetests('database drivers tests', engines, function (engine) {
 
                         done();
 
-                    }, log.json).catch(log.json);
-                }, log.json).catch(log.json);
+                    }, log.json);
+                }, log.json);
             });
 
             it('count', function () {
                return db.cache.count().then(function (c) {
                    assert(c === 1)
-               }, log.json).catch(log.json);
+               }, log.json);
             });
 
             it('fetchOne', function (done) {
@@ -123,12 +127,12 @@ overridetests('database drivers tests', engines, function (engine) {
                     db.cache.find(id).then(function (data) {
 
                         var tmp = {
-                            id: data.id,
-                            html: data.html,
-                            url: data.url
+                            id      : data.id,
+                            html    : data.html,
+                            url     : data.url
                         };
 
-                        assert.deepEqual(ins, tmp);2
+                        assert.deepEqual(ins, tmp);
                         db.cache.fetchOne('select * from :table: where id = :id', {
                             id: id
                         }).then(function (data) {
@@ -141,11 +145,13 @@ overridetests('database drivers tests', engines, function (engine) {
                                     "error": "found 2 rows"
                                 }, e)
                                 done()
-                            }).catch(log.json)
-                        }, log.json).catch(log.json);
-                    }, log.json).catch(log.json);
-                }, log.json).catch(log.json);
+                            });
+                        }, log.json);
+                    }, log.json);
+                }, log.json);
             });
+
+
         });
     });
 });

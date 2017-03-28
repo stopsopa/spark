@@ -13,13 +13,19 @@ module.exports = {
             table           : 'spark_cache'
         }
     },
-    parser: {
-        url: 'http://localhost/fetch',
-        method: 'POST',
-        headers: {
+    parser: { // https://nodejs.org/api/http.html#http_http_request_options_callback
+        hostname    : '0.0.0.0',
+        // port        : 80, // default 80
+        protocol    : 'http:',
+        path        : '/fetch',
+        method      : 'POST',
+        headers     : {
             'Content-Type': 'application/json; charset=utf-8',
             'Cache-Control': 'no-cache'
         }
+        // change also user agent for first reuqest curl
+        // change also user agent for first reuqest curl
+        // change also user agent for first reuqest curl
     },
     crawler: {
         waitBeforeCrawlNextPage: 300, // ms
