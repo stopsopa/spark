@@ -31,13 +31,9 @@ overridetests('database drivers tests', engines, function (engine) {
 
     describe('database tests', function () {
 
-        it('table exist', function (done) {
-            db.cache.tableExist().then(function (res) {
-
+        it('table exist', function () {
+            return db.cache.tableExist().then(function (res) {
                 assert.equal(true, res);
-
-                done();
-
             }, log);
         });
 
@@ -77,10 +73,9 @@ overridetests('database drivers tests', engines, function (engine) {
 
             });
 
-            it('query id', function (done) {
-                db.cache.query('select html from :table: where id = :id', 'test1').then(function (data) {
+            it('query id', function () {
+                return db.cache.query('select html from :table: where id = :id', 'test1').then(function (data) {
                     assert(data[0].html === 'html');
-                    done();
                 }, log);
             });
 
@@ -174,6 +169,37 @@ overridetests('database drivers tests', engines, function (engine) {
                     }, log);
                 }, log);
             });
+
+            it('query - in', function () {
+                return db.cache.query("SELECT html FROM :table: WHERE id in (:ids)", {
+                    ids: [id, '6jkfd84k5t8df']
+                }).then((data) => {
+                    assert.deepEqual([
+                        { html: '-html-' },
+                        { html: 'html-' }
+                    ], data);
+                }, log);
+            });
+
+            it('syntax error', function (done) {
+                db.cache.query("SELECT SELECT * FROM :table:", {id:'test'}).then(log, function (e) {
+                    assert.deepEqual({
+                        message: e.message,
+                        error: {
+                            query: e.error.query,
+                            params: e.error.params
+                        }
+                    }, {
+                        message: 'query error',
+                        error: {
+                            query: 'SELECT SELECT * FROM `spark_cache`',
+                            params: {id: 'test'}
+                        }
+                    });
+                    done();
+                });
+            });
+
 
 
         });
