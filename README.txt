@@ -66,6 +66,10 @@ window.nmsc = window.nmsc || []; nmsc.push(true);
 https://docs.travis-ci.com/user/gui-and-headless-browsers/
 
 
+---- mock ---- vvv
+    https://stopsopa.mybalsamiq.com/projects/spark/New%20mockup
+---- mock ---- ^^^
+
 ---- further research ----
 https://github.com/oliviertassinari/react-swipeable-views
 

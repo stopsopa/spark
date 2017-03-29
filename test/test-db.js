@@ -38,7 +38,7 @@ overridetests('database drivers tests', engines, function (engine) {
 
                 done();
 
-            });
+            }, log);
         });
 
         describe('insert, update, find, count', function (done) {
@@ -72,9 +72,30 @@ overridetests('database drivers tests', engines, function (engine) {
 
                         done();
 
-                    }, log.json);
-                }, log.json);
+                    }, log);
+                }, log);
 
+            });
+
+            it('query id', function (done) {
+                db.cache.query('select html from :table: where id = :id', 'test1').then(function (data) {
+                    assert(data[0].html === 'html');
+                    done();
+                }, log);
+            });
+
+            it('query - param not found', function (done) {
+                db.cache.query('select html from :table: where id = :id and wrongparam = :wrongparam', {
+                    id: 'test1'
+                }).then(function (data) {
+                    log('do true', data)
+                }, function (e) {
+                    assert(
+                        JSON.stringify(e),
+                        `{"message":"general promise query try catch","error":"Param 'wrongparam' not found in object: {\"id\":\"test1\"} for request: select html from \`spark_cache\` where id = :id and wrongparam = :wrongparam"}`
+                    );
+                    done();
+                });
             });
 
             it('update, find', function (done) {
@@ -101,14 +122,14 @@ overridetests('database drivers tests', engines, function (engine) {
 
                         done();
 
-                    }, log.json);
-                }, log.json);
+                    }, log);
+                }, log);
             });
 
             it('count', function () {
                return db.cache.count().then(function (c) {
                    assert(c === 1)
-               }, log.json);
+               }, log);
             });
 
             it('fetchOne', function (done) {
@@ -133,22 +154,25 @@ overridetests('database drivers tests', engines, function (engine) {
                         };
 
                         assert.deepEqual(ins, tmp);
+
                         db.cache.fetchOne('select * from :table: where id = :id', {
                             id: id
                         }).then(function (data) {
 
                             assert(data.id === id);
 
-                            db.cache.fetchOne('select * from :table:').then(log.json, function (e) {
+                            db.cache.fetchOne('select * from :table:').then(function (e) {
+                                log('e', e)
+                            }, function (e) {
                                 assert.deepEqual({
                                     "message": "fetchOne query error",
                                     "error": "found 2 rows"
-                                }, e)
-                                done()
+                                }, e);
+                                done();
                             });
-                        }, log.json);
-                    }, log.json);
-                }, log.json);
+                        }, log);
+                    }, log);
+                }, log);
             });
 
 
