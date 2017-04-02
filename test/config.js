@@ -10,7 +10,7 @@ module.exports = Object.assign(rootrequire('config.js'), {
             host            : '127.0.0.1',
             user            : 'root',
             password        : '6yhn', // for travis no password https://docs.travis-ci.com/user/database-setup/#MySQL
-            connectTimeout  : 3000,
+            connectTimeout  : 2000,
             database        : 'spark', // CREATE DATABASE `spark` /*!40100 COLLATE 'utf8_general_ci' */;
             table           : 'spark_cache'
         }
@@ -29,7 +29,7 @@ module.exports = Object.assign(rootrequire('config.js'), {
     // },
     parser      : { // https://nodejs.org/api/http.html#http_http_request_options_callback
         hostname    : '0.0.0.0',
-        port        : 91,
+        port        : 1025,
         protocol    : 'http:',
         path        : '/fetch'
         // change also user agent for first reuqest curl
@@ -38,7 +38,7 @@ module.exports = Object.assign(rootrequire('config.js'), {
     },
     testendpoints : { // https://nodejs.org/api/http.html#http_http_request_options_callback
         hostname    : '0.0.0.0',
-        port        : 92,
+        port        : 1026,
         protocol    : 'http:',
         path        : '/crawler/index.html'
     },

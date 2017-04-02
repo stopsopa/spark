@@ -25,16 +25,30 @@ overridetests('database drivers tests', engines, function (engine) {
         delete cnf.password;
     }
 
-    const db = rootrequire('lib', 'db', engine, 'driver.js')(cnf);
+    const driver        = rootrequire('lib', 'db', engine, 'driver.js');
 
-    const log           = rootrequire('lib', 'log.js');
+    const db            = driver(cnf);
 
     describe('database tests', function () {
+
+        // it('wrong connection', function (done) {
+        //
+        //     this.timeout(3000);
+        //
+        //     const test      = Object.assign({}, cnf, {
+        //         host: '1.2.3.4'
+        //     });
+        //
+        //     log(test)
+        //
+        //     const db        = driver(test);
+        //
+        // });
 
         it('table exist', function () {
             return db.cache.tableExist().then(function (res) {
                 assert.equal(true, res);
-            }, log);
+            });
         });
 
         describe('insert, update, find, count', function (done) {
@@ -45,7 +59,7 @@ overridetests('database drivers tests', engines, function (engine) {
 
             var id = 'test1';
 
-            it('insert, find', function (done) {
+            it('insert, find', function () {
 
                 var ins = {
                     id              : id,
@@ -61,39 +75,31 @@ overridetests('database drivers tests', engines, function (engine) {
                     block           : 0
                 };
 
-                db.cache.insert(ins).then(function () {
-                    db.cache.find(id).then(function (data) {
-
-                        assert.deepEqual(ins, data);
-
-                        done();
-
-                    }, log);
-                }, log);
-
+                return db.cache.insert(ins).then(function () {
+                    return db.cache.find(id);
+                }).then(function (data) {
+                    assert.deepEqual(ins, data);
+                });
             });
 
             it('query id', function () {
                 return db.cache.query('select html from :table: where id = :id', 'test1').then(function (data) {
                     assert(data[0].html === 'html');
-                }, log);
+                });
             });
 
-            it('query - param not found', function (done) {
-                db.cache.query('select html from :table: where id = :id and wrongparam = :wrongparam', {
+            it('query - param not found', function () {
+                return db.cache.query('select html from :table: where id = :id and wrongparam = :wrongparam', {
                     id: 'test1'
-                }).then(function (data) {
-                    log('do true', data)
-                }, function (e) {
+                }).catch(function (e) {
                     assert(
                         JSON.stringify(e),
                         `{"message":"general promise query try catch","error":"Param 'wrongparam' not found in object: {\"id\":\"test1\"} for request: select html from \`spark_cache\` where id = :id and wrongparam = :wrongparam"}`
                     );
-                    done();
                 });
             });
 
-            it('update, find', function (done) {
+            it('update, find', function () {
 
                 var upd = {
                     url             : 'http://url-',
@@ -108,28 +114,21 @@ overridetests('database drivers tests', engines, function (engine) {
                     block           : 1
                 };
 
-                db.cache.update(upd, id).then(function () {
-                    db.cache.find(id).then(function (data) {
-
-                        upd.id = id;
-
-                        assert.deepEqual(upd, data);
-
-                        done();
-
-                    }, log);
-                }, log);
+                return db.cache.update(upd, id).then(function () {
+                    return db.cache.find(id);
+                }).then(function (data) {
+                    upd.id = id;
+                    assert.deepEqual(upd, data);
+                });
             });
 
             it('count', function () {
                return db.cache.count().then(function (c) {
                    assert(c === 1)
-               }, log);
+               });
             });
 
-            it('fetchOne', function (done) {
-
-                // this.timeout(4000)
+            it('fetchOne', function () {
 
                 var id = '6jkfd84k5t8df';
 
@@ -139,35 +138,30 @@ overridetests('database drivers tests', engines, function (engine) {
                     url: 'http://url-'
                 }
 
-                db.cache.insert(ins).then(function () {
-                    db.cache.find(id).then(function (data) {
+                return db.cache.insert(ins).then(function () {
+                    return db.cache.find(id);
+                }).then(function (data) {
 
-                        var tmp = {
-                            id      : data.id,
-                            html    : data.html,
-                            url     : data.url
-                        };
+                    var tmp = {
+                        id      : data.id,
+                        html    : data.html,
+                        url     : data.url
+                    };
 
-                        assert.deepEqual(ins, tmp);
+                    assert.deepEqual(ins, tmp);
 
-                        db.cache.fetchOne('select * from :table: where id = :id', {
-                            id: id
-                        }).then(function (data) {
-
-                            assert(data.id === id);
-
-                            db.cache.fetchOne('select * from :table:').then(function (e) {
-                                log('e', e)
-                            }, function (e) {
-                                assert.deepEqual({
-                                    "message": "fetchOne query error",
-                                    "error": "found 2 rows"
-                                }, e);
-                                done();
-                            });
-                        }, log);
-                    }, log);
-                }, log);
+                    return db.cache.fetchOne('select * from :table: where id = :id', {
+                        id: id
+                    });
+                }).then(function (data) {
+                    assert(data.id === id);
+                    return db.cache.fetchOne('select * from :table:')
+                }).catch(function (e) {
+                    assert.deepEqual({
+                        "message": "fetchOne query error",
+                        "error": "found 2 rows"
+                    }, e);
+                });
             });
 
             it('query - in', function () {
@@ -178,11 +172,11 @@ overridetests('database drivers tests', engines, function (engine) {
                         { html: '-html-' },
                         { html: 'html-' }
                     ], data);
-                }, log);
+                });
             });
 
-            it('syntax error', function (done) {
-                db.cache.query("SELECT SELECT * FROM :table:", {id:'test'}).then(log, function (e) {
+            it('syntax error', function () {
+                return db.cache.query("SELECT SELECT * FROM :table:", {id:'test'}).then(log, function (e) {
                     assert.deepEqual({
                         message: e.message,
                         error: {
@@ -196,7 +190,6 @@ overridetests('database drivers tests', engines, function (engine) {
                             params: {id: 'test'}
                         }
                     });
-                    done();
                 });
             });
 

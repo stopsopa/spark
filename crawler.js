@@ -30,13 +30,8 @@ function insertNewLinks(origin, list, callback) {
 
         if (url) {
             db.cache.create(origin + url).then(pop, function (d) {
-                try {
-                    if (d.error.code !== 'ER_DUP_ENTRY') {
-                        log.json(d)
-                    }
-                }
-                catch (e) {
-                    log.json(e)
+                if (d.error.code !== 'ER_DUP_ENTRY') {
+                    log.json(d)
                 }
                 pop();
             });
@@ -112,10 +107,6 @@ function crawl() {
                                         log.json('error')
                                         log.json(e)
                                         log.json(upd)
-                                    })
-                                    .catch(function () {
-                                        log.json('error')
-                                        log.json(e)
                                     });
                             });
                         }
@@ -126,13 +117,6 @@ function crawl() {
                                         free = true
                                     }, config.crawler.waitBeforeCrawlNextPage);
                                 }, function (e) {
-                                    log.json('error')
-                                    log.json(e)
-                                    setTimeout(function() {
-                                        free = true
-                                    }, config.crawler.waitBeforeCrawlNextPage);
-                                })
-                                .catch(function (e) {
                                     log.json('error')
                                     log.json(e)
                                     setTimeout(function() {
@@ -172,12 +156,6 @@ function crawl() {
             else {
                 log.json(e)
             }
-        })
-        .catch(function (e) {
-            log.json(e)
-            setTimeout(function() {
-                free = true
-            }, config.crawler.continueIdleAfter);
         });
 }
 
