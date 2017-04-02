@@ -55,7 +55,7 @@ function crawl() {
 
         log(db.now(), 'emergency crawl, couter:' + emercounter);
 
-        var emercounter = 0;
+        emercounter = 0;
         var emergency = false;
         return;
     }
@@ -129,7 +129,7 @@ function crawl() {
                         log(e)
                     }
                 }, function (e) {
-                    log.line('spark cant crawl : ' + row.url, JSON.stringify(e));
+                    log.line("spark can't crawl : " + row.url, JSON.stringify(e));
 
                     if (!emergency) {
                         emercounter = 0;
@@ -142,9 +142,6 @@ function crawl() {
                     }, config.crawler.continueIdleAfter);
 
                     // @todo - send email
-                })
-                .catch(function (e) {
-                    log.json(e)
                 });
 
         }, function (e) {
