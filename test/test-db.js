@@ -151,7 +151,7 @@ overridetests('database drivers tests', engines, function (engine) {
                     url: 'http://url-'
                 }
 
-                return db.cache.insert(ins).then(function () {
+                return db.cache.insert(ins).then(function (data) {
                     return db.cache.find(id);
                 }).then(function (data) {
 
@@ -180,7 +180,8 @@ overridetests('database drivers tests', engines, function (engine) {
             it('find different id', function () {
                 return db.cache.find({
                     url: 'http://url-'
-                }).catch(function (e) {
+                })
+                .catch(function (e) {
                     assert.deepEqual({
                         error: 'found 2 rows',
                         message: 'find query error',
@@ -188,14 +189,14 @@ overridetests('database drivers tests', engines, function (engine) {
                 });
             });
 
-            // it('find wrong select', function () {
-            //     return db.cache.find(id, []).catch(function (e) {
-            //         assert.deepEqual({
-            //             message: 'input error',
-            //             error: "second argument of find method should be string"
-            //         }, e)
-            //     });
-            // });
+            it('find wrong select', function () {
+                return db.cache.find(id, []).catch(function (e) {
+                    assert.deepEqual({
+                        message: 'input error',
+                        error: "second argument of find method should be string"
+                    }, e)
+                });
+            });
 
             it('count with params', function () {
                 return db.cache.insert({
