@@ -130,9 +130,9 @@ overridetests('database drivers tests', engines, function (engine) {
             });
 
             it('count', function () {
-               return db.cache.count().then(function (c) {
-                   assert(c === 1)
-               });
+                return db.cache.count().then(function (c) {
+                    assert(c === 1)
+                });
             });
 
             it('fetchOne', function () {
@@ -168,6 +168,28 @@ overridetests('database drivers tests', engines, function (engine) {
                         "message": "fetchOne query error",
                         "error": "found 2 rows"
                     }, e);
+                });
+            });
+
+            it('count with params', function () {
+                return db.cache.insert({
+                    id              : 'additionid',
+                    url             : 'http://url-for-count',
+                    html            : 'other value'
+                }).then(function () {
+                    return db.cache.count({
+                        'html': '%html%'
+                    }, ['like']);
+                }, log).then(function (c) {
+                    assert.equal(2, c);
+                });
+            });
+
+            it('count wrong', function () {
+                return db.cache.count({
+                    'wrongcolumn': '%html%'
+                }).catch(function (e) {
+                    return e;
                 });
             });
 
