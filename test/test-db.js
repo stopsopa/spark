@@ -31,19 +31,20 @@ overridetests('database drivers tests', engines, function (engine) {
 
     describe('database tests', function () {
 
-        // it('wrong connection', function (done) {
-        //
-        //     this.timeout(3000);
-        //
-        //     const test      = Object.assign({}, cnf, {
-        //         host: '1.2.3.4'
-        //     });
-        //
-        //     log(test)
-        //
-        //     const db        = driver(test);
-        //
-        // });
+        it('wrong connection', function () {
+
+            this.timeout(3000);
+
+            const test      = Object.assign({}, cnf, {
+                host: '1.2.3.4'
+            });
+
+            const db        = driver(test);
+
+            return db.cache.query('show tables').catch(function (err) {
+                assert.equal('connection error', err.message);
+            });
+        });
 
         it('table exist', function () {
             return db.cache.tableExist().then(function (res) {
@@ -96,6 +97,12 @@ overridetests('database drivers tests', engines, function (engine) {
                         JSON.stringify(e),
                         `{"message":"general promise query try catch","error":"Param 'wrongparam' not found in object: {\"id\":\"test1\"} for request: select html from \`spark_cache\` where id = :id and wrongparam = :wrongparam"}`
                     );
+                });
+            });
+
+            it('update no id', function () {
+                return db.cache.update({
+                    updateRequest: db.date()
                 });
             });
 
