@@ -184,9 +184,18 @@ overridetests('database drivers tests', engines, function (engine) {
                     assert.deepEqual({
                         error: 'found 2 rows',
                         message: 'find query error',
-                    }, e)
+                    }, e);
                 });
             });
+
+            // it('find wrong select', function () {
+            //     return db.cache.find(id, []).catch(function (e) {
+            //         assert.deepEqual({
+            //             message: 'input error',
+            //             error: "second argument of find method should be string"
+            //         }, e)
+            //     });
+            // });
 
             it('count with params', function () {
                 return db.cache.insert({
