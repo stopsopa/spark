@@ -33,5 +33,5 @@ script:
   - npm run cover
 
 after_success:
-  - cat ./coverage/lcov.info | node node_modules/coveralls/bin/coveralls.js
+  - cat ./coverage/lcov.info | node node_modules/coveralls/bin/coveralls.js || cat ./coverage/lcov.info | node node_modules/coveralls/bin/coveralls.js || cat ./coverage/lcov.info | node node_modules/coveralls/bin/coveralls.js
 
