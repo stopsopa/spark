@@ -79,6 +79,7 @@ overridetests('database drivers tests', engines, function (engine) {
                 return db.cache.insert(ins).then(function () {
                     return db.cache.find(id);
                 }).then(function (data) {
+                    delete data.lastTimeFound;
                     assert.deepEqual(ins, data);
                 });
             });
@@ -131,6 +132,7 @@ overridetests('database drivers tests', engines, function (engine) {
                     return db.cache.find(id);
                 }).then(function (data) {
                     upd.id = id;
+                    delete data.lastTimeFound;
                     assert.deepEqual(upd, data);
                 });
             });
