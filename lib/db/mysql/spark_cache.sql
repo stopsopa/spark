@@ -12,6 +12,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
 -- Dumping structure for table spark.spark_cache
+
 DROP TABLE IF EXISTS `spark_cache`;
 CREATE TABLE IF NOT EXISTS `spark_cache` (
   `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `spark_cache` (
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `updateRequest` datetime DEFAULT NULL,
+  `lastTimeFound` datetime DEFAULT NULL,
   `statusCode` int(10) unsigned DEFAULT NULL,
   `json` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `warning` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,

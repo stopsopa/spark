@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<style>
+    [data-divs] * {
+        font-size: 28px;
+    }
+    [data-divs] span {
+        border: 1px solid transparent;
+        -moz-transition: all 0.3s;
+        -webkit-transition: all 0.3s;
+        transition: all 0.3s;
+        display: inline-block;
+        background-color: white;
+        z-index: 0;
+    }
+    [data-divs] span:hover {
+        border: 1px solid gray;
+        -moz-transform: scale(2);
+        -webkit-transform: scale(2);
+        transform: scale(2);
+        border-radius: 2px;
+        z-index: 1;
+    }
+    [data-popup] {
+        display: none;
+        position: fixed;
+        padding: 30px;
+        background-color: white;
+        border: 1px solid gray;
+        top: 50%;
+        left: 50%;
+        -moz-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        -o-transform: translate(-50%, -50%);
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+    }
+    [data-popup] input {
+        border: none;
+        line-height: 2em;
+        font-size: 28px;
+        text-align: center;
+    }
+</style>
+<div>
+    <div data-tabs>
+        <div data-buttons>
+            <!--<span>tab 1</span>-->
+            <!--<span>tab 2</span>-->
+            <!--<a href="javascript:;">tab 3</a>-->
+            <!--<a href="javascript:;">tab 4</a>-->
+            <!--...-->
+        </div>
+        <div data-divs>
+            <!--<div>-->
+                <!--content for tab 1-->
+            <!--</div>-->
+            <!--<div>-->
+                <!--content for tab 2-->
+            <!--</div>-->
+            <!--...-->
+        </div>
+    </div>
+    <div data-popup>
+        <input type="text" value="" data-em readonly> <br>
+        <input type="text" value="" data-en readonly> <br>
+        <input type="text" value="" data-su readonly>
+    </div>
+</div>
+<pre></pre>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>!function(t){"function"==typeof define&&define.amd?define(["jquery"],t):t(jQuery)}(function(t){return function(e){function n(){try{window.console.error.apply(window.console,arguments)}catch(t){}}var i={active:void 0},a="_"+t,r=":"+t,d={destroy:function(t,i){var d=e(i);if(!d.is(r))return n("Element "+t+" is not "+r);var o=d.data(a);d.removeData(a),d.find("[data-buttons]:first").off("click","> *",o.change).find("> *").removeData(a)},active:function(t,i,d){if(d=Math.floor(d),isNaN(d))return n("arg1 is NaN, should be int");if(0>d)return n("arg1 shouldn't be less then 0");var o=e(this);if(!o.is(r))return n("Element "+t+" is not "+r);var s=o.data(a),c=s.change.buttons.find("> :eq("+d+")");return c.length?void s.change.apply(c):n("Tab index "+d+" doesn't exist")}};e.fn[t]=function(o){var s=Array.prototype.slice.call(arguments,1);if("string"==typeof o){if(!d[o])throw"Method "+o+" is not defined";return e(this).each(function(t,i){return e(this).is(r)?void d[o].apply(this,[t,i].concat(s)):n("Element "+t+" is not "+r)})}var c=e.extend({},i,o||{});return e(this).each(function(i){var d=e(this);if(d.is(r))return n("Element "+i+" is already a '"+t+"' widget");var o=d.find("[data-buttons]:first"),s=d.find("[data-divs]:first"),f=function(n,i,r){var d=function(){var d=e(this),o=d.index();i.children().not(":eq("+o+")").removeClass("active").end().eq(o).addClass("active"),r.children().not(":eq("+o+")").removeClass("active").end().eq(o).addClass("active");var s=d.data(a),c=!s;s||d.data(a,{first:!0}),n.triggerHandler(t+":change",[o,d,r.children().eq(o),c])};return d.buttons=i,d.divs=r,d.box=n,d}(d,o,s);if(o.on("click","> *",f),c.active)var l=o.find("> :eq("+c.active+")");else{var l=o.children(".active:first");l.length||(l=s.children(".active:first")),l.length||(l=o.children(":first"))}d.data(a,{widget:t,change:f}),f.call(l,null,"oninit")})},function(n){n[t]=function(n){var i=e(n).data(a);return i&&i.widget&&i.widget===t?!0:!1},e.extend(e.expr[":"],n)}({})}}("tabs"));</script>
+<style>[data-tabs]>[data-buttons]{font-size:0}[data-tabs]>[data-buttons]>*{font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:15px;padding:10px;cursor:pointer;margin-right:-1px;color:#262626;text-decoration:none;border:1px solid transparent;display:inline-block;white-space:nowrap;margin-bottom:-1px;outline:0}[data-tabs]>[data-buttons]>.active,[data-tabs]>[data-buttons]>:hover{border:1px solid #262626;margin-right:-1px}[data-tabs]>[data-buttons]>.active{border-bottom:1px solid #fff;position:relative}[data-tabs]>[data-divs]>div{border:1px solid #262626;padding:10px;display:none}[data-tabs]>[data-divs]>div.active{display:block}[data-tabs]>[data-buttons]>.active:before{content:"";position:absolute;bottom:-1px;left:-1px;width:1px;height:1px;background-color:#262626}</style>
+<script>
+    var log = (function () {try {return console.log}catch (e) {return function () {}}}());
+
+    // http://2ality.com/2013/09/javascript-unicode.html
+    // https://medium.com/@thekevinscott/emojis-in-javascript-f693d0eb79fb#3846
+    function toUTF16(codePoint) {
+        var TEN_BITS = parseInt('1111111111', 2);
+        function u(codeUnit) {
+            return '\\u'+codeUnit.toString(16).toUpperCase();
+        }
+
+        if (codePoint <= 0xFFFF) {
+            return u(codePoint);
+        }
+        codePoint -= 0x10000;
+
+        // Shift right to get to most significant 10 bits
+        var leadSurrogate = 0xD800 + (codePoint >> 10);
+
+        // Mask to get least significant 10 bits
+        var tailSurrogate = 0xDC00 + (codePoint & TEN_BITS);
+
+        return u(leadSurrogate) + u(tailSurrogate);
+    }
+
+    // 0x1F920 - cowboy - true
+    // 0x1F928 - empty - false
+    var etest = (function () { // modernizr
+        var isCanvas = (function () {
+            var elem = document.createElement('canvas');
+            return !!(elem.getContext && elem.getContext('2d'));
+        }());
+        var isCanvastext = (function() {
+            if (isCanvas  === false) {
+                return false;
+            }
+            return typeof document.createElement('canvas').getContext('2d').fillText == 'function';
+        }());
+        var node = document.createElement('canvas');
+        var ctx = node.getContext('2d');
+        var div = document.createElement('div');
+        var w = node.width;
+        var h = node.height;
+        var offset = 12 * (window.devicePixelRatio || 1);
+        return isCanvastext ? function (t) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#f00';
+            ctx.textBaseline = 'top';
+            ctx.font = '32px Arial';
+//            var u16 = toUTF16(t);
+//            log('jest i tu', u16)
+//            document.querySelector('pre').innerHTML = '&#'+t+';' + document.querySelector('pre').innerHTML;
+
+            div.innerHTML = '&#'+t+';';
+
+            ctx.fillText(div.innerText, 0, 0); // U+1F428 KOALA
+
+//            var s = document.getElementsByTagName('div')[0];
+//            s.parentNode.insertBefore(node,s)
+
+            return ctx.getImageData(offset, offset, 1, 1).data[0] !== 0;
+        } : function () {return false}
+    }());
+
+    // if he change that? http://apps.timwhitlock.info/emoji/tables/unicode
+    //  !!! http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
+
+    // http://apps.timwhitlock.info/emoji/tables/unicode
+    // https://medium.com/@thekevinscott/emojis-in-javascript-f693d0eb79fb#6171
+    var table = {
+        Emoticons: { // https://en.wikipedia.org/wiki/Emoticons_%28Unicode_block%29 g(Emoticons (Unicode block))
+            from: 0x1F5Fa, // 128512
+            to: 0x1F9C0 // 128591
+        },
+        Humans: { // https://en.wikipedia.org/wiki/Emoticons_%28Unicode_block%29 g(Emoticons (Unicode block))
+            from: 0x1F645, // 127995  U+1F3FB–U+1F3FF
+            to: 0x1F64F // 127999
+        },
+        "Miscellaneous Symbols and Pictographs": {
+            from: 0x1F300,
+            to: 0x1F5FF
+        },
+        "Miscellaneous Symbols and Pictographs": {
+            from: 0x1F900 ,
+            to: 0x1F9FF
+        },
+        "Transport and Map Symbols": {
+            from: 0x1F680,
+            to: 0x1F6FF
+        },
+        "Miscellaneous Symbols": {
+            from: 0x2600,
+            to: 0x26FF
+        },
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var popup = (function () {
+
+            var pop = document.querySelector('[data-popup]');
+            var em = pop.querySelector('[data-em]');
+            var su = pop.querySelector('[data-su]');
+            var en = pop.querySelector('[data-en]');
+
+            function bind(ev) {
+                pop.addEventListener(ev, function (e) {
+                    if (e.target.tagName.toLowerCase() === 'input') {
+                        e.preventDefault();
+                        e.target.select();
+                    }
+                }, true);
+            }
+            bind('mouseenter')
+            bind('click')
+
+            pop.addEventListener('mouseleave', function (e) {
+                if (e.target.tagName.toLowerCase() === 'div') {
+                    e.preventDefault();
+                    popup.hide()
+                }
+            }, true);
+
+            return {
+                show: function (span) {
+                    em.value = span.innerText;
+                    su.value = span.dataset.su;
+                    en.value = span.dataset.en;
+                    if (span.dataset.en && span.dataset.su) {
+                        pop.style.display = 'block';
+                    }
+                },
+                hide: function () {
+                    pop.style.display = 'none';
+                }
+            };
+        }());
+
+        var t, tab = JSON.parse(JSON.stringify(table));
+
+        Object.keys(tab).forEach(function (v, i) {
+            tab[v] = [];
+        });
+
+        for (var _t in table) {
+            t = table[_t];
+            for (var _tt = t.from ; _tt <= t.to ; _tt += 1 ) {
+                // http://stackoverflow.com/a/39872849
+//                etest(_tt) && tab[_t].push('&#'+_tt+';')
+//                tab[_t].push('&#'+_tt+';')
+                tab[_t].push({
+                    html: '&#'+_tt+';',
+                    surogates: toUTF16(_tt),
+//                    canvas: etest(_tt)
+                })
+            }
+        }
+
+        ;(function () {
+
+            var tabs    = $('[data-tabs]');
+            var buttons = $('[data-buttons]');
+            var divs    = $('[data-divs]');
+
+            Object.keys(tab).forEach(function (v) {
+                buttons.append($('<span>'+v+'</span>'));
+                $('<div></div>').html(tab[v].map(function (r) {
+                    return '<span data-su="'+r.surogates+'" data-en="'+r.html.replace('&', '&amp;')+'">'+r.html+'</span>';
+                }).join('')).appendTo(divs);
+            });
+
+            tabs.tabs();
+            tabs.get(0).addEventListener('click', function (e) {
+                if (e.target.tagName.toLowerCase() === 'span' && e.target.getAttribute('data-su')) {
+                    e.preventDefault();
+                    popup.show(e.target);
+                }
+                else {
+                    popup.hide();
+                }
+            }, true);
+        }());
+
+
+//        document.querySelector('pre').innerHTML = JSON.stringify(tab, null, '  ');
+//        document.querySelector('div').innerHTML = tab.join(' ');
+    });
+
+</script>
+<a href="http://emojipedia.org/">http://emojipedia.org/</a>
+<br>
+<a href="https://medium.com/@thekevinscott/emojis-in-javascript-f693d0eb79fb#6171">https://medium.com/@thekevinscott/emojis-in-javascript-f693d0eb79fb#6171</a>
+<br>
+<a href="http://2ality.com/2013/09/javascript-unicode.html">http://2ality.com/2013/09/javascript-unicode.html</a> <br>
+<a href="https://apps.timwhitlock.info/emoji/tables/unicode#note4">https://apps.timwhitlock.info/emoji/tables/unicode#note4</a>
+</body>
+</html>
