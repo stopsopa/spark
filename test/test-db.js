@@ -83,6 +83,12 @@ overridetests('database drivers tests', engines, function (engine) {
                 });
             });
 
+            it('find listed', function () {
+                return db.cache.find(id, 'id, html').then(function (a) {
+                    assert.deepEqual({ id: 'test1', html: 'html' }, a)
+                });
+            });
+
             it('query id', function () {
                 return db.cache.query('select html from :table: where id = :id', 'test1').then(function (data) {
                     assert(data[0].html === 'html');
@@ -168,6 +174,17 @@ overridetests('database drivers tests', engines, function (engine) {
                         "message": "fetchOne query error",
                         "error": "found 2 rows"
                     }, e);
+                });
+            });
+
+            it('find different id', function () {
+                return db.cache.find({
+                    url: 'http://url-'
+                }).catch(function (e) {
+                    assert.deepEqual({
+                        error: 'found 2 rows',
+                        message: 'find query error',
+                    }, e)
                 });
             });
 
