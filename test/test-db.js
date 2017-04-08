@@ -249,6 +249,13 @@ overridetests('database drivers tests', engines, function (engine) {
                 });
             });
 
+            it('trans', function () {
+                var t = ['raz'];
+                var r = db.cache.trans(t);
+
+                assert.deepEqual(t, r)
+            });
+
 
 
         });
