@@ -29,6 +29,7 @@ module.exports = {
     },
     crawler: {
         waitBeforeCrawlNextPage: 300, // ms
-        continueIdleAfter: 5000 // ms
+        continueIdleAfter: 5000, // ms
+        lastTimeFoundCorrection: -10 // sec
     }
 };

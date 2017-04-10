@@ -55,7 +55,7 @@ overridetests('database drivers tests', engines, function (engine) {
         describe('insert, update, find, count', function (done) {
 
             before(function () {
-                db.cache.query('truncate :table:');
+                db.cache.truncate();
             });
 
             var id = 'test1';
@@ -139,7 +139,7 @@ overridetests('database drivers tests', engines, function (engine) {
 
             it('count', function () {
                 return db.cache.count().then(function (c) {
-                    assert(c === 1)
+                    assert(c === 1);
                 });
             });
 
@@ -170,7 +170,7 @@ overridetests('database drivers tests', engines, function (engine) {
                     });
                 }).then(function (data) {
                     assert(data.id === id);
-                    return db.cache.fetchOne('select * from :table:')
+                    return db.cache.fetchOne('select * from :table:');
                 }).catch(function (e) {
                     assert.deepEqual({
                         "message": "fetchOne query error",
