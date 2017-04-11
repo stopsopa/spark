@@ -1,5 +1,4 @@
 node version v4.2.6 -- works well
-node version v7.6.0 -- works well
 
 ---- installation of nightmare with xvfb --- vvv
 
@@ -106,7 +105,3 @@ root     11779  0.0 24.0 401060 244548 ?       S    Mar15   1:47 Xvfb -ac -scree
 2017-03-17-13-26-58
 2017-03-17-13-31-58
 2017-03-17-13-34-17
-
---- about testing ---- vvv
-https://github.com/epeli/underscore.string/blob/master/package.json
---- about testing ---- ^^^

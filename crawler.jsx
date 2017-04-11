@@ -191,6 +191,16 @@ WHERE               id = :id
                         free = true
                     }, config.crawler.continueIdleAfter);
 
+                    if (!emergency) {
+                        emercounter = 0;
+                    }
+
+                    emergency = true;
+
+                    setTimeout(function() {
+                        free = true
+                    }, config.crawler.continueIdleAfter);
+
                     // @todo - send email
                 })
                 .catch(function (e) {

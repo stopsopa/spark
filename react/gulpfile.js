@@ -20,7 +20,7 @@ gulp.task("scss", function () {
         outputStyle: 'compressed'
     };
 
-    if (process.env.WEBPACK_MODE === 'prod') {
+    if (utils.env() === 'prod') {
         cnf.errLogToConsole = true;
         // sourceMapEmbed: true,
         // sourceComments: true
@@ -50,11 +50,11 @@ gulp.task('default', function() {
     ;
 });
 
-gulp.task('build', ['scss', 'default']);
+gulp.task('prod', ['scss', 'default']);
 
-gulp.task('watch', ['build'], function () {
+gulp.task('watch', ['prod'], function () {
     utils.con('roots').forEach(function (p) {
-        gulp.watch([p + '/**/*.{js,jsx,css,scss}'], ['build']);
+        gulp.watch([p + '/**/*.{js,jsx,css,scss}'], ['prod']);
     });
 
     var entry = utils.con('js.entries');
@@ -64,7 +64,7 @@ gulp.task('watch', ['build'], function () {
     }
 
     entry.forEach(function (p) {
-        gulp.watch([p + '/**/*.entry.{js,jsx}'], ['build']);
+        gulp.watch([p + '/**/*.entry.{js,jsx}'], ['prod']);
     });
 });
 

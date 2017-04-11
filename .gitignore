@@ -5,5 +5,3 @@ node_modules/
 *.tar
 *.tar.gz
 
-
-test/cache\.txt
