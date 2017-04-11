@@ -77,7 +77,7 @@ overridetests('database drivers tests', engines, function (engine) {
                 };
 
                 return db.cache.insert(ins).then(function () {
-                    return db.cache.find(id);
+                    return db.cache.fetchOne(id);
                 }).then(function (data) {
                     delete data.lastTimeFound;
                     assert.deepEqual(ins, data);
@@ -85,7 +85,7 @@ overridetests('database drivers tests', engines, function (engine) {
             });
 
             it('find listed', function () {
-                return db.cache.find(id, 'id, html').then(function (a) {
+                return db.cache.fetchOne(id, 'id, html').then(function (a) {
                     assert.deepEqual({ id: 'test1', html: 'html' }, a)
                 });
             });
@@ -129,7 +129,7 @@ overridetests('database drivers tests', engines, function (engine) {
                 };
 
                 return db.cache.update(upd, id).then(function () {
-                    return db.cache.find(id);
+                    return db.cache.fetchOne(id);
                 }).then(function (data) {
                     upd.id = id;
                     delete data.lastTimeFound;
@@ -154,7 +154,7 @@ overridetests('database drivers tests', engines, function (engine) {
                 }
 
                 return db.cache.insert(ins).then(function (data) {
-                    return db.cache.find(id);
+                    return db.cache.fetchOne(id);
                 }).then(function (data) {
 
                     var tmp = {
@@ -165,12 +165,12 @@ overridetests('database drivers tests', engines, function (engine) {
 
                     assert.deepEqual(ins, tmp);
 
-                    return db.cache.fetchOne('select * from :table: where id = :id', {
+                    return db.cache.fetchOne({
                         id: id
                     });
                 }).then(function (data) {
                     assert(data.id === id);
-                    return db.cache.fetchOne('select * from :table:');
+                    return db.cache.find();
                 }).catch(function (e) {
                     assert.deepEqual({
                         "message": "fetchOne query error",
@@ -180,19 +180,19 @@ overridetests('database drivers tests', engines, function (engine) {
             });
 
             it('find different id', function () {
-                return db.cache.find({
+                return db.cache.fetchOne({
                     url: 'http://url-'
                 })
                 .catch(function (e) {
                     assert.deepEqual({
                         error: 'found 2 rows',
-                        message: 'find query error',
+                        message: 'fetchOne query error',
                     }, e);
                 });
             });
 
             it('find wrong select', function () {
-                return db.cache.find(id, []).catch(function (e) {
+                return db.cache.fetchOne(id, []).catch(function (e) {
                     assert.deepEqual({
                         message: 'input error',
                         error: "second argument of find method should be string"

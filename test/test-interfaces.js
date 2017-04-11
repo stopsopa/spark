@@ -43,7 +43,7 @@ overridetests('database interfaces tests', engines, function (engine) {
                 db.cache.create(url + '1'),
                 db.cache.create(url + '2')
             ]).then((ids) => Promise.all(ids.map(function (r) {
-                return db.cache.find(r.id);
+                return db.cache.fetchOne(r.id);
             }))).then(function (data) {
                 data.forEach(function (d) {
                     assert(db.hash(d.url) === d.id);
@@ -70,12 +70,12 @@ overridetests('database interfaces tests', engines, function (engine) {
 
             var before;
 
-            return db.cache.find(hash)
+            return db.cache.fetchOne(hash)
                 .then((d) => {
                     before = d;
                     return db.cache.success(hash, {json:true}, 'html:5');
                 })
-                .then((d) => db.cache.find(hash))
+                .then((d) => db.cache.fetchOne(hash))
                 .then((d) => {
 
                     assert(hash === d.id);
@@ -111,7 +111,7 @@ overridetests('database interfaces tests', engines, function (engine) {
             return db.cache.create(url)
                 .then(() => db.cache.error(hash, 501, {error:'wrong1'}, 'html:error1'))
                 .then(() => db.cache.error(hash, 502, {error:'wrong2'}, 'html:error2'))
-                .then(() => db.cache.find(hash))
+                .then(() => db.cache.fetchOne(hash))
                 .then((d) => {
                     assert(db.hash(d.url) === hash);
                     assert(d.html === 'html:error2');
@@ -134,7 +134,16 @@ overridetests('database interfaces tests', engines, function (engine) {
             } catch (e) {
                 assert(e === "Can't generate hash for url: 'string' must match /^https?:\/\/.+/");
             }
-        })
+        });
+
+        // it('fetch', function () {
+        //
+        //     db.cache.find()
+        //     // return db.cache.fetch()
+        //     //     .then((e) => db.cache.success(d.hash, {error:'fetch'}, 'html:fetch'))
+        //     //     .then(() => db.cache.)
+        // });
+
     });
 });
 
