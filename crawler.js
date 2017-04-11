@@ -184,7 +184,7 @@ WHERE               id = :id
                         });
                     }
                 }, function (e) {
-                    log('spark cant crawl : ' + row.url, JSON.stringify(e));
+                    log.line('spark cant crawl : ' + row.url, JSON.stringify(e));
 
                     if (!emergency) {
                         emercounter = 0;

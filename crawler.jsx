@@ -38,7 +38,7 @@ function insertNewLinks(origin, list, callback) {
             db.cache.insert({
                 id: hash(url),
                 url: origin + url,
-                created: db.date(),
+                created: db.now(),
                 html: ''
             })
             .then(pop, function (d) {
@@ -112,7 +112,7 @@ function crawl() {
 
                             var upd = {
                                 html            : html || '',
-                                updated         : db.date(),
+                                updated         : db.now(),
                                 statusCode      : res.statusCode,
                                 updateRequest     : null,
                                 json            : JSON.stringify(res.json, null, '  ') || '-empty-',
@@ -154,7 +154,7 @@ WHERE               id = :id
 `,                      {
                             id          : row.id,
                             html        : html || '',
-                            updated     : db.date(),
+                            updated     : db.now(),
                             updateRequest     : null,
                             statusCode  : res.statusCode,
                             json        : JSON.stringify(res.json, null, '  ') || '-empty-'
@@ -179,17 +179,7 @@ WHERE               id = :id
                         });
                     }
                 }, function (e) {
-                    log('spark cant crawl : ' + row.url, JSON.stringify(e));
-
-                    if (!emergency) {
-                        emercounter = 0;
-                    }
-
-                    emergency = true;
-
-                    setTimeout(function() {
-                        free = true
-                    }, config.crawler.continueIdleAfter);
+                    log.line('spark cant crawl : ' + row.url, JSON.stringify(e));
 
                     if (!emergency) {
                         emercounter = 0;
@@ -237,7 +227,9 @@ setInterval(function () {
 (function () {
     function run() {
 
-        log(db.now(), 'reset updateRequest');
+        var now = db.now();
+
+        log(now, 'reset updateRequest');
 
         db.cache.query('update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))');
 
