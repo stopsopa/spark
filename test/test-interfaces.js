@@ -37,7 +37,6 @@ overridetests('database interfaces tests', engines, function (engine) {
 
         it('create', function () {
 
-            // var date = //
             var url = 'http://domain.com/directory/file';
 
             return Promise.all([
@@ -71,35 +70,36 @@ overridetests('database interfaces tests', engines, function (engine) {
 
             var before;
 
-            return db.cache.find(hash).then(function (d) {
-                before = d;
-                return db.cache.success(hash, {json:true}, 'html:5');
-            }).then(function (d) {
-                return db.cache.find(hash);
-            }).then(function (d) {
+            return db.cache.find(hash)
+                .then((d) => {
+                    before = d;
+                    return db.cache.success(hash, {json:true}, 'html:5');
+                })
+                .then((d) => db.cache.find(hash))
+                .then((d) => {
 
-                assert(hash === d.id);
-                assert(d.html === 'html:5');
-                assert(url, d.url);
+                    assert(hash === d.id);
+                    assert(d.html === 'html:5');
+                    assert(url, d.url);
 
-                assert(before.created.toISOString() === d.created.toISOString());
+                    assert(before.created.toISOString() === d.created.toISOString());
 
-                assert(before.lastTimeFound.toISOString() === d.lastTimeFound.toISOString());
+                    assert(before.lastTimeFound.toISOString() === d.lastTimeFound.toISOString());
 
-                assert(before.updated === null);
+                    assert(before.updated === null);
 
-                assert(d.updated.toISOString().length === 24); // now it's date
+                    assert(d.updated.toISOString().length === 24); // now it's date
 
-                assert(d.updateRequest === null); // now it's null
+                    assert(d.updateRequest === null); // now it's null
 
-                assert(d.statusCode === 200);
+                    assert(d.statusCode === 200);
 
-                assert.deepEqual({json:true}, JSON.parse(d.json));
+                    assert.deepEqual({json:true}, JSON.parse(d.json));
 
-                assert(d.warning === null);
-                assert(d.errorCounter === null);
-                assert(d.block === 0);
-            });
+                    assert(d.warning === null);
+                    assert(d.errorCounter === null);
+                    assert(d.block === 0);
+                });
         })
 
         it('error', function () {
@@ -108,25 +108,23 @@ overridetests('database interfaces tests', engines, function (engine) {
 
             var hash = db.hash(url);
 
-            return db.cache.create(url).then(function () {
-                return db.cache.error(hash, 501, {error:'wrong1'}, 'html:error1');
-            }).then(function () {
-                return db.cache.error(hash, 502, {error:'wrong2'}, 'html:error2');
-            }).then(function () {
-                return db.cache.find(hash);
-            }).then(function (d) {
-                assert(db.hash(d.url) === hash);
-                assert(d.html === 'html:error2');
-                assert(d.updated.toISOString().length === 24);
-                assert(d.created.toISOString().length === 24);
-                assert(d.statusCode === 502);
-                assert.deepEqual(JSON.parse(d.json), {error:'wrong2'});
-                assert(d.warning === null);
-                assert(d.errorCounter === 2);
-                assert(d.block === 0);
-                assert(d.updateRequest === null);
-                assert(d.lastTimeFound.toISOString().length === 24);
-            });
+            return db.cache.create(url)
+                .then(() => db.cache.error(hash, 501, {error:'wrong1'}, 'html:error1'))
+                .then(() => db.cache.error(hash, 502, {error:'wrong2'}, 'html:error2'))
+                .then(() => db.cache.find(hash))
+                .then((d) => {
+                    assert(db.hash(d.url) === hash);
+                    assert(d.html === 'html:error2');
+                    assert(d.updated.toISOString().length === 24);
+                    assert(d.created.toISOString().length === 24);
+                    assert(d.statusCode === 502);
+                    assert.deepEqual(JSON.parse(d.json), {error:'wrong2'});
+                    assert(d.warning === null);
+                    assert(d.errorCounter === 2);
+                    assert(d.block === 0);
+                    assert(d.updateRequest === null);
+                    assert(d.lastTimeFound.toISOString().length === 24);
+                });
         })
     });
 });
