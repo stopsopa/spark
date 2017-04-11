@@ -77,7 +77,6 @@ overridetests('database interfaces tests', engines, function (engine) {
             }).then(function (d) {
                 return db.cache.find(hash);
             }).then(function (d) {
-                
 
                 assert(hash === d.id);
                 assert(d.html === 'html:5');
@@ -100,6 +99,33 @@ overridetests('database interfaces tests', engines, function (engine) {
                 assert(d.warning === null);
                 assert(d.errorCounter === null);
                 assert(d.block === 0);
+            });
+        })
+
+        it('error', function () {
+
+            var url = 'http://domain.com/directory/file3';
+
+            var hash = db.hash(url);
+
+            return db.cache.create(url).then(function () {
+                return db.cache.error(hash, 501, {error:'wrong1'}, 'html:error1');
+            }).then(function () {
+                return db.cache.error(hash, 502, {error:'wrong2'}, 'html:error2');
+            }).then(function () {
+                return db.cache.find(hash);
+            }).then(function (d) {
+                assert(db.hash(d.url) === hash);
+                assert(d.html === 'html:error2');
+                assert(d.updated.toISOString().length === 24);
+                assert(d.created.toISOString().length === 24);
+                assert(d.statusCode === 502);
+                assert.deepEqual(JSON.parse(d.json), {error:'wrong2'});
+                assert(d.warning === null);
+                assert(d.errorCounter === 2);
+                assert(d.block === 0);
+                assert(d.updateRequest === null);
+                assert(d.lastTimeFound.toISOString().length === 24);
             });
         })
     });
