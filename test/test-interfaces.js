@@ -126,6 +126,15 @@ overridetests('database interfaces tests', engines, function (engine) {
                     assert(d.lastTimeFound.toISOString().length === 24);
                 });
         })
+
+        it('hash', function () {
+            try {
+                db.hash('string');
+                assert(false);
+            } catch (e) {
+                assert(e === "Can't generate hash for url: 'string' must match /^https?:\/\/.+/");
+            }
+        })
     });
 });
 

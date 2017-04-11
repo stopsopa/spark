@@ -52,7 +52,7 @@ overridetests('database drivers tests', engines, function (engine) {
             });
         });
 
-        describe('insert, update, find, count', function (done) {
+        describe('CRUD', function (done) {
 
             before(function () {
                 db.cache.truncate();
