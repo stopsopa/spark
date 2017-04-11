@@ -5,11 +5,11 @@ module.exports = {
         use: 'mysql',
         mysql: {
             connectionLimit : 3, // https://github.com/mysqljs/mysql#pooling-connections
-            host            : 'localhost',
-            user            : 'root',
-            password        : '6yhn',
-            connectTimeout  : 3000,
-            database        : 'spark',
+            host     : 'xx.xx.xx.xx',
+            user     : 'root',
+            password : 'pass',
+            database : 'cms',
+            connectTimeout: 3000,
             table           : 'spark_cache'
         }
     },
