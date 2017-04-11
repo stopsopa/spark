@@ -77,6 +77,7 @@ overridetests('database interfaces tests', engines, function (engine) {
             }).then(function (d) {
                 return db.cache.find(hash);
             }).then(function (d) {
+                
 
                 assert(hash === d.id);
                 assert(d.html === 'html:5');
