@@ -5,12 +5,15 @@ const http          = require('http');
 const process       = require('process');
 const sha1          = require('sha1');
 
+
 require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
 
 const log           = rootrequire('lib', 'log.js');
 const spark         = rootrequire('lib', 'curljson.js').spark;
 const db            = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
-const config        = rootrequire('config');
+const config        = rootrequire('config')[process.argv[2]];
+
+log(db.now(), ' start crawler: ' + process.argv[2]);
 
 function hash(url) {
 
@@ -243,5 +246,5 @@ setInterval(function () {
         }, config.crawler.continueIdleAfter);
     }
     run();
-    setInterval(run, 3 * 60 * 60 * 1000); // 10800000
+    setInterval(run, 6 * 60 * 60 * 1000); // 10800000
 }());
