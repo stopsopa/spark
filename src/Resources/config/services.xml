@@ -50,6 +50,13 @@
         
 
 <!--
+    spark.cache.service:
+        class: CoreBundle\Services\SparkService
+        arguments:
+            - "%prerender_endpoint%"
+            - "spark_cache"
+            - "@doctrine.dbal.default_connection"
+
     spark.prerender.eventlistener:
         class: Stopsopa\SparkBundle\EventListener\PrerenderReplacerListener
         arguments:
