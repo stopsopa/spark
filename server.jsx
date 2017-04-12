@@ -463,11 +463,15 @@ app.all('/fetch', (req, res) => {
                                             continue;
                                         }
 
-                                        if (/^file:/.test(h[0])) {
+                                        if (/^file:/.test(h)) {
                                             continue;
                                         }
 
-                                        if (/^mailto:/.test(h[0])) {
+                                        if (/^mailto:/.test(h)) {
+                                            continue;
+                                        }
+
+                                        if (/^javascript:/.test(h)) {
                                             continue;
                                         }
 
@@ -590,11 +594,15 @@ app.all('/fetch', (req, res) => {
                                     continue;
                                 }
 
-                                if (/^file:/.test(h[0])) {
+                                if (/^file:/.test(h)) {
                                     continue;
                                 }
 
-                                if (/^mailto:/.test(h[0])) {
+                                if (/^mailto:/.test(h)) {
+                                    continue;
+                                }
+
+                                if (/^javascript:/.test(h)) {
                                     continue;
                                 }
 
