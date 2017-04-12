@@ -12,6 +12,8 @@ const bodyParser    = require('body-parser');
 const express       = require('express');
 const url           = require('url');
 const app           = express();
+const config        = rootrequire('config')
+const dbprovider    = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
@@ -717,6 +719,66 @@ try /fetch?url=http://....
     res.end(msg)
 });
 
+
+
+(function () {
+
+    var cache = {};
+
+    function getConnection(site) {
+
+        if (!cache[site]) {
+            cache[site] = dbprovider(config[site]);
+        }
+
+        return cache[site];
+    }
+    /**
+
+     */
+    app.all('/ping', (req, res) => {
+
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+        var c, resp = {};
+
+        if (req.query.site || req.query.url) {
+
+            if (config[req.query.site]) {
+
+                var db = getConnection(req.query.site);
+
+                return db.cache.query('update :table: set updateRequest = :updateRequest WHERE url = :url', {
+                    updateRequest: db.now(),
+                    url: req.query.url
+                }).then(function (data) {
+                    res.end(JSON.stringify(data));
+                });
+            }
+            else {
+                resp.error = 'no config for site "'+req.query.site+'"';
+            }
+        }
+        else {
+            resp.error = 'parameter is missing';
+            resp.missingParams = [];
+
+            if (!req.query.site) {
+                resp.missingParams.push('site');
+            }
+
+            if (!req.query.url) {
+                resp.missingParams.push('url');
+            }
+        }
+
+        res.end(JSON.stringify(resp));
+
+    });
+}());
+
 app.listen(port, ip, () => {
     console.log('Parser server is running '+ip+':'+port)
 });
+
+

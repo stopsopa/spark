@@ -10,8 +10,10 @@ require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
 
 const log           = rootrequire('lib', 'log.js');
 const spark         = rootrequire('lib', 'curljson.js').spark;
-const db            = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
+const dbprovider    = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
 const config        = rootrequire('config')[process.argv[2]];
+
+const db            = dbprovider(config);
 
 log(db.now(), ' start crawler: ' + process.argv[2]);
 
