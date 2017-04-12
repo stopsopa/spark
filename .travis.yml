@@ -16,22 +16,22 @@ env:
 #  - yarn # no need to even execute yarn if there is yarn.lock file
 
 before_script: # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+#  - "export DISPLAY=:99.0"
+#  - "sh -e /etc/init.d/xvfb start"
   # alternatively
   #- "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
   #- sleep 3 # give xvfb some time to start
-  - npm run server & disown #https://docs.travis-ci.com/user/gui-and-headless-browsers/#Starting-a-Web-Server
-  - npm run parser & disown
+#  - npm run server & disown #https://docs.travis-ci.com/user/gui-and-headless-browsers/#Starting-a-Web-Server
+#  - npm run parser & disown
 #  - sleep 3 - not necessary, install global libs below instead, it takes time too
-  - yarn global add mocha@3.2.0
-  - yarn global add istanbul@0.4.5
-  - mysql -u root -e "CREATE DATABASE spark /*\!40100 COLLATE 'utf8_general_ci' */;"
-  - mysql -u root spark < lib/db/mysql/spark_cache.sql
+#  - yarn global add mocha@3.2.0
+#  - yarn global add istanbul@0.4.5
+#  - mysql -u root -e "CREATE DATABASE spark /*\!40100 COLLATE 'utf8_general_ci' */;"
+#  - mysql -u root spark < lib/db/mysql/spark_cache.sql
 
 script:
-  - npm run cover
+  - npm run test
 
 after_success:
-  - cat ./coverage/lcov.info | node node_modules/coveralls/bin/coveralls.js
+#  - cat ./coverage/lcov.info | node node_modules/coveralls/bin/coveralls.js
 
