@@ -9,6 +9,7 @@ else
     sudo killall node &> /dev/null
     sudo killall node &> /dev/null
     sudo killall node &> /dev/null
+
     kill $(ps aux | grep bash | grep -v "$$" | grep -v "  $1" | grep -v "  $2" | awk '{print $2}') &> /dev/null
     echo "terminal pid: $1"
     echo "script   pid: $$"
