@@ -738,36 +738,49 @@ try /fetch?url=http://....
      */
     app.all('/ping', (req, res) => {
 
+        var params = {}
+
+        if (req.query) {
+            params = Object.assign(params, req.query || {});
+        }
+
+        if (req.body) {
+            params = Object.assign(params, req.body || {});
+        }
+
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
         var c, resp = {};
 
-        if (req.query.site || req.query.url) {
+        if (params.site || params.url) {
 
-            if (config[req.query.site]) {
+            if (config[params.site]) {
 
-                var db = getConnection(req.query.site);
+                var db = getConnection(params.site);
 
                 return db.cache.query('update :table: set updateRequest = :updateRequest WHERE url = :url', {
                     updateRequest: db.now(),
-                    url: req.query.url
+                    url: params.url
                 }).then(function (data) {
+
+                    data = Object.assign(data, params);
+
                     res.end(JSON.stringify(data));
                 });
             }
             else {
-                resp.error = 'no config for site "'+req.query.site+'"';
+                resp.error = 'no config for site "'+params.site+'"';
             }
         }
         else {
             resp.error = 'parameter is missing';
             resp.missingParams = [];
 
-            if (!req.query.site) {
+            if (!params.site) {
                 resp.missingParams.push('site');
             }
 
-            if (!req.query.url) {
+            if (!params.url) {
                 resp.missingParams.push('url');
             }
         }
