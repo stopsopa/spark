@@ -46,7 +46,25 @@
             <!--<argument type="service" id="service_container" />-->
             <!--<tag name="kernel.event_listener" method="onKernelResponse" event="kernel.response" />-->
         <!--</service>-->
+        
+        
 
+<!--
+    spark.prerender.eventlistener:
+        class: Stopsopa\SparkBundle\EventListener\PrerenderReplacerListener
+        arguments:
+            - "@service_container"
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelResponse }
+
+    spark.prerenderafter.eventlistener:
+        class: Stopsopa\SparkBundle\EventListener\PrerenderReplacerAfterListener
+        arguments:
+            - "@service_container"
+        tags:
+            - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }
+-->
+        
     </services>
 
 
