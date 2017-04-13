@@ -46,6 +46,7 @@ function insertNewLinks(origin, list, callback) {
                 id: hash(url),
                 url: origin + url,
                 created: db.now(),
+                updateRequest: db.now(),
                 html: ''
             })
             .then(pop, function (d) {
@@ -71,7 +72,17 @@ function insertNewLinks(origin, list, callback) {
 
 var emercounter = 0;
 var emergency = false;
-var free = false; // false on start
+
+var inter = (function () {
+    var handler;
+    return function (time) {
+
+        clearInterval(handler);
+
+        handler = setTimeout(crawl, time);
+    };
+}());
+
 function crawl() {
 
     if (emergency) {
@@ -82,8 +93,8 @@ function crawl() {
 
         log(db.now(), 'emergency crawl, couter:' + emercounter);
 
-        var emercounter = 0;
-        var emergency = false;
+        emercounter = 0;
+        emergency = false;
         return;
     }
 
@@ -136,10 +147,8 @@ function crawl() {
                                     emergency = false;
                                     emercounter = 0;
 
-                                    setTimeout(function() {
-                                        free = true
-                                    }, config.crawler.waitBeforeCrawlNextPage);
-
+                                    log.line('inter');
+                                    inter(config.crawler.waitBeforeCrawlNextPage);
                                 }, function (e) {
                                     log.json('error')
                                     log.json(e)
@@ -170,22 +179,19 @@ WHERE               id = :id
                             json        : JSON.stringify(res.json, null, '  ') || '-empty-'
                         })
                         .then(function (res) {
-                            setTimeout(function() {
-                                free = true
-                            }, config.crawler.waitBeforeCrawlNextPage);
+                            log.line('inter');
+                            inter(config.crawler.waitBeforeCrawlNextPage);
                         }, function (e) {
-                            log.json('error')
-                            log.json(e)
-                            setTimeout(function() {
-                                free = true
-                            }, config.crawler.waitBeforeCrawlNextPage);
+                            log.json('error');
+                            log.json(e);
+                            log.line('inter');
+                            inter(config.crawler.waitBeforeCrawlNextPage);
                         })
                         .catch(function (e) {
-                            log.json('error')
-                            log.json(e)
-                            setTimeout(function() {
-                                free = true
-                            }, config.crawler.waitBeforeCrawlNextPage);
+                            log.json('error');
+                            log.json(e);
+                            log.line('inter');
+                            inter(config.crawler.waitBeforeCrawlNextPage);
                         });
                     }
                 }, function (e) {
@@ -197,9 +203,8 @@ WHERE               id = :id
 
                     emergency = true;
 
-                    setTimeout(function() {
-                        free = true
-                    }, config.crawler.continueIdleAfter);
+                    log.line('inter');
+                    inter(config.crawler.continueIdleAfter);
 
                     // @todo - send email
                 })
@@ -209,9 +214,8 @@ WHERE               id = :id
 
         }, function (e) {
             if (e.error === 'found 0 rows') {
-                setTimeout(function() {
-                    free = true
-                }, config.crawler.continueIdleAfter);
+                log.line('inter');
+                inter(config.crawler.continueIdleAfter);
             }
             else {
                 log.json(e)
@@ -219,20 +223,12 @@ WHERE               id = :id
         })
         .catch(function (e) {
             log.json(e)
-            setTimeout(function() {
-                free = true
-            }, config.crawler.continueIdleAfter);
+            log.line('inter');
+            inter(config.crawler.continueIdleAfter);
         });
 }
 
 log(db.now(), 'start...');
-
-setInterval(function () {
-    if (free) {
-        free = false;
-        crawl();
-    }
-}, 100);
 
 (function () {
     function run() {
@@ -243,9 +239,8 @@ setInterval(function () {
 
         db.cache.query('update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))');
 
-        setTimeout(function() {
-            free = true
-        }, config.crawler.continueIdleAfter);
+        log.line('inter');
+        inter(config.crawler.continueIdleAfter);
     }
     run();
     setInterval(run, 6 * 60 * 60 * 1000); // 10800000
