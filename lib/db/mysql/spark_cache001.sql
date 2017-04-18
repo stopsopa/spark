@@ -14,15 +14,15 @@
 -- Dumping structure for table angelita.spark_cache
 DROP TABLE IF EXISTS `spark_cache`;
 CREATE TABLE IF NOT EXISTS `spark_cache` (
-  `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `url` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `html` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `id` varchar(40) NOT NULL,
+  `url` longtext NOT NULL,
+  `html` longtext DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `updateRequest` datetime DEFAULT NULL,
   `statusCode` int(10) unsigned DEFAULT NULL,
-  `json` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-  `warning` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `json` longtext DEFAULT NULL,
+  `warning` varchar(10) DEFAULT NULL,
   `errorCounter` int(11) DEFAULT NULL,
   `block` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `spark_settings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `origin_id` int(10) unsigned NOT NULL,
   `key` varchar(50) NOT NULL,
-  `value` varchar(255) NOT NULL,
+  `value` longtext DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_spark_settings_spark_domain` (`origin_id`),
   CONSTRAINT `FK_spark_settings_spark_domain` FOREIGN KEY (`origin_id`) REFERENCES `spark_domain` (`id`)

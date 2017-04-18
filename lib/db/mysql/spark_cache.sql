@@ -15,16 +15,16 @@
 
 DROP TABLE IF EXISTS `spark_cache`;
 CREATE TABLE IF NOT EXISTS `spark_cache` (
-  `id` varchar(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `url` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `html` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `id` varchar(40) NOT NULL,
+  `url` longtext NOT NULL,
+  `html` longtext DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   `updateRequest` datetime DEFAULT NULL,
   `lastTimeFound` datetime DEFAULT NULL,
   `statusCode` int(10) unsigned DEFAULT NULL,
-  `json` longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-  `warning` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `json` longtext DEFAULT NULL,
+  `warning` varchar(10) DEFAULT NULL,
   `errorCounter` int(11) DEFAULT NULL,
   `block` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
