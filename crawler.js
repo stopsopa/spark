@@ -7,11 +7,8 @@ const process       = require('process');
 require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
 
 const log           = rootrequire('lib', 'log.js');
-
 const config        = rootrequire(process.argv[2] || 'config');
-
 const spark         = rootrequire('lib', 'curljson.js')(config.parser).spark;
-
 const driver        = rootrequire('lib', 'db', 'mysql', 'driver.js');
 const cnf           = config.db.mysql;
 const db            = driver(cnf);
@@ -29,7 +26,10 @@ function insertNewLinks(origin, list, callback) {
         var url = list.pop();
 
         if (url) {
-            db.cache.create(origin + url).then(pop, function (d) {
+
+            url = origin + url;
+
+            db.cache.create(url).then(pop, function (d) {
                 if (d.error.code !== 'ER_DUP_ENTRY') {
                     log.json(d)
                 }
@@ -44,7 +44,17 @@ function insertNewLinks(origin, list, callback) {
 
 var emercounter = 0;
 var emergency = false;
-var free = false; // false on start
+
+var inter = (function () {
+    var handler;
+    return function (time) {
+
+        clearTimeout(handler);
+
+        handler = setTimeout(crawl, time);
+    };
+}());
+
 function crawl() {
 
     if (emergency) {
@@ -56,7 +66,7 @@ function crawl() {
         log(db.now(), 'emergency crawl, couter:' + emercounter);
 
         emercounter = 0;
-        var emergency = false;
+        emergency = false;
         return;
     }
 
@@ -99,9 +109,8 @@ function crawl() {
                                         emergency = false;
                                         emercounter = 0;
 
-                                        setTimeout(function() {
-                                            free = true
-                                        }, config.crawler.waitBeforeCrawlNextPage);
+                                        log.line('inter');
+                                        inter(config.crawler.waitBeforeCrawlNextPage);
 
                                     }, function (e) {
                                         log.json('error')
@@ -113,15 +122,13 @@ function crawl() {
                         else {
                             db.cache.error(row.id, res.statusCode, res.json, html)
                                 .then(function (res) {
-                                    setTimeout(function() {
-                                        free = true
-                                    }, config.crawler.waitBeforeCrawlNextPage);
+                                    log('inter');
+                                    inter(config.crawler.waitBeforeCrawlNextPage);
                                 }, function (e) {
-                                    log.json('error')
-                                    log.json(e)
-                                    setTimeout(function() {
-                                        free = true
-                                    }, config.crawler.waitBeforeCrawlNextPage);
+                                    log.json('error');
+                                    log.json(e);
+                                    log.line('inter');
+                                    inter(config.crawler.waitBeforeCrawlNextPage);
                                 });
                         }
                     }
@@ -129,6 +136,7 @@ function crawl() {
                         log(e)
                     }
                 }, function (e) {
+
                     log.line("spark can't crawl : " + row.url, JSON.stringify(e));
 
                     if (!emergency) {
@@ -137,18 +145,16 @@ function crawl() {
 
                     emergency = true;
 
-                    setTimeout(function() {
-                        free = true
-                    }, config.crawler.continueIdleAfter);
+                    log.line('inter');
+                    inter(config.crawler.continueIdleAfter);
 
                     // @todo - send email
                 });
 
         }, function (e) {
             if (e.error === 'found 0 rows') {
-                setTimeout(function() {
-                    free = true
-                }, config.crawler.continueIdleAfter);
+                log.line('inter');
+                inter(config.crawler.continueIdleAfter);
             }
             else {
                 log.json(e)
@@ -158,13 +164,6 @@ function crawl() {
 
 log(db.now(), 'start...');
 
-setInterval(function () {
-    if (free) {
-        free = false;
-        crawl();
-    }
-}, 100);
-
 (function () {
     function run() {
 
@@ -172,11 +171,11 @@ setInterval(function () {
 
         log(now, 'reset updateRequest');
 
-        db.cache.query('update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))');
-
-        setTimeout(function() {
-            free = true
-        }, config.crawler.continueIdleAfter);
+        db.cache.query('update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))')
+            .then(() => {
+                log('inter');
+                inter(config.crawler.continueIdleAfter);
+            });
     }
     run();
     setInterval(run, 3 * 60 * 60 * 1000); // 10800000

@@ -464,11 +464,7 @@ app.all('/fetch', (req, res) => {
                                             continue;
                                         }
 
-                                        if (/^file:/.test(h[0])) {
-                                            continue;
-                                        }
-
-                                        if (/^mailto:/.test(h[0])) {
+                                        if (/^(javascript|file|mailto):/.test(h)) {
                                             continue;
                                         }
 
@@ -591,11 +587,7 @@ app.all('/fetch', (req, res) => {
                                     continue;
                                 }
 
-                                if (/^file:/.test(h[0])) {
-                                    continue;
-                                }
-
-                                if (/^mailto:/.test(h[0])) {
+                                if (/^(javascript|file|mailto):/.test(h)) {
                                     continue;
                                 }
 
