@@ -745,6 +745,8 @@ try /fetch?url=http://....
     }
     /**
      * http://138.68.156.126/ping?site=lh&url=http%3A%2F%2Fwww.lymphomahub.com%2Fmedical-information%2Fash-2016-tcl-pet-guided-therapy-analysis-of-the-petal-trial-abstract-185
+     *
+     * @todo - extend this function to skip url that don't match domain (site parameter)
      */
     app.all('/ping', (req, res) => {
 
