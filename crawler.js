@@ -59,9 +59,6 @@ function insertNewLinks(origin, list, callback) {
                     log.json(e)
                 }
                 pop();
-            })
-            .catch(function (e) {
-                log.json(e)
             });
         }
         else {
@@ -77,7 +74,7 @@ var inter = (function () {
     var handler;
     return function (time) {
 
-        clearInterval(handler);
+        clearTimeout(handler);
 
         handler = setTimeout(crawl, time);
     };
@@ -98,7 +95,7 @@ function crawl() {
         return;
     }
 
-    db.cache.fetchOne("select * from :table: WHERE updateRequest is not null ORDER BY updateRequest DESC LIMIT 1")
+    db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
 
             log(db.now(), ' - ' + process.pid + ' ', row.url);
@@ -135,7 +132,7 @@ function crawl() {
                                 html            : html || '',
                                 updated         : db.now(),
                                 statusCode      : res.statusCode,
-                                updateRequest     : null,
+                                updateRequest   : null,
                                 json            : JSON.stringify(res.json, null, '  ') || '-empty-',
                                 warning         : searchForWarning(res.json),
                                 errorCounter    : null
@@ -153,10 +150,6 @@ function crawl() {
                                     log.json('error')
                                     log.json(e)
                                     log.json(upd)
-                                })
-                                .catch(function () {
-                                    log.json('error')
-                                    log.json(e)
                                 });
                         });
                     }
@@ -186,16 +179,11 @@ WHERE               id = :id
                             log.json(e);
                             log.line('inter');
                             inter(config.crawler.waitBeforeCrawlNextPage);
-                        })
-                        .catch(function (e) {
-                            log.json('error');
-                            log.json(e);
-                            log.line('inter');
-                            inter(config.crawler.waitBeforeCrawlNextPage);
                         });
                     }
                 }, function (e) {
-                    log.line('spark cant crawl : ' + row.url, JSON.stringify(e));
+
+                    log.line("spark can't crawl : " + row.url, JSON.stringify(e));
 
                     if (!emergency) {
                         emercounter = 0;
@@ -207,9 +195,6 @@ WHERE               id = :id
                     inter(config.crawler.continueIdleAfter);
 
                     // @todo - send email
-                })
-                .catch(function (e) {
-                    log.json(e)
                 });
 
         }, function (e) {
@@ -220,11 +205,6 @@ WHERE               id = :id
             else {
                 log.json(e)
             }
-        })
-        .catch(function (e) {
-            log.json(e)
-            log.line('inter');
-            inter(config.crawler.continueIdleAfter);
         });
 }
 
@@ -237,10 +217,12 @@ log(db.now(), 'start...');
 
         log(now, 'reset updateRequest');
 
-        db.cache.query('update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))');
+        db.cache.query('update :table: set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))').then(function () {
 
-        log.line('inter');
-        inter(config.crawler.continueIdleAfter);
+            log.line('inter');
+
+            inter(config.crawler.continueIdleAfter);
+        });
     }
     run();
     setInterval(run, 6 * 60 * 60 * 1000); // 10800000
