@@ -19,9 +19,10 @@ log(db.now(), ' start crawler: ' + process.argv[2]);
 
 function hash(url) {
 
-    if (/^https?:\/\//i.test(url)) {
-        url = url.replace(/^https?:\/\/[^\/\?\#&=]+(.*)$/i, '$1');
-    }
+
+    // if (/^https?:\/\//i.test(url)) {
+    //     url = url.replace(/^https?:\/\/[^\/\?\#&=]+(.*)$/i, '$1');
+    // }
 
     return sha1(url);
 }
@@ -41,10 +42,13 @@ function insertNewLinks(origin, list, callback) {
     (function pop() {
         var url = list.pop();
 
+
         if (url) {
+            url = origin + url;
+
             db.cache.insert({
                 id: hash(url),
-                url: origin + url,
+                url: url,
                 created: db.now(),
                 updateRequest: db.now(),
                 html: ''
