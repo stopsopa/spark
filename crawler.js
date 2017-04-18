@@ -19,10 +19,9 @@ log(db.now(), ' start crawler: ' + process.argv[2]);
 
 function hash(url) {
 
-
-    // if (/^https?:\/\//i.test(url)) {
-    //     url = url.replace(/^https?:\/\/[^\/\?\#&=]+(.*)$/i, '$1');
-    // }
+    if ( ! /^https?:\/\//i.test(url)) {
+        throw "url: '"+url+"' is not correct";
+    }
 
     return sha1(url);
 }

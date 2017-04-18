@@ -3,6 +3,7 @@
 const path          = require('path');
 require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
 const http          = require('http');
+const sha1          = require('sha1');
 
 const Nightmare     = require('nightmare');
 const log           = rootrequire(path.join('lib', 'log.jsx'));
@@ -14,6 +15,15 @@ const url           = require('url');
 const app           = express();
 const config        = rootrequire('config')
 const dbprovider    = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
+
+function hash(url) {
+
+    if ( ! /^https?:\/\//i.test(url)) {
+        throw "url: '"+url+"' is not correct";
+    }
+
+    return sha1(url);
+}
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
@@ -734,7 +744,7 @@ try /fetch?url=http://....
         return cache[site];
     }
     /**
-
+     * http://138.68.156.126/ping?site=lh&url=http%3A%2F%2Fwww.lymphomahub.com%2Fmedical-information%2Fash-2016-tcl-pet-guided-therapy-analysis-of-the-petal-trial-abstract-185
      */
     app.all('/ping', (req, res) => {
 
@@ -763,7 +773,33 @@ try /fetch?url=http://....
                     url: params.url
                 }).then(function (data) {
 
+                    if (!data.affectedRows) {
+                        return db.cache.query('INSERT INTO :table: (id, url, updateRequest) VALUE (:id, :url, :updateRequest)', {
+                            id              : hash(params.url),
+                            url             : params.url,
+                            updateRequest   : db.now()
+                        })
+                        // INSERT INTO `cms`.`spark_cache` (`id`, `url`, `html`, `created`, `updated`, `updateRequest`, `statusCode`, `json`, `warning`, `errorCounter`) VALUES ('R', 'R', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                    }
+
                     data = Object.assign(data, params);
+
+                    data.mode = 'updated';
+
+                    // data.config = config[params.site];
+
+                    // data = Object.assign(data, config[site]);
+
+                    res.end(JSON.stringify(data));
+                }).then(function (data) {
+
+                    data = Object.assign(data, params);
+
+                    data.mode = 'inserted';
+
+                    // data.config = config[params.site];
+
+                    // data = Object.assign(data, config[site]);
 
                     res.end(JSON.stringify(data));
                 });
