@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `spark_cache` (
 DROP TABLE IF EXISTS `spark_domain`;
 CREATE TABLE IF NOT EXISTS `spark_domain` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `domain` varchar(255) NOT NULL,
+  `origin` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -43,12 +43,12 @@ CREATE TABLE IF NOT EXISTS `spark_domain` (
 DROP TABLE IF EXISTS `spark_settings`;
 CREATE TABLE IF NOT EXISTS `spark_settings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `domain_id` int(10) unsigned NOT NULL,
+  `origin_id` int(10) unsigned NOT NULL,
   `key` varchar(50) NOT NULL,
   `value` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_spark_settings_spark_domain` (`domain_id`),
-  CONSTRAINT `FK_spark_settings_spark_domain` FOREIGN KEY (`domain_id`) REFERENCES `spark_domain` (`id`)
+  KEY `FK_spark_settings_spark_domain` (`origin_id`),
+  CONSTRAINT `FK_spark_settings_spark_domain` FOREIGN KEY (`origin_id`) REFERENCES `spark_domain` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
