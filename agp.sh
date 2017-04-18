@@ -15,7 +15,7 @@ else
     echo "script   pid: $$"
     ps aux | grep bash
     echo '<pre>' > static/log.html
-    while true; do killall Xvfb; killall Xvfb; Xvfb -ac -screen scrn 1280x2000x24 :9.0 & disown; echo "<pre>$(date +%Y-%m-%d_%H-%M-%S) Restart Xvfb..." >> static/log.html; sleep $((60 * 45)); done &>> /dev/null & disown
+    while true; do killall Xvfb; killall Xvfb; Xvfb -ac -screen scrn 1280x2000x24 :9.0 & disown; echo "<pre>$(date +%Y-%m-%d_%H-%M-%S) Restart Xvfb..." >> static/log.html; sleep $((60 * 10)); done &>> /dev/null & disown
     npm run supervisor 0.0.0.0 8080 &>> /dev/null & disown
     /bin/bash start.sh 0.0.0.0 80 &>> /dev/null & disown
 #    #sleep 3
