@@ -193,8 +193,6 @@ WHERE               id = :id
                     }
 
                     emergency = true;
-
-                    log.line('inter');
                     inter(config.crawler.continueIdleAfter);
 
                     // @todo - send email
