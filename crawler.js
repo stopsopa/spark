@@ -8,14 +8,31 @@ const sha1          = require('sha1');
 
 require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
 
-const log           = rootrequire('lib', 'log.js');
+let log           = rootrequire('lib', 'log.js');
 const spark         = rootrequire('lib', 'curljson.js').spark;
 const dbprovider    = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
 const config        = rootrequire('config')[process.argv[2]];
 
 const db            = dbprovider(config);
 
-log(db.now(), ' start crawler: ' + process.argv[2]);
+log = (function (old, n) {
+
+    n = function (str) {
+        return old(__stack[1].getFileName() + ':' + (String("     " + __stack[1].getLineNumber()).slice(-5)) + ': ' + db.now() + ': ' + process.pid + ": ", str);
+    }
+
+    n.line = function (d) {
+        return old(__stack[1].getFileName() + ':' + (String("     " + __stack[1].getLineNumber()).slice(-5)) + ': ' + db.now() + ': ' + process.pid + ":\n", d);
+    }
+
+    n.json = function (d) {
+        return old.json(__stack[1].getFileName() + ':' + (String("     " + __stack[1].getLineNumber()).slice(-5)) + ': ' + db.now() + ': ' + process.pid + ":\n", d);
+    }
+
+    return n;
+}(log));
+
+log('start crawler: ' + process.argv[2]);
 
 function hash(url) {
 
@@ -39,8 +56,8 @@ function insertNewLinks(origin, list, callback) {
     }
 
     (function pop() {
-        var url = list.pop();
 
+        var url = list.pop();
 
         if (url) {
             url = origin + url;
@@ -91,7 +108,7 @@ function crawl() {
 
     if (emercounter > 5) {
 
-        log(db.now(), 'emergency crawl, couter:' + emercounter);
+        log('emergency crawl, couter:' + emercounter);
 
         emercounter = 0;
         emergency = false;
@@ -101,7 +118,7 @@ function crawl() {
     db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
 
-            log(db.now(), ' - ' + process.pid + ' ', row.url);
+            log(row.url);
 
             row.url += '?_prerender';
 
@@ -147,7 +164,7 @@ function crawl() {
                                     emergency = false;
                                     emercounter = 0;
 
-                                    // log.line('inter');
+                                    // log('inter');
                                     inter(config.crawler.waitBeforeCrawlNextPage);
                                 }, function (e) {
                                     log.json('error')
@@ -175,18 +192,17 @@ WHERE               id = :id
                             json        : JSON.stringify(res.json, null, '  ') || '-empty-'
                         })
                         .then(function (res) {
-                            log.line('inter');
                             inter(config.crawler.waitBeforeCrawlNextPage);
                         }, function (e) {
                             log.json('error');
                             log.json(e);
-                            log.line('inter');
+                            log('inter');
                             inter(config.crawler.waitBeforeCrawlNextPage);
                         });
                     }
                 }, function (e) {
 
-                    log.line("spark can't crawl : " + row.url, JSON.stringify(e));
+                    log("spark can't crawl : " + row.url, JSON.stringify(e));
 
                     if (!emergency) {
                         emercounter = 0;
@@ -200,7 +216,7 @@ WHERE               id = :id
 
         }, function (e) {
             if (e.error === 'found 0 rows') {
-                // log.line('inter');
+                // log('inter');
                 inter(config.crawler.continueIdleAfter);
             }
             else {
@@ -209,19 +225,14 @@ WHERE               id = :id
         });
 }
 
-log(db.now(), 'start...');
+log('start...');
 
 (function () {
     function run() {
 
-        var now = db.now();
-
-        log(now, 'reset updateRequest');
+        log('reset updateRequest');
 
         db.cache.query('update :table: set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))').then(function () {
-
-            log.line('inter');
-
             inter(config.crawler.continueIdleAfter);
         });
     }
