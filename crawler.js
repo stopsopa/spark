@@ -147,7 +147,7 @@ function crawl() {
                                     emergency = false;
                                     emercounter = 0;
 
-                                    log.line('inter');
+                                    // log.line('inter');
                                     inter(config.crawler.waitBeforeCrawlNextPage);
                                 }, function (e) {
                                     log.json('error')
@@ -202,7 +202,7 @@ WHERE               id = :id
 
         }, function (e) {
             if (e.error === 'found 0 rows') {
-                log.line('inter');
+                // log.line('inter');
                 inter(config.crawler.continueIdleAfter);
             }
             else {
