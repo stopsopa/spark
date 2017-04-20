@@ -11,13 +11,13 @@ const overridetests = rootrequire('lib', 'overridetests.js');
 const config        = rootrequire('test', 'config.js');
 const log           = rootrequire('lib', 'log.js');
 
-var engines = glob.sync(path.resolve(__dirname, '..', 'lib', 'db', '*')).filter(function (p) {
+var engines = glob.sync(path.resolve(__dirname, '..', 'lib', 'db', '*')).filter((p) => {
     return fs.lstatSync(p).isDirectory();
-}).map(function (path) {
+}).map((path) => {
     return path.replace(/^.*\/([^\/]+)$/, '$1');
 });
 
-overridetests('database interfaces tests', engines, function (engine) {
+overridetests('database interfaces tests', engines, (engine) => {
 
     const cnf = config.db[engine];
 
@@ -29,23 +29,23 @@ overridetests('database interfaces tests', engines, function (engine) {
 
     const db            = driver(cnf, config);
 
-    describe('interfaces tests', function () {
+    describe('interfaces tests', () => {
 
-        before(function () {
+        before(() => {
             db.cache.truncate();
         });
 
-        it('create', function () {
+        it('create', () => {
 
             var url = 'http://domain.com/directory/file';
 
             return Promise.all([
                 db.cache.create(url + '1'),
                 db.cache.create(url + '2')
-            ]).then((ids) => Promise.all(ids.map(function (r) {
+            ]).then((ids) => Promise.all(ids.map((r) => {
                 return db.cache.fetchOne(r.id);
-            }))).then(function (data) {
-                data.forEach(function (d) {
+            }))).then((data) => {
+                data.forEach((d) => {
                     assert(db.hash(d.url) === d.id);
                     assert(d.html === null);
                     assert(d.updated === null);
@@ -62,7 +62,7 @@ overridetests('database interfaces tests', engines, function (engine) {
 
         });
 
-        it('success', function () {
+        it('success', () => {
 
             var url = 'http://domain.com/directory/file2';
 
@@ -102,7 +102,7 @@ overridetests('database interfaces tests', engines, function (engine) {
                 });
         })
 
-        it('error', function () {
+        it('error', () => {
 
             var url = 'http://domain.com/directory/file3';
 
@@ -127,7 +127,7 @@ overridetests('database interfaces tests', engines, function (engine) {
                 });
         })
 
-        it('hash', function () {
+        it('hash', () => {
             try {
                 db.hash('string');
                 assert(false);
@@ -136,7 +136,7 @@ overridetests('database interfaces tests', engines, function (engine) {
             }
         });
 
-        // it('fetch', function () {
+        // it('fetch', () => {
         //
         //     db.cache.find()
         //     // return db.cache.fetch()
