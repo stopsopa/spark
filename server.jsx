@@ -762,11 +762,31 @@ try /fetch?url=http://....
 
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
-        var c, resp = {};
+        var resp = {};
 
-        if (params.site || params.url) {
+        if (params.site && params.url) {
 
-            if (config[params.site]) {
+            var conf = config[params.site];
+
+            if (conf) {
+
+                var prefix = conf.source;
+
+                if (typeof prefix !== 'string') {
+                    return res.end(JSON.stringify({
+                        error: "No source specified for site: '" + params.site + "' or is not string"
+                    }));
+                }
+
+                if (prefix[prefix.length - 1] !== '/') {
+                    prefix += '/';
+                }
+
+                if (params.url.indexOf(prefix) !== 0) {
+                    return res.end(JSON.stringify({
+                        error: "Url '" + params.url + "' should start from prefix '" + prefix + "'"
+                    }));
+                }
 
                 var db = getConnection(params.site);
 
@@ -793,6 +813,8 @@ try /fetch?url=http://....
                     // data = Object.assign(data, config[site]);
 
                     res.end(JSON.stringify(data));
+                }, function (e) {
+                    return res.end(JSON.stringify(e));
                 }).then(function (data) {
 
                     data = Object.assign(data, params);
@@ -804,6 +826,8 @@ try /fetch?url=http://....
                     // data = Object.assign(data, config[site]);
 
                     res.end(JSON.stringify(data));
+                }, function (e) {
+                    return res.end(JSON.stringify(e));
                 });
             }
             else {
