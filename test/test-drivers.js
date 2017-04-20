@@ -33,6 +33,8 @@ overridetests('database drivers tests', engines, (engine) => {
 
         it('wrong connection', function () {
 
+            // this.skip();
+
             this.timeout(3000);
 
             const test      = Object.assign({}, cnf, {
@@ -165,9 +167,7 @@ overridetests('database drivers tests', engines, (engine) => {
 
                     assert.deepEqual(ins, tmp);
 
-                    return db.cache.fetchOne({
-                        id: id
-                    });
+                    return db.cache.fetchOne(id);
                 }).then((data) => {
                     assert(data.id === id);
                     return db.cache.find();
@@ -188,15 +188,6 @@ overridetests('database drivers tests', engines, (engine) => {
                         error: 'found 2 rows',
                         message: 'fetchOne query error',
                     }, e);
-                });
-            });
-
-            it('find wrong select', () => {
-                return db.cache.fetchOne(id, []).catch((e) => {
-                    assert.deepEqual({
-                        message: 'input error',
-                        error: "second argument of find method should be string"
-                    }, e)
                 });
             });
 

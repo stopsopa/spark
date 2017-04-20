@@ -10,7 +10,8 @@ module.exports = {
             password        : '6yhn',
             connectTimeout  : 3000,
             database        : 'spark',
-            table           : 'spark_cache'
+            table           : 'spark_cache',
+            idColumn        : 'id'
         }
     },
     parser: { // https://nodejs.org/api/http.html#http_http_request_options_callback

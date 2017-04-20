@@ -12,7 +12,8 @@ module.exports = Object.assign(rootrequire('config.js'), {
             password        : '6yhn', // for travis no password https://docs.travis-ci.com/user/database-setup/#MySQL
             connectTimeout  : 2000,
             database        : 'spark', // CREATE DATABASE `spark` /*!40100 COLLATE 'utf8_general_ci' */;
-            table           : 'spark_cache'
+            table           : 'spark_cache',
+            idColumn        : 'id'
         }
     },
     // parser: {

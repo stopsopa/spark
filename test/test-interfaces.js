@@ -10,6 +10,7 @@ require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..')
 const overridetests = rootrequire('lib', 'overridetests.js');
 const config        = rootrequire('test', 'config.js');
 const log           = rootrequire('lib', 'log.js');
+const delay         = rootrequire('test', 'delay.js');
 
 var engines = glob.sync(path.resolve(__dirname, '..', 'lib', 'db', '*')).filter((p) => {
     return fs.lstatSync(p).isDirectory();
@@ -120,7 +121,7 @@ overridetests('database interfaces tests', engines, (engine) => {
                     assert(d.statusCode === 502);
                     assert.deepEqual(JSON.parse(d.json), {error:'wrong2'});
                     assert(d.warning === null);
-                    assert(d.errorCounter === 2);
+                    assert(d.errorCounter === 2); // most important
                     assert(d.block === 0);
                     assert(d.updateRequest === null);
                     assert(d.lastTimeFound.toISOString().length === 24);
@@ -136,13 +137,48 @@ overridetests('database interfaces tests', engines, (engine) => {
             }
         });
 
-        // it('fetch', () => {
-        //
-        //     db.cache.find()
-        //     // return db.cache.fetch()
-        //     //     .then((e) => db.cache.success(d.hash, {error:'fetch'}, 'html:fetch'))
-        //     //     .then(() => db.cache.)
-        // });
+        it('fetch', function () {
+
+            this.timeout(4000);
+
+            var tmp = [
+                'http://domain.com/one',
+                'http://domain.com/two',
+                'http://domain.com/three',
+            ];
+
+            var urls = [].concat(tmp);
+
+            return db.cache.create(urls.shift())
+                .then(() => delay(1000))
+                .then(() => db.cache.create(urls.shift()))
+                .then(() => delay(1000))
+                .then(() => db.cache.create(urls.shift()))
+                .then(() => db.cache.fetch())
+                .then((row) => {
+                    assert(row.url === tmp[2]);
+                    return db.cache.success(row.id, {}, 'html success');
+                })
+                .then(() => db.cache.fetch())
+                .then((row) => {
+                    assert(row.url === tmp[1]);
+                    return db.cache.error(row.id, 500, {status:500}, 'html: 500');
+                })
+                .then(() => db.cache.fetch())
+                .then((row) => {
+                    assert(row.url === tmp[0]);
+                    return db.cache.success(row.id, {}, 'html success 2');
+                })
+                .then(() => db.cache.fetch())
+                .then((row) => {
+                    assert(row.url === 'http://domain.com/directory/file1');
+                    return db.cache.success(row.id, {}, 'html success 2');
+                })
+                .then(() => db.cache.fetch())
+                .then((row) => {
+                    assert(row === null);
+                })
+        });
 
     });
 });
