@@ -172,7 +172,7 @@ overridetests('database interfaces tests', engines, (engine) => {
                 .then(() => db.cache.fetch())
                 .then((row) => {
                     assert(row.url === 'http://domain.com/directory/file1');
-                    return db.cache.success(row.id, {}, 'html success 2');
+                    return db.cache.success(row.id, {}, 'html success 3');
                 })
                 .then(() => db.cache.fetch())
                 .then((row) => {
