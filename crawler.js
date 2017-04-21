@@ -60,6 +60,7 @@ function insertNewLinks(origin, list, callback) {
         var url = list.pop();
 
         if (url) {
+
             url = origin + url;
 
             db.cache.insert({
@@ -120,13 +121,9 @@ function crawl() {
     db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
 
-            var url = row.url;
+            log(row.url);
 
-            log(url);
-
-            url += ( (url.indexOf('?') > -1) ? '&' : '?') + '_prerender';
-
-            spark(url)
+            spark(row.url)
                 .then(function (res) {
 
                     var list = [], origin;
