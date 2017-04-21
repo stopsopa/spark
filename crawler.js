@@ -106,18 +106,19 @@ function crawl() {
         emercounter += 1;
     }
 
-    if (emercounter > 5) {
+    if (emercounter >= 15) {
 
         log('emergency crawl, couter:' + emercounter);
 
         emercounter = 0;
         emergency = false;
+
+        inter(config.crawler.continueIdleAfter * 4);
         return;
     }
 
     db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row) {
-
 
             var url = row.url;
 

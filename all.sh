@@ -22,10 +22,11 @@ else
     npm run supervisor 0.0.0.0 8080 &>> /dev/null & disown
     /bin/bash start.sh 0.0.0.0 80 &>> /dev/null & disown
 
-    echo "> running: node crawler.js lh"
-    node crawler.js lh &>> static/log.html & disown
+    echo "> running: node crawler.js agp"
+    node crawler.js agp &>> static/log.html & disown
 
-    echo '> running: node crawler.js agp'
-    sleep $((60 * 60 * 3)) && node crawler.js agp &>> static/log.html & disown
+    echo "> running: node crawler.js lh"
+    sleep $((60 * 60 * 3)) && node crawler.js lh &>> static/log.html & disown
 fi
+
 
