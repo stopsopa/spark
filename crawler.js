@@ -120,7 +120,7 @@ function crawl() {
 
             log(row.url);
 
-            row.url += '?_prerender';
+            row.url += ( (row.url.indexOf('?') > -1) ? '&' : '?') + '_prerender';
 
             spark(row.url)
                 .then(function (res) {
