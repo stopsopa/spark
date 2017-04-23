@@ -61,7 +61,7 @@ function crawl() {
         emercounter += 1;
     }
 
-    if (emercounter > 5) {
+    if (emercounter >= 6) {
 
         log(db.now(), 'emergency crawl, couter:' + emercounter);
 
@@ -73,9 +73,13 @@ function crawl() {
     db.cache.fetch()
         .then(function (row) {
 
+            if (!row) {
+                log('inter - nothing to crawl');
+                return inter(config.crawler.continueIdleAfter);
+            }
+
             log(db.now(), ' - ' + process.pid + ' ', row.url);
 
-            row.url += '?_prerender';
 
             spark(row.url)
                 .then(function (res) {
