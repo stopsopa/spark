@@ -11,12 +11,11 @@ kill -SIGTERM $(ps aux | grep "testmode" | grep -v grep | head -1 | awk '{print 
 kill -SIGTERM $(ps aux | grep "testmode" | grep -v grep | head -1 | awk '{print $2}') &> /dev/null
 kill -SIGTERM $(ps aux | grep "testmode" | grep -v grep | head -1 | awk '{print $2}') &> /dev/null
 
-
 if [ "$#" == 0 ] || [ "$#" -gt 1 ] ; then
 	echo "call: /bin/bash $0 start";
 else
     echo 'starting servers...';
-    npm run start ${PARSER_HOST} ${PARSER_PORT} testmode & disown
+    npm run crawler ${PARSER_HOST} ${PARSER_PORT} testmode & disown
     cd test
     node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
     # http://localhost:92/crawler/index.html
