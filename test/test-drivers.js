@@ -33,7 +33,7 @@ overridetests('database drivers tests', engines, (engine) => {
 
         it('wrong connection', function () {
 
-            // this.skip();
+            this.skip();
 
             this.timeout(3000);
 
@@ -248,6 +248,31 @@ overridetests('database drivers tests', engines, (engine) => {
                 var r = db.cache.trans(t);
 
                 assert.deepEqual(t, r)
+            });
+
+            it('count', () => {
+                var id = 'additionid';
+                return db.cache.count(id).then(function (row) {
+                    assert(row === 1)
+                });
+            });
+
+            it('find', () => {
+                var id = 'additionid';
+                return db.cache.find(id).then(function (row) {
+                    assert(row.pop().id === id)
+                });
+            });
+
+            it('find where', () => {
+                var id = 'additionid';
+                return db.cache.find({
+                    url: 'http://url%'
+                }, [
+                    'like'
+                ]).then(function (row) {
+                    assert(row.length === 3)
+                });
             });
 
         });

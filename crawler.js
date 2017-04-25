@@ -104,7 +104,6 @@ function crawl() {
                     }
 
                     try {
-
                         if (res.statusCode === 200) {
                             insertNewLinks(origin, list, function () {
                                 db.cache.success(row.id, res.json, html)
@@ -151,8 +150,6 @@ function crawl() {
 
                     log.line('inter');
                     inter(config.crawler.continueIdleAfter);
-
-                    // @todo - send email
                 });
 
         }, function (e) {
