@@ -32,7 +32,12 @@ module.exports = Object.assign(rootrequire('config.js'), {
         hostname    : '0.0.0.0',
         port        : 1025,
         protocol    : 'http:',
-        path        : '/fetch'
+        path        : '/fetch',
+        method      : 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cache-Control': 'no-cache'
+        }
         // change also user agent for first reuqest curl
         // change also user agent for first reuqest curl
         // change also user agent for first reuqest curl
@@ -40,7 +45,6 @@ module.exports = Object.assign(rootrequire('config.js'), {
     testendpoints : { // https://nodejs.org/api/http.html#http_http_request_options_callback
         hostname    : '0.0.0.0',
         port        : 1026,
-        protocol    : 'http:',
-        path        : '/crawler/index.html'
+        protocol    : 'http:'
     },
 });

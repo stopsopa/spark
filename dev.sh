@@ -17,8 +17,8 @@ else
     echo 'starting servers...';
     npm run crawler ${PARSER_HOST} ${PARSER_PORT} testmode & disown
     cd test
-    node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
-    # http://localhost:92/crawler/index.html
+        node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
+        # http://localhost:92/crawler/index.html
     cd ..
     sleep 3
 
@@ -27,10 +27,8 @@ else
     curl "${PARSER_HOST}:${PARSER_PORT}" &> /dev/null && echo 'PARSER     : working' || echo 'PARSER     : not working';
     curl "${TESTEN_HOST}:${TESTEN_PORT}" &> /dev/null && echo 'TESTSERVER : working' || echo 'TESTSERVER : not working';
 
-    node crawler.js &>> static/log.html & disown
+#    node crawler.js &>> static/log.html & disown
 #    node crawler.js
-
-
 
 #    node crawler.js test/config.js
 #    curl 'http://138.68.156.126:91/fetch?url=http://localhost:92/crawler/index.html' \

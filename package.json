@@ -18,7 +18,7 @@
         "testenv": "/bin/bash dev.sh start",
         "test": "node_modules/mocha/bin/mocha test/test.js",
         "cover": "istanbul cover _mocha --report lcovonly test/test.js",
-        "crawler": "node server.js",
+        "crawler": "node parser.js",
         "supervisor": "node supervisor.js",
         "hash" : "node lib/hash.js"
     }

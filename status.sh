@@ -1,2 +1,2 @@
 #!/bin/bash
-ps aux | grep "node server.js" | grep -v grep
+ps aux | grep "node parser.js" | grep -v grep

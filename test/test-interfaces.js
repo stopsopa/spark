@@ -139,6 +139,8 @@ overridetests('database interfaces tests', engines, (engine) => {
 
         it('fetch', function () {
 
+            this.skip();
+
             this.timeout(4000);
 
             var tmp = [

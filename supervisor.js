@@ -48,7 +48,7 @@ function response(res, data, code) {
 
 app.all('/status', (req, res) => {
 
-    // ps aux | grep "node server.js" | grep -v grep
+    // ps aux | grep "node parser.js" | grep -v grep
     proc = spawn('bash', ['status.sh'], {
         maxBuffer: 200*1024,
         timeout: 5000,
@@ -72,13 +72,13 @@ app.all('/status', (req, res) => {
     proc.on('close', () => {
         response(res, {
             response: buff || 'serwer is not running'
-        }, (buff.indexOf('server.js') > -1) ? 200 : 404);
+        }, (buff.indexOf('parser.js') > -1) ? 200 : 404);
     });
 });
 
 app.all('/start', (req, res) => {
 
-    // ps aux | grep "node server.js" | grep -v grep
+    // ps aux | grep "node parser.js" | grep -v grep
     proc = spawn('bash', ['start.sh', req.body.ip, req.body.port], {
         maxBuffer: 200*1024,
         timeout: 5000,
@@ -93,7 +93,7 @@ app.all('/start', (req, res) => {
 
 app.all('/stop', (req, res) => {
 
-    // kill -SIGTERM $(ps aux | grep "server.js" | grep -v grep | head -1 | awk '{print $2}')
+    // kill -SIGTERM $(ps aux | grep "parser.js" | grep -v grep | head -1 | awk '{print $2}')
     proc = spawn('bash', ['stop.sh'], {
         maxBuffer: 200*1024,
         timeout: 5000,

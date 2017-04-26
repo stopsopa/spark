@@ -126,6 +126,9 @@ function curl(uri, method, headers) {
 
 app.all('/fetch', (req, res) => {
 
+    // log.dump(req.method, 1)
+    // log.dump(req.headers, 1)
+
     var
         params  = req.query,
         error   = false
@@ -194,7 +197,25 @@ app.all('/fetch', (req, res) => {
 
         // @todo - i think i forget port here - check later how to add
         params.url = (function () {
+
             var uri = url.parse(params.url);
+
+            // see: node sandbox/uri.js
+            // Url {
+            //     protocol: 'http:',
+            //     slashes: true,
+            //     auth: null,
+            //     host: '138.68.156.126:1025',
+            //     port: '1025',
+            //     hostname: '138.68.156.126',
+            //     hash: null,
+            //     search: null,
+            //     query: null,
+            //     pathname: '/crawler/index.html',
+            //     path: '/crawler/index.html',
+            //     href: 'http://138.68.156.126:1025/crawler/index.html'
+            // }
+
             return uri.protocol + '//' + uri.host + uri.path;
         }());
 
@@ -217,7 +238,6 @@ app.all('/fetch', (req, res) => {
 
         // hardcoded for now
         // params.ajaxwatchdog = 8000;
-
 
 
 
@@ -624,8 +644,7 @@ app.all('/fetch', (req, res) => {
                         }
 
                         return json(status, data);
-                    })
-                    .catch(function () {
+                    }, function () {
 
                         var args = Array.prototype.slice.call(arguments);
 
@@ -642,20 +661,13 @@ app.all('/fetch', (req, res) => {
                     code: 'general-error-then-rejected',
                     data: e
                 });
-            })
-            .catch(function (e) {
-                json(500, {
-                    error: 'prerequest',
-                    code: 'general-exception',
-                    data: e
-                });
             });
     }
-    catch (e) {
+    catch (ee) {
         json(500, {
             error: 'crawler',
             code: 'general-exception',
-            data: e
+            data: ee
         });
     }
 });

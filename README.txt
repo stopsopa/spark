@@ -86,7 +86,7 @@ node lib/hash.js "http://138.68.156.126:1025/crawler/index.html"
 
 
 ---- further research ----- vvv
-grab html : lib\server.js:400
+grab html : lib\parser.js:400
 ---- further research ----- ^^^
 
 --- manual work ---- vvv
