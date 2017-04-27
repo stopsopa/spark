@@ -28,6 +28,7 @@ before_script: # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Usin
   - yarn global add istanbul@0.4.5
   - mysql -u root -e "CREATE DATABASE spark /*\!40100 COLLATE 'utf8_general_ci' */;"
   - mysql -u root spark < lib/db/mysql/spark_cache.sql
+  - /bin/bash dev.php start
 
 script:
   - npm run cover
