@@ -119,11 +119,15 @@ function crawl() {
     }
 
     db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL ORDER BY updateRequest DESC LIMIT 1")
-        .then(function (row) {
+        .then(function (row, url) {
+
+            url = row.url;
+
+            url += ((url.indexOf('?') > -1) ? '&' : '?' ) + '_';
 
             log(row.url);
 
-            spark(row.url)
+            spark(url)
                 .then(function (res) {
 
                     var list = [], origin;
