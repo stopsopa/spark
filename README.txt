@@ -1,6 +1,13 @@
 node version v4.2.6 -- works well
 node version v7.6.0 -- works well
 
+
+--- to read --- vvv
+https://developers.google.com/web/updates/2017/04/headless-chrome?utm_source=feed&utm_medium=feed&utm_campaign=updates_feed
+https://developers.google.com/web/tools/lighthouse/
+--- to read --- ^^^
+
+
 ---- installation of nightmare with xvfb --- vvv
 
 apt-get update &&\

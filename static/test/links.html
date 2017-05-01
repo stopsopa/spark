@@ -5,44 +5,217 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        * {
+            font-family: Candara, Calibri, Segoe, "Segoe UI", Optima, Arial, sans-serif;
+        }
+        a {
+            color: blue;
+        }
+        table button {
+            margin-left: 10px;
+        }
+        [r] {
+            color: red;
+        }
+    </style>
     <title>Document</title>
     <script>
+
+        var log = (function () {try {return console.log;}catch (e) {return function () {}}}());
+
+        var manipulation = {
+            after: function (referenceNode, newNode) {
+                return this.before(referenceNode.nextSibling, newNode);
+            },
+            before: function (referenceNode, newNode) {
+                referenceNode.parentNode.insertBefore(newNode, referenceNode);
+                return this;
+            },
+            append: function (parentNode, newNode) {
+                parentNode.appendChild(newNode);
+                return this;
+            },
+            prepend: function (parentNode, newNode) {
+                parentNode.insertBefore(newNode, parentNode.firstChild);
+                return this;
+            },
+            remove: function (node) {
+                node.parentNode.removeChild(node);
+                return this;
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function () {
 
-            var noorigin = location.href.substring(location.origin.length)
-            var nooriginwithouthash = noorigin;
+            (function () {
 
-            if (noorigin.indexOf('#') > -1) {
-                nooriginwithouthash = noorigin.split('#');
-                nooriginwithouthash = nooriginwithouthash[0];
-            }
+                var href        = location.href;
 
-            document.getElementById('withdomainandhash').setAttribute('href', location.href);
-            document.getElementById('withoutdomain').setAttribute('href', noorigin);
-            document.getElementById('nodomainnohash').setAttribute('href', nooriginwithouthash);
+                if (href.indexOf('#') > -1) {
+                    href = href.split('#');
+                    href = href[0];
+                }
+
+                var noorigin    = href.substring(location.origin.length);
+
+                Array.prototype.slice.call(document.querySelectorAll('a')).forEach(function (a) {
+
+                    var h = a.getAttribute('href');
+
+                    if (typeof h !== 'string') {
+                        return;
+                    }
+
+                    h = h
+                        .replace('{href}', href)
+                        .replace('{noorigin}', noorigin)
+                        .replace('{host}', location.host)
+                        .replace('{hostname}', location.hostname)
+                    ;
+
+                    if (h) {
+                        a.setAttribute('href', a.innerHTML = h);
+                        var c = document.createElement('a');
+                        c.setAttribute('href', h);
+                        c.innerHTML = h;
+                        c.style.display = 'none';
+
+                        var cls = a.getAttribute('class');
+                        if (cls) {
+                            c.classList.add(cls)
+                        }
+                        manipulation.after(a, c)
+                    }
+                })
+            }());
+
+            (function (h) {
+                if (h) {
+                    var list = Array.prototype.slice.call(document.querySelectorAll('[class]'));
+
+                    list.forEach(function (a) {
+                        if (a.getAttribute('class') === h) {
+                            return;
+                        }
+                        a.parentNode.removeChild(a);
+                    });
+                }
+            }(location.hash.replace(/^#(.*)$/, '$1')));
+
+            (function () {
+
+                function insertAfter(newNode, referenceNode) {
+                    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+                }
+
+                var list = Array.prototype.slice.call(document.querySelectorAll('a[class]'));
+
+                list.forEach(function (a) {
+
+                    if (a.style.display === 'none') {
+                        return;
+                    }
+
+                    var c = a.getAttribute('class');
+                    var b = document.createElement('button');
+                    b.innerHTML = c;
+                    b.onclick = function () {
+                        location.href = location.pathname + '#' + c;
+                        location.reload(true);
+                    }
+                    insertAfter(b, a);
+                });
+
+                var b = document.createElement('button');
+                b.innerHTML = 'clear';
+                b.onclick = function () {
+                    location.href = location.pathname;
+                };
+
+                document.body.insertBefore( b, document.body.firstChild );
+            }());
+
         })
     </script>
 </head>
 <body>
-<a href="?parameter#andhash">start link</a>
-<hr>
+<table>
+    <tbody>
+    <tr>
+        <td valign="top">
+            <a href="/link/slash at the beginning"></a>
+            <br>
+            <a href="no slash at the beginning"></a>
+            <br>
+            <a href="http://httpd.pl/md5" r></a>
+            <br>
+            <a href="#id hash" class="hash"></a>
+            <br>
+            <a href="?onlyparameter"></a>
+            <br>
+            <a href="?onlyparameter#andhash"></a>
+            <br>
+            <a href="../up.html"></a>
+            <br>
+            <a href="../../up2.html"></a>
+            <br>
+            <a href="/" class="slash"></a>
+            <br>
+            <a href="//domain.com" r></a><!-- // @todo i think i should do here replce //domain.com -> https?://domain.com and then run all logic -->
+            <br>
+            <a href="/link#hash"></a>
+            <br>
+            <a>no href at all</a>
+            <br>
+            <a href="" class="empty-href">empty href</a>
+        </td>
+        <td valign="top">
+            <a href="//{host}" class="two-slashes-same-port"></a> <!-- same port -->
+            <br>
+            <a href="//{host}/" class="main-domain-with-slashq-same-port"></a> <!-- same port -->
+            <br>
+            <a href="//{host}/test/same-origin-same-port.html"></a>
+            <br>
+            <a href="//{hostname}:9076" r></a> <!-- different port -->
+            <br>
+            <a href="//{hostname}:9076/test/differentport.html" r></a> <!-- different port -->
+            <br>
+            <a href="//{hostname}" r></a> <!-- port 80 -->
+            <br>
+            <a href="//{hostname}/test/port80.html" r></a> <!-- will cast to defalut port 80 -->
+            <br>
+            <a href="{href}"></a>
+            <br>
+            <a href="{href}#hash"></a>
+            <br>
+            <a href="{href}?param=val1"></a>
+            <br>
+            <a href="{href}?param=val1#hash1"></a>
+            <br>
+            <a href="{noorigin}"></a>
+            <br>
+            <a href="{noorigin}#hash2"></a>
+            <br>
+            <a href="{noorigin}?param=val2"></a>
+            <br>
+            <a href="{noorigin}?param=val2#hash2"></a>
+            <br>
+            <a href="javascript:" r></a>
+            <br>
+            <a href="javascript:alert()" r></a>
+            <br>
+            <a href="mailto:" r></a>
+            <br>
+            <a href="mailto:someone@example.com?Subject=Hello%20again" r></a>
+            <br>
+            <a href="file:" r></a>
+        </td>
+    </tr>
+    </tbody>
+</table>
 
-<a href="/link/slash at the beginning">lash at the beginning</a>
-<br>
-<a href="no slash at the beginning">no slash at the beginning</a>
-<br>
-<a href="http://httpd.pl/md5">md5</a>
-<br>
-<a href="#id hash">d has</a>
-<br>
-<a href="?onlyparameter">onlyparameter</a>
-<br>
-<a href="/">/</a>
-<br>
-<a href="" id="withdomainandhash">withdomainandhash</a>
-<br>
-<a href="" id="withoutdomain">withoutdomain</a>
-<br>
-<a href="" id="nodomainnohash">nodomainnohash</a>
+
+
 </body>
 </html>

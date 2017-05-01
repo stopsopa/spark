@@ -11,6 +11,7 @@
                 return function () {}
             }
         }());
+
         var c;
         while (c = cache.shift()) {
             log.apply(this, c);
@@ -347,5 +348,4 @@ if (typeof require !== 'undefined') {
         // normally it shouldn't be called here, it's only for testing
     }())
 
-}())
-
+}());

@@ -126,9 +126,6 @@ function curl(uri, method, headers) {
 
 app.all('/fetch', (req, res) => {
 
-    // log.dump(req.method, 1)
-    // log.dump(req.headers, 1)
-
     var
         params  = req.query,
         error   = false
@@ -195,29 +192,16 @@ app.all('/fetch', (req, res) => {
             error = "provide absolute path that beginning from http[s]://...";
         }
 
-        // @todo - i think i forget port here - check later how to add
-        params.url = (function () {
-
-            var uri = url.parse(params.url);
-
-            // see: node sandbox/uri.js
-            // Url {
-            //     protocol: 'http:',
-            //     slashes: true,
-            //     auth: null,
-            //     host: '138.68.156.126:1025',
-            //     port: '1025',
-            //     hostname: '138.68.156.126',
-            //     hash: null,
-            //     search: null,
-            //     query: null,
-            //     pathname: '/crawler/index.html',
-            //     path: '/crawler/index.html',
-            //     href: 'http://138.68.156.126:1025/crawler/index.html'
-            // }
-
-            return uri.protocol + '//' + uri.host + uri.path;
-        }());
+        if (!params.url) {
+            return json(500, {
+                error: 'crawler',
+                code: 'wrong-input-parameters',
+                data: {
+                    method: req.method,
+                    headers: req.headers
+                }
+            });
+        }
 
         if (error) {
             return json(500, {
@@ -232,7 +216,6 @@ app.all('/fetch', (req, res) => {
         }
 
         log('[browser:'+params.u+':init]: ' + params.url);
-
 
 
 
@@ -443,28 +426,14 @@ app.all('/fetch', (req, res) => {
                                 links: (function () {
 
                                     var h, links = [];
+                                        // , debug = [];
 
                                     var path = location.pathname.split('/');
                                     path.pop();
                                     path = path.join('/');
 
-                                    var noorigin = location.href.substring(location.origin.length)
-                                    var nooriginwithouthash = noorigin;
-
-                                    if (noorigin.indexOf('#') > -1) {
-                                        nooriginwithouthash = noorigin.split('#');
-                                        nooriginwithouthash = nooriginwithouthash[0];
-                                    }
-
-                                    var list = Array.prototype.slice.call(document.getElementsByTagName('a')).map(function (a) {
+                                    var list = Array.prototype.slice.call(document.querySelectorAll('a[href]')).map(function (a) {
                                         return a.getAttribute('href');
-                                    }).filter(function (h) {
-
-                                        if (h) {
-                                            return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
-                                        }
-
-                                        return false;
                                     });
 
                                     // http://origin/directory/link
@@ -473,46 +442,65 @@ app.all('/fetch', (req, res) => {
                                     // not //origin/directory/link
                                     // not #hash
                                     for (var i = 0, l = list.length ; i < l ; i += 1 ) {
+
                                         h = list[i];
 
-                                        if (h === location.href || h === noorigin || h === nooriginwithouthash) {
-                                            continue;
-                                        }
+                                        // console.log('test         >>>>> "' + h + '"');
 
-                                        if (h[0] === '?') {
-                                            links.push(location.pathname + h);
+                                        if (h === '') {
+                                            // debug.push(["", "", '<empty>'])
+                                            links.push('');
                                             continue;
                                         }
 
                                         if (/^(javascript|file|mailto):/.test(h)) {
+                                            // debug.push([h, "<continue>"])
+                                            continue;
+                                        }
+
+                                        if (h[0] === '?') {
+                                            // debug.push([h, location.pathname + h])
+                                            links.push(location.pathname + h);
                                             continue;
                                         }
 
                                         if (h[0] === '#') {
+                                            // debug.push([h, location.pathname + h])
+                                            links.push(location.pathname + h);
                                             continue;
                                         }
 
                                         if (h[0] === '/') {
                                             if (h[1] && h[1] === '/') {
+                                                // @todo i think i should do here replce //domain.com -> https?://domain.com and then run all logic
+                                                // debug.push([h, '<add>', location.protocol + h])
+                                                h = location.protocol + h;
+                                            }
+                                            else {
+                                                // debug.push([h, h])
+                                                links.push(h);
                                                 continue;
                                             }
-                                            links.push(h);
-                                            continue;
                                         }
 
+
                                         if (h.indexOf(location.origin) === 0) {
+                                            // debug.push([h, h.substring(location.origin.length)])
                                             links.push(h.substring(location.origin.length));
                                             continue;
                                         }
 
                                         if (!/^https?:\/\//i.test(h) && h[0] !== '/') {
+                                            // debug.push([h, path + '/' + h])
                                             links.push(path + '/' + h);
                                         }
                                     }
 
+                                    // console.log(JSON.stringify(debug, null, '  '))
+                                    // console.log(JSON.stringify(links, null, '  '))
                                     return links;
                                 }()).reverse().filter(function (e, i, arr) {
-                                    return arr.indexOf(e, i+1) === -1;
+                                    return arr.indexOf(e, i + 1) === -1;
                                 }).reverse().sort()
                             }),
                             watchdog: window[params.nmsc].ajaxwatchdogresponse
@@ -563,14 +551,6 @@ app.all('/fetch', (req, res) => {
                             path.pop();
                             path = path.join('/');
 
-                            var noorigin = data.internalLinks.href.substring(data.internalLinks.origin.length)
-                            var nooriginwithouthash = noorigin;
-
-                            if (noorigin.indexOf('#') > -1) {
-                                nooriginwithouthash = noorigin.split('#');
-                                nooriginwithouthash = nooriginwithouthash[0];
-                            }
-
                             var list = data.internalLinks.links.concat((function () {
                                 var redirect = [];
 
@@ -581,14 +561,7 @@ app.all('/fetch', (req, res) => {
                                 }
 
                                 return redirect;
-                            }())).filter(function (h) {
-
-                                if (h) {
-                                    return !!h.replace(/^\s*(\S*(\s+\S+)*)\s*$/, '$1')
-                                }
-
-                                return false;
-                            });
+                            }()));
 
                             // http://origin/directory/link
                             // /directory/link
@@ -596,9 +569,16 @@ app.all('/fetch', (req, res) => {
                             // not //origin/directory/link
                             // not #hash
                             for (var i = 0, l = list.length ; i < l ; i += 1 ) {
+
                                 h = list[i];
 
-                                if (h === data.internalLinks.href || h === noorigin || h === nooriginwithouthash) {
+                                if (h === '') {
+                                    // debug.push(["", "", '<empty>'])
+                                    links.push('');
+                                    continue;
+                                }
+
+                                if (/^(javascript|file|mailto):/.test(h)) {
                                     continue;
                                 }
 
@@ -607,17 +587,15 @@ app.all('/fetch', (req, res) => {
                                     continue;
                                 }
 
-                                if (/^(javascript|file|mailto):/.test(h)) {
-                                    continue;
-                                }
-
                                 if (h[0] === '#') {
+                                    links.push(data.internalLinks.pathname + h);
                                     continue;
                                 }
 
                                 if (h[0] === '/') {
                                     if (h[1] && h[1] === '/') {
-                                        continue;
+                                        // @todo i think i should do here replce //domain.com -> https?://domain.com and then run all logic
+                                        h = data.internalLinks.protocol + h;
                                     }
                                     links.push(h);
                                     continue;
@@ -635,7 +613,7 @@ app.all('/fetch', (req, res) => {
 
                             return links;
                         }()).reverse().filter(function (e, i, arr) {
-                            return arr.indexOf(e, i+1) === -1;
+                            return arr.indexOf(e, i + 1) === -1;
                         }).reverse().sort();
 
                         if (params.returnonlyhtml) {
