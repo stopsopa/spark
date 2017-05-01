@@ -42,6 +42,7 @@ var json = (function () {
     }
 }());
 
+// http://xxx.xxx.xxx.xxx:1025/test/links.html#empty-href
 describe('parser - links', () => {
 
     var del = (function () {
