@@ -231,8 +231,11 @@ app.all('/fetch', (req, res) => {
 
 
 
+        // fix for native (hidden) server caching
+        var prerender = params.url + ( (params.url.indexOf('?') > -1) ? '&' : '?' ) + '_prerender';
 
-        curl(params.url, params.firstrequesttype, params.firstrequestheaders)
+
+        curl(prerender, params.firstrequesttype, params.firstrequestheaders)
             .then(function (res) {
 
                 if (res.statusCode !== 200) {
@@ -346,7 +349,7 @@ app.all('/fetch', (req, res) => {
                             events['did-get-redirect-request'].push(data);
                         }
                     })
-                    .goto(params.url, params.headers || {})
+                    .goto(prerender, params.headers || {})
                     .wait('body')
                     .evaluate(function (params) {
 
