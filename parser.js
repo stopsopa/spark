@@ -426,7 +426,6 @@ app.all('/fetch', (req, res) => {
                                 links: (function () {
 
                                     var h, links = [];
-                                        // , debug = [];
 
                                     var path = location.pathname.split('/');
                                     path.pop();
@@ -445,27 +444,21 @@ app.all('/fetch', (req, res) => {
 
                                         h = list[i];
 
-                                        // console.log('test         >>>>> "' + h + '"');
-
                                         if (h === '') {
-                                            // debug.push(["", "", '<empty>'])
                                             links.push('');
                                             continue;
                                         }
 
                                         if (/^(javascript|file|mailto):/.test(h)) {
-                                            // debug.push([h, "<continue>"])
                                             continue;
                                         }
 
                                         if (h[0] === '?') {
-                                            // debug.push([h, location.pathname + h])
                                             links.push(location.pathname + h);
                                             continue;
                                         }
 
                                         if (h[0] === '#') {
-                                            // debug.push([h, location.pathname + h])
                                             links.push(location.pathname + h);
                                             continue;
                                         }
@@ -473,31 +466,30 @@ app.all('/fetch', (req, res) => {
                                         if (h[0] === '/') {
                                             if (h[1] && h[1] === '/') {
                                                 // @todo i think i should do here replce //domain.com -> https?://domain.com and then run all logic
-                                                // debug.push([h, '<add>', location.protocol + h])
                                                 h = location.protocol + h;
                                             }
                                             else {
-                                                // debug.push([h, h])
                                                 links.push(h);
                                                 continue;
                                             }
                                         }
 
-
                                         if (h.indexOf(location.origin) === 0) {
-                                            // debug.push([h, h.substring(location.origin.length)])
-                                            links.push(h.substring(location.origin.length));
+
+                                            h = h.substring(location.origin.length);
+
+                                            if (!h.length || h[0] === '/') {
+                                                links.push(h);
+                                            }
+
                                             continue;
                                         }
 
                                         if (!/^https?:\/\//i.test(h) && h[0] !== '/') {
-                                            // debug.push([h, path + '/' + h])
                                             links.push(path + '/' + h);
                                         }
                                     }
 
-                                    // console.log(JSON.stringify(debug, null, '  '))
-                                    // console.log(JSON.stringify(links, null, '  '))
                                     return links;
                                 }()).reverse().filter(function (e, i, arr) {
                                     return arr.indexOf(e, i + 1) === -1;
@@ -573,7 +565,6 @@ app.all('/fetch', (req, res) => {
                                 h = list[i];
 
                                 if (h === '') {
-                                    // debug.push(["", "", '<empty>'])
                                     links.push('');
                                     continue;
                                 }

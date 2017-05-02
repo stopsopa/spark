@@ -47,4 +47,6 @@ module.exports = Object.assign(rootrequire('config.js'), {
         port        : 1026,
         protocol    : 'http:'
     },
+    // with this you can run 'npm run test fast'
+    onlyfasttests: (process.argv[3] && (process.argv[3] === 'fast'))
 });

@@ -33,9 +33,10 @@ overridetests('database drivers tests', engines, (engine) => {
 
         it('wrong connection', function () {
 
-            this.skip();
+            config.onlyfasttests && this.skip();
 
             this.timeout(3000);
+            this.slow(2500);
 
             const test      = Object.assign({}, cnf, {
                 host: '1.2.3.4'

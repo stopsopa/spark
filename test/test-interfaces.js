@@ -140,9 +140,10 @@ overridetests('database interfaces tests', engines, (engine) => {
 
         it('fetch', function () {
 
-            // this.skip();
+            config.onlyfasttests && this.skip();
 
             this.timeout(4000);
+            this.slow(2500);
 
             var tmp = [
                 'http://domain.com/one',

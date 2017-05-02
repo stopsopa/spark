@@ -83,7 +83,9 @@ describe('parser - links', () => {
     }());
 
     it('test - all', function () {
+        config.onlyfasttests && this.skip();
         this.timeout(4000);
+        this.slow(2500);
         return json('/test/links.html').then((res) => {
             assert(res.json.html.indexOf('slash at the beginning') > 0);
             assert.deepEqual(del(), res.json.internalLinks.links);
@@ -91,7 +93,9 @@ describe('parser - links', () => {
     });
 
     it('test - hash', function () {
+        config.onlyfasttests && this.skip();
         this.timeout(4000);
+        this.slow(2500);
         return json('/test/links.html#hash').then((res) => {
             assert(res.json.html.indexOf('slash at the beginning') > 0);
             assert.deepEqual(del(0, 1), res.json.internalLinks.links);
@@ -99,7 +103,9 @@ describe('parser - links', () => {
     });
 
     it('test - slash', function () {
+        config.onlyfasttests && this.skip();
         this.timeout(4000);
+        this.slow(2500);
         return json('/test/links.html#slash').then((res) => {
             assert(res.json.html.indexOf('slash at the beginning') > 0);
             assert.deepEqual(del(0, 9), res.json.internalLinks.links);
@@ -107,7 +113,9 @@ describe('parser - links', () => {
     });
 
     it('test - empty-href', function () {
+        config.onlyfasttests && this.skip();
         this.timeout(4000);
+        this.slow(2500);
         return json('/test/links.html#empty-href').then((res) => {
             assert(res.json.html.indexOf('slash at the beginning') > 0);
             assert.deepEqual(del(1, 9), res.json.internalLinks.links);
@@ -115,7 +123,9 @@ describe('parser - links', () => {
     });
 
     it('test - two-slashes-same-port', function () {
+        config.onlyfasttests && this.skip();
         this.timeout(4000);
+        this.slow(2500);
         return json('/test/links.html#two-slashes-same-port').then((res) => {
             assert(res.json.html.indexOf('slash at the beginning') > 0);
             assert.deepEqual(del(1, 9), res.json.internalLinks.links);
@@ -123,7 +133,9 @@ describe('parser - links', () => {
     });
 
     it('test - main-domain-with-slashq-same-port', function () {
+        config.onlyfasttests && this.skip();
         this.timeout(4000);
+        this.slow(2500);
         return json('/test/links.html#main-domain-with-slashq-same-port').then((res) => {
             assert(res.json.html.indexOf('slash at the beginning') > 0);
             assert.deepEqual(del(0, 9), res.json.internalLinks.links);
