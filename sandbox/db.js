@@ -4,9 +4,9 @@
 const path          = require("path");
 const mysql         = require('mysql');
 
-require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
-const db            = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
-const log           = rootrequire('react', 'webpack', 'log.js');
+require(path.resolve(__dirname, '..', 'lib', 'rootrequire'))(__dirname, '..');
+const db            = rootrequire('lib', 'db', 'mysql', 'db_spark');
+const log           = rootrequire('react', 'webpack', 'log');
 
 var id = 'idhash' + (new Date()).getTime();
 // var id = 'idhash1487196660236';

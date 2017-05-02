@@ -2,8 +2,8 @@
 
 const path = require('path');
 
-require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
-const config = rootrequire('test', 'config.js');
+require(path.resolve(__dirname, '..', 'lib', 'rootrequire'))(__dirname, '..');
+const config = rootrequire('test', 'config');
 
 if (process.argv.length > 2) {
 

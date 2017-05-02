@@ -6,8 +6,8 @@ const bodyParser    = require('body-parser');
 const express       = require('express');
 const assert        = console.assert;
 
-require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
-const log           = rootrequire('lib', 'log.js');
+require(path.resolve(__dirname, '..', 'lib', 'rootrequire'))(__dirname, '..');
+const log           = rootrequire('lib', 'log');
 
 const app           = express();
 

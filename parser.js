@@ -8,9 +8,9 @@ const url           = require('url');
 const Nightmare     = require('nightmare');
 const assert        = console.assert;
 
-require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
+require(path.resolve(__dirname, 'lib', 'rootrequire'))(__dirname, '.');
 
-const log           = rootrequire('lib', 'log.js');
+const log           = rootrequire('lib', 'log');
 
 const app           = express();
 

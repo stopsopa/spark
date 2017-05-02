@@ -1,9 +1,9 @@
 'use strict';
 
 const path = require('path');
-require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
+require(path.resolve(__dirname, '..', 'lib', 'rootrequire'))(__dirname, '..');
 
-module.exports = Object.assign(rootrequire('config.js'), {
+module.exports = Object.assign(rootrequire('config'), {
     db: {
         mysql: {
             connectionLimit : 3, // https://github.com/mysqljs/mysql#pooling-connections

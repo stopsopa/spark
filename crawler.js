@@ -4,12 +4,12 @@ const path          = require('path');
 const http          = require('http');
 const process       = require('process');
 
-require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
+require(path.resolve(__dirname, 'lib', 'rootrequire'))(__dirname, '.');
 
-const log           = rootrequire('lib', 'log.js');
+const log           = rootrequire('lib', 'log');
 const config        = rootrequire(process.argv[2] || 'config');
-const spark         = rootrequire('lib', 'curljson.js')(config.parser).spark;
-const driver        = rootrequire('lib', 'db', 'mysql', 'driver.js');
+const spark         = rootrequire('lib', 'curljson')(config.parser).spark;
+const driver        = rootrequire('lib', 'db', 'mysql', 'driver');
 const cnf           = config.db.mysql;
 const db            = driver(cnf);
 

@@ -5,11 +5,11 @@ const path          = require('path');
 const glob          = require("glob");
 const fs            = require('fs');
 
-require(path.resolve(__dirname, '..', 'lib', 'rootrequire.js'))(__dirname, '..');
+require(path.resolve(__dirname, '..', 'lib', 'rootrequire'))(__dirname, '..');
 
-const overridetests = rootrequire('lib', 'overridetests.js');
-const config        = rootrequire('test', 'config.js');
-const log           = rootrequire('lib', 'log.js');
+const overridetests = rootrequire('lib', 'overridetests');
+const config        = rootrequire('test', 'config');
+const log           = rootrequire('lib', 'log');
 
 var engines = glob.sync(path.resolve(__dirname, '..', 'lib', 'db', '*')).filter((p) => {
     return fs.lstatSync(p).isDirectory();
@@ -25,7 +25,7 @@ overridetests('database drivers tests', engines, (engine) => {
         delete cnf.password;
     }
 
-    const driver        = rootrequire('lib', 'db', engine, 'driver.js');
+    const driver        = rootrequire('lib', 'db', engine, 'driver');
 
     const db            = driver(cnf);
 
