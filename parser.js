@@ -586,14 +586,22 @@ app.all('/fetch', (req, res) => {
                                 if (h[0] === '/') {
                                     if (h[1] && h[1] === '/') {
                                         // @todo i think i should do here replce //domain.com -> https?://domain.com and then run all logic
-                                        h = data.internalLinks.protocol + h;
+                                        h = location.protocol + h;
                                     }
-                                    links.push(h);
-                                    continue;
+                                    else {
+                                        links.push(h);
+                                        continue;
+                                    }
                                 }
 
                                 if (h.indexOf(data.internalLinks.origin) === 0) {
-                                    links.push(h.substring(data.internalLinks.origin.length));
+
+                                    h = h.substring(data.internalLinks.origin.length);
+
+                                    if (!h.length || h[0] === '/') {
+                                        links.push(h);
+                                    }
+
                                     continue;
                                 }
 
