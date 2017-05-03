@@ -1,0 +1,8 @@
+n /test/ajax/example.json
+n /test/ajax/example.json
+j /test/ajax/example.json
+f /test/ajax/example.json
+d 400
+f /test/ajax/example.json
+j /test/ajax/example.json
+n /test/ajax/example.json

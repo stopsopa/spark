@@ -8,189 +8,169 @@
     <title>Ajax</title>
 </head>
 <body>
-
-    <button id="ajax">ajax</button>
-    <button id="fetch">fetch</button>
-    <button id="ajaxwrong">ajaxwrong</button>
-    <button id="fetchwrong">fetchwrong</button>
     <pre></pre>
 
     <script src="/libs/onAllFinished.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="/libs/jquery.js"></script>
     <script>
 //        window.XMLHttpRequest.prototype.onAllFinished(function (status) {
 //            log('onAllFinished', status)
 //        }, 1000, 3000);
 
-        var log = (function () {try {return console.log;}catch (e) {return function () {}}}());
+        var log = (function () {try {return console.log}catch (e) {return function () {}}}());
 
-        var ajaxNative = (function () {
+        function trim(s) {
+            return s.replace(/^\s*(\S*(\s+\S+)*)\s*$/,'$1');
+        }
+
+        var ajaxN = (function () {
+            'use strict';
             function createXHR() {
                 if (window.XDomainRequest) return new XDomainRequest();     // code for IE7+, Firefox, Chrome, Opera, Safari
                 if (window.XMLHttpRequest) return new XMLHttpRequest();     // code for IE7+, Firefox, Chrome, Opera, Safari
                 if (window.ActiveXObject)  return new ActiveXObject("Microsoft.XMLHTTP");  //   code for IE6, IE5
                 throw "Can't create xhr object";
             };
-            return function (url, data, fn, errfn) { // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-                data || (data = {});
-                errfn || (errfn = function (e) {log(e)})
-                var xhr  = createXHR();
-                xhr.open('GET', url, true);
-                xhr.setRequestHeader('Content-type', 'text/plain'); // for ie9 issue
-                xhr.onreadystatechange = function() {
-                    if (xhr.status === 0) {
-                        xhr.abort();
-                        errfn && errfn('Server not found');
-                        return;
-                    }
-                    if (xhr.readyState == 4)   {
-                        if (xhr.status  == 200) {
-                            try {
-                                var resp = JSON.parse(xhr.responseText);
-                            }
-                            catch (e) {
-                                throw e;
-                            }
-                            fn && fn(resp);
-                            xhr=null;
+            return function (url, data) { // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+                return new Promise(function (resolve, reject) {
+                    var xhr  = createXHR();
+                    xhr.open('GET', url, true);
+                    xhr.setRequestHeader('Content-type', 'text/plain'); // for ie9 issue
+                    xhr.onreadystatechange = function() {
+                        if (xhr.status === 0) {
+                            xhr.abort();
+                            reject('Server not found');
+                            return;
                         }
-                        else {
-                            errfn && errfn('Error status code: '+xhr.status);
+                        if (xhr.readyState == 4)   {
+                            if (xhr.status  == 200) {
+
+                                var resp = xhr.responseText;
+
+                                try {
+                                    resp = JSON.parse(xhr.responseText);
+                                }
+                                catch (e) {
+                                }
+
+                                xhr=null;
+                                resolve(resp);
+                            }
+                            else {
+                                reject('Error status code: ' + xhr.status);
+                            }
                         }
                     }
-                }
-                xhr.send(JSON.stringify(data));
+                    xhr.send(JSON.stringify(data || {}));
+                });
             };
         })();
 
-        $(function () {
-            var i = 0;
+        function ajaxJ(url, data) {
+            return $.ajax(url, {
+                type: 'get',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(data)
+            });
+        }
+        function ajaxF(url, data) {
+            return fetch(url, {
+                method: 'get',
+                headers: new Headers({
+                    'Content-type' : 'application/json; charset=utf-8'
+                }),
+                body: JSON.stringify(data)
+            });
+        }
+
+        var ajaxD = (function () {
+
+            var lib = function (delay) {
+
+                (typeof delay === 'undefined') && (delay = 100);
+
+                return new Promise(function (resolve) {
+                    setTimeout(resolve, delay);
+                });
+            };
+
+            lib.reject = function (delay) {
+
+                (typeof delay === 'undefined') && (delay = 100);
+
+                return new Promise(function (resolve, reject) {
+                    setTimeout(reject, delay);
+                });
+            }
+
+            return lib;
+        }());
+
+        document.addEventListener('DOMContentLoaded', function () {
 
             var pre = document.querySelector('pre');
 
-            function ajaxJQ(l, fn) {
-                l = 'jq ' + l
-                $.ajax('/json?_' + l)
-                    .done(function (data) {
-                        pre.innerHTML += l + "\n";
-                        fn && fn();
-                    })
-                ;
-            }
-
-            function ajaxN(l, fn) {
-                l = 'nt ' + l;
-                ajaxNative('/json?_' + l, {}, function (data) {
-                    pre.innerHTML += l + "\n";
-                    fn && fn();
-                })
-            }
-
-            setTimeout(function () {
-
-                ajaxJQ(i + ' ' + 1, function () {
-                    ajaxJQ(i + ' ' + 2, function () {
-                        ajaxJQ(i + ' ' + 3, function () {
-                            ajaxJQ(i + ' ' + 4, function () {
-                                setTimeout(function () {
-                                    ajaxJQ(i + ' after tm ' + 5, function () {
-                                        ajaxN(i + ' after tm ' + 6, function () {
-                                            pre.innerHTML += 'jq first ' + i + ' end' + "\n";
-                                        });
-                                    });
-                                }, 300);
-                            });
-                        });
-                    });
-                });
-
-                setTimeout(function () {
-                    ajaxJQ(i + ' sm ' + 1, function () {
-                        ajaxJQ(i + ' sm ' + 2, function () {
-                            ajaxN(i + ' sm ' + 3, function () {
-                                ajaxN(i + ' sm ' + 4, function () {
-                                    pre.innerHTML += 'jq sm ' + i + ' end' + "\n";
-                                })
-                            })
-                        });
-                    });
-                }, 50)
-
-            }, 500);
-
-            (function () {
-
-                var i = 0;
-
-                $('#ajax').on('click', function () {
-                    i += 1;
-                    ajaxJQ(i + ' ' + 1, function () {
-                        ajaxJQ(i + ' ' + 2, function () {
-                            ajaxJQ(i + ' ' + 3, function () {
-                                ajaxJQ(i + ' ' + 4, function () {
-                                    setTimeout(function () {
-                                        ajaxJQ(i + ' ' + 5, function () {
-                                            ajaxN(i + ' ' + 6, function () {
-                                                pre.innerHTML += 'ajax manual ' + i + ' end' + "\n";
-                                            });
-                                        });
-                                    }, 300);
-                                });
-                            });
-                        });
-                    });
-                });
-
-                (function () {
-                    var i = 0;
-                    $('#ajaxwrong').on('click', function () {
-                        ajaxNative('/ajaxwrong?_'+i)
-                        i += 1;
-                    })
-                }())
-            }());
-
-            (function () {
-                var i = 0;
-                function fetchN(l, fn) {
-                    l = 'fe ' + l;
-                    var f = fetch('/json?_' + l)
-                    if (typeof fn === 'function') {
-                        f.then(function () {
-                            pre.innerHTML += l + "\n";
-                            fn()
-                        });
+            var query = (function () {
+                var t, tmp = {};
+                location.search.replace(/^\?(.*)$/, '$1').split(/&/g).map(function (a) {
+                    t = a.split(/=/g);
+                    t[1] = t[1] ? decodeURIComponent(t[1]) : true;
+                    if (typeof tmp[t[0]] === 'undefined') {
+                        tmp[t[0]] = t[1];
                     }
-                }
-                $('#fetch').on('click', function () {
-
-                    i += 1;
-
-                    var fn = (function (i) {
-                        return function (data) {
-                            pre.innerHTML += 'fetch manual ' + i + ' end' + "\n";
+                    else {
+                        if (typeof tmp[t[0]] === 'string') {
+                            tmp[t[0]] = [tmp[t[0]], t[1]];
                         }
-                    }(i));
-
-                    var k = i;
-                    fetchN(k +' new fetch ' + 1, function (data) {
-                        fetchN(k +' new fetch ' + 2, function (data) {
-                            fetchN(k +' new fetch ' + 3, function (data) {
-                                fetchN(k +' new fetch ' + 4, function (data) {
-                                    fetchN(k +' new fetch ' + 5, function (data) {
-                                        fetchN(k +' new fetch ' + 6, fn);
-                                    });
-                                });
-                            });
-                        });
-                    });
+                        else {
+                            tmp[t[0]].push(t[1]);
+                        }
+                    }
                 });
-
-                $('#fetchwrong').on('click', function () {
-                    fetch('/ajaxwrong?_fetch_' + i)
-                });
+                return tmp;
             }());
 
+            if (query.tape) {
+
+                var stack = [];
+
+                ajaxN('/test/ajax/' + query.tape + '.txt')
+                    .then(function (data) {
+
+                        data = data.split(/\n/g).filter(function (d) {
+                            return !!trim(d);
+                        }).map(function (d, t, i) {
+                            t = {}, i = 0;
+                            d.replace(/([^\s]+)/g, function (r) {
+                                t[(i++ === 0) ? 'm' : 'url'] = (/^\d+$/.test(r) ? parseInt(r, 10) : r);
+                            });
+                            return t;
+                        });
+
+                        (function run(t, m, u) {
+
+                            t = data.shift();
+
+                            if (t) {
+
+                                m = 'ajax' + t.m.toUpperCase();
+
+                                u = t.url;
+
+                                if (typeof u === 'string') {
+                                    u += '?' + m;
+                                }
+
+                                stack.push(t);
+
+                                pre.innerHTML = JSON.stringify(stack, null, '    ');
+
+                                window[m](u).then(run)
+                            }
+                        }());
+
+                    })
+            }
         });
 
     </script>
