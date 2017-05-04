@@ -125,7 +125,10 @@ export default class Sandbox extends React.Component {
                     }
                 })
                 .done((json) => {
-                    log('data', json);
+                    log(
+                        'data awailable under window.json like JSON.stringify(window.json.watchdog, null, \'    \')',
+                        window.json = json
+                    );
                 })
                 .always(() => {
                     this.setState({

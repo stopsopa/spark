@@ -1,0 +1,10 @@
+n /delay
+n /delay
+j /delay
+f /delay
+d 400
+f /delay
+j /delay
+n /delay
+
+

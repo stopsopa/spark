@@ -7,6 +7,7 @@ const express       = require('express');
 const assert        = console.assert;
 
 require(path.resolve(__dirname, '..', 'lib', 'rootrequire'))(__dirname, '..');
+
 const log           = rootrequire('lib', 'log');
 
 const app           = express();
@@ -40,10 +41,10 @@ app.all('/', (req, res) => {
     res.end(ip + ':' + port + ' is working...');
 })
 
-app.all('/json', (req, res) => {
+app.all('/delay', (req, res) => {
 
     var params = {
-        timeout: 300
+        timeout: 0
     }
 
     if (req.query.timeout > 0) {
@@ -61,7 +62,8 @@ app.all('/json', (req, res) => {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
         res.end(JSON.stringify({
-            ok: true
+            ok: true,
+            timeout: params.timeout
         }));
 
     }, params.timeout)
@@ -72,7 +74,7 @@ app.get('/ajaxwrong', (req, res) => {
 });
 
 app.listen(port, ip, () => {
-    console.log('Test endpoints server is running '+ip+':'+port)
+    console.log('Test endpoints server is running ' + ip + ':' + port)
 });
 
 

@@ -9,7 +9,6 @@
 const http          = require('http');
 const path          = require('path');
 const bodyParser    = require('body-parser');
-const fs            = require('fs');
 const express       = require('express');
 const assert        = console.assert;
 const log           = console.log;

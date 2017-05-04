@@ -8,7 +8,7 @@
     <title>Ajax</title>
 </head>
 <body>
-    <pre></pre>
+    <pre>/test/ajax.html?tape=test</pre>
 
     <script src="/libs/onAllFinished.js"></script>
     <script src="/libs/jquery.js"></script>
@@ -34,8 +34,9 @@
             return function (url, data) { // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
                 return new Promise(function (resolve, reject) {
                     var xhr  = createXHR();
+//                    xhr.open((url.indexOf('/delay') === 0) ? 'POST' : 'GET', url, true);
                     xhr.open('GET', url, true);
-                    xhr.setRequestHeader('Content-type', 'text/plain'); // for ie9 issue
+//                    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8'); // for ie9 issue
                     xhr.onreadystatechange = function() {
                         if (xhr.status === 0) {
                             xhr.abort();
@@ -61,25 +62,28 @@
                             }
                         }
                     }
-                    xhr.send(JSON.stringify(data || {}));
+                    xhr.send();
+//                    xhr.send(JSON.stringify(data || {}));
                 });
             };
         })();
 
         function ajaxJ(url, data) {
             return $.ajax(url, {
-                type: 'get',
-                contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify(data)
+//                type: (url.indexOf('/delay') === 0) ? 'POST' : 'GET',
+                type: 'GET',
+//                contentType: 'application/json; charset=utf-8',
+//                data: JSON.stringify(data)
             });
         }
         function ajaxF(url, data) {
             return fetch(url, {
-                method: 'get',
-                headers: new Headers({
-                    'Content-type' : 'application/json; charset=utf-8'
-                }),
-                body: JSON.stringify(data)
+//                method: (url.indexOf('/delay') === 0) ? 'POST' : 'GET',
+                method: 'GET',
+//                headers: new Headers({
+////                    'Content-type' : 'application/json; charset=utf-8'
+//                }),
+//                body: JSON.stringify(data)
             });
         }
 
@@ -106,9 +110,12 @@
             return lib;
         }());
 
+
         document.addEventListener('DOMContentLoaded', function () {
 
             var pre = document.querySelector('pre');
+
+            pre.innerHTML = location.origin + pre.innerHTML;
 
             var query = (function () {
                 var t, tmp = {};
@@ -132,7 +139,7 @@
 
             if (query.tape) {
 
-                var stack = [];
+                var back = [];
 
                 ajaxN('/test/ajax/' + query.tape + '.txt')
                     .then(function (data) {
@@ -142,7 +149,7 @@
                         }).map(function (d, t, i) {
                             t = {}, i = 0;
                             d.replace(/([^\s]+)/g, function (r) {
-                                t[(i++ === 0) ? 'm' : 'url'] = (/^\d+$/.test(r) ? parseInt(r, 10) : r);
+                                t[(i++ === 0) ? 'm' : 'u'] = (/^\d+$/.test(r) ? parseInt(r, 10) : r);
                             });
                             return t;
                         });
@@ -155,15 +162,16 @@
 
                                 m = 'ajax' + t.m.toUpperCase();
 
-                                u = t.url;
+                                u = t.u;
 
                                 if (typeof u === 'string') {
-                                    u += '?' + m;
+
+                                    u += ((u.indexOf('?') > -1 ) ? '&' : '?' ) + m;
                                 }
 
-                                stack.push(t);
+                                back.push(t);
 
-                                pre.innerHTML = JSON.stringify(stack, null, '    ');
+                                pre.innerHTML = JSON.stringify(back, null, '    ');
 
                                 window[m](u).then(run)
                             }
