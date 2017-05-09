@@ -580,7 +580,9 @@ app.all('/fetch', (req, res) => {
                             }
                         }());
 
-                        data.internalLinks.links = (function () {
+                        data.internalLinks.href     = fix(data.internalLinks.href);
+                        data.internalLinks.search   = fix(data.internalLinks.search);
+                        data.internalLinks.links    = (function () {
 
                             var h, links = [];
 
