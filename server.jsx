@@ -86,7 +86,8 @@ const defopt = {
     firstrequestheaders: {
         'User-Agent' : 'Electron/version',
         Connection: 'close'
-    }
+    },
+    servercacheprotection: '___prerender'
 };
 
 // http://stackoverflow.com/a/16608045/5560682
@@ -200,7 +201,7 @@ app.all('/fetch', (req, res) => {
         }
 
         if ( ! /^https?:\/\//i.test(params.url)) {
-            error = "provide absolute path that beginning from http[s]://...";
+            error = "provide absolute path that starts from http[s]://...";
         }
 
         // @todo - i think i forget port here - check later how to add
@@ -230,10 +231,11 @@ app.all('/fetch', (req, res) => {
         // params.ajaxwatchdog = 8000;
 
 
-
-        // fix for native (hidden) server caching
-        var prerender = params.url + ( (params.url.indexOf('?') > -1) ? '&' : '?' ) + '_prerender';
-
+        var prerender = params.url;
+        if (params.servercacheprotection) {
+            // fix for native (hidden) server caching
+            prerender = params.url + ( (params.url.indexOf('?') > -1) ? '&' : '?' ) + params.servercacheprotection;
+        }
 
         curl(prerender, params.firstrequesttype, params.firstrequestheaders)
             .then(function (res) {
@@ -557,6 +559,27 @@ app.all('/fetch', (req, res) => {
 
                         data.contentType = mime;
 
+
+                        var fix = (function (reg, l) {
+
+                            function preg_quote (str, delimiter) {
+                                return (str + '').replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\' + (delimiter || '') + '-]', 'g'), '\\$&')
+                            }
+
+                            if (params.servercacheprotection) {
+                                reg = new RegExp('[\?&]' + preg_quote(params.servercacheprotection) + '&?', 'g');
+                                return function (t) {
+                                    return t.replace(reg, function (t) {
+                                        l = t[t.length -1];
+                                        return (l === '&' && t[0] === '?') ? '?' : '';
+                                    })
+                                }
+                            }
+                            else {
+                                return function (t) {return t};
+                            }
+                        }());
+
                         data.internalLinks.links = (function () {
 
                             var h, links = [];
@@ -646,7 +669,9 @@ app.all('/fetch', (req, res) => {
                             return links;
                         }()).reverse().filter(function (e, i, arr) {
                             return arr.indexOf(e, i+1) === -1;
-                        }).reverse().sort();
+                        }).reverse().map(fix).sort();
+
+                        data.html = fix(data.html);
 
                         if (params.returnonlyhtml) {
 
@@ -654,8 +679,7 @@ app.all('/fetch', (req, res) => {
                         }
 
                         return json(status, data);
-                    })
-                    .catch(function () {
+                    }, function () {
 
                         var args = Array.prototype.slice.call(arguments);
 
