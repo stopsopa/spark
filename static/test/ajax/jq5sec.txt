@@ -1,7 +1,7 @@
 n /delay
 n /delay
-j /delay?timeout=5000
-f /delay
+j /delay?timeout=1000
+f /delay?code=201
 f /delay
 j /delay
 n /delay

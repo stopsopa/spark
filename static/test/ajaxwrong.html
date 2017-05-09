@@ -18,9 +18,8 @@
     <script src="/libs/onAllFinished.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script>
-//        window.XMLHttpRequest.prototype.onAllFinished(function (status) {
-//            log('onAllFinished', status)
-//        }, 1000, 3000);
+
+        window.XMLHttpRequest.prototype.onAllFinished(1000, 3001);
 
         var log = (function () {try {return console.log;}catch (e) {return function () {}}}());
 

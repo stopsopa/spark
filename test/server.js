@@ -43,30 +43,42 @@ app.all('/', (req, res) => {
 
 app.all('/delay', (req, res) => {
 
-    var params = {
-        timeout: 0
+    var def = {
+        timeout: 0,
+        code: 200,
+        'Content-Type' : 'application/json; charset=utf-8'
     }
 
-    if (req.query.timeout > 0) {
+    var params = Object.assign({}, def);
+
+    if (Object.keys(req.query || {})) {
         params = Object.assign(params, req.query);
     }
 
-    if (req.body.timeout > 0) {
+    if (Object.keys(req.body || {})) {
         params = Object.assign(params, req.body);
     }
 
-    params.timeout = parseInt(params.timeout, 10);
+    var timeout     = parseInt(params.timeout, 10) || def.timeout;
+    var code        = parseInt(params.code, 10) || def.code;
+
+    delete params.timeout;
+    delete params.code;
+
+    Object.keys(params).forEach(function (h, v) {
+        v = params[h];
+        v && res.setHeader(h, v);
+    });
+
+    res.status(code);
 
     setTimeout(() => {
 
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.end(JSON.stringify(Object.assign(params, {
+            ok: true
+        })));
 
-        res.end(JSON.stringify({
-            ok: true,
-            timeout: params.timeout
-        }));
-
-    }, params.timeout)
+    }, timeout);
 });
 
 app.get('/ajaxwrong', (req, res) => {

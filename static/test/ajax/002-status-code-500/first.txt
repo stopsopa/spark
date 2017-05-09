@@ -1,0 +1,10 @@
+n /delay?timeout=100
+n /delay?timeout=100
+j /delay?timeout=100
+f /delay?timeout=100
+d 400
+f /delay?timeout=100
+j /delay?timeout=100
+n /delay?timeout=100
+
+

@@ -66,7 +66,6 @@ export default class Sandbox extends React.Component {
         this.onChangeWALAR  = debounce(this.onChangeWALAR.bind(this), 150);
     }
     setState() {
-        log('setState')
         return super.setState.apply(this, arguments);
     }
     @autobind
@@ -125,6 +124,9 @@ export default class Sandbox extends React.Component {
                     }
                 })
                 .done((json) => {
+
+                    window.json = json;
+
                     log(
                         'data awailable under window.json like JSON.stringify(window.json.watchdog, null, \'    \')',
                         window.json = json

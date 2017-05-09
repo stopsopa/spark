@@ -2,6 +2,10 @@ var glob      = require("glob");
 var path      = require("path");
 var colors    = require('colors');
 
+if (!process.env.WEBPACK_MODE) {
+    return console.log("\n\n     run: 'npm run dev' or 'npm run prod' \n\n".red);
+}
+
 function findentries(root) {
     // https://github.com/dylansmith/node-pathinfo/blob/master/index.js
     // http://php.net/manual/en/function.pathinfo.php#refsect1-function.pathinfo-examples

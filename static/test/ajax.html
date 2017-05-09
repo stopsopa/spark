@@ -6,16 +6,22 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Ajax</title>
+    <style>
+        * {
+            background-color: #2E2E2E;
+            color: #DEDEDE;
+            font-size: 11px;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
-    <pre>/test/ajax.html?tape=test</pre>
+    <pre id="json">/test/ajax.html?tape=test</pre>
+    <pre id="other"></pre>
 
     <script src="/libs/onAllFinished.js"></script>
     <script src="/libs/jquery.js"></script>
     <script>
-//        window.XMLHttpRequest.prototype.onAllFinished(function (status) {
-//            log('onAllFinished', status)
-//        }, 1000, 3000);
 
         var log = (function () {try {return console.log}catch (e) {return function () {}}}());
 
@@ -43,8 +49,8 @@
                             reject('Server not found');
                             return;
                         }
-                        if (xhr.readyState == 4)   {
-                            if (xhr.status  == 200) {
+                        if (xhr.readyState === 4)   {
+                            if (xhr.status == 200) {
 
                                 var resp = xhr.responseText;
 
@@ -110,74 +116,105 @@
             return lib;
         }());
 
-
         document.addEventListener('DOMContentLoaded', function () {
 
-            var pre = document.querySelector('pre');
+            var pre = (function () {
+                var el = document.getElementById('json');
+                var stack = [];
+                el.innerHTML = location.origin + el.innerHTML;
+                return function (obj) {
+                    stack.push(obj)
+                    el.innerHTML = JSON.stringify(stack, null, '    ');
+                }
+            }());
 
-            pre.innerHTML = location.origin + pre.innerHTML;
+            var other = (function () {
+                var el = document.getElementById('other');
+                var data = {};
+                var ret = function (key, val) {
+                    data[key] = val;
+                    el.innerHTML = JSON.stringify(data, null, '    ');
+                }
+
+                ret.data = function () {
+                    return data;
+                }
+
+                return ret;
+            }());
+
+            var now = function () {
+                return (new Date()).getTime();
+            };
+
+            other('start', now());
+
+            // run only in browser
+//            if (!window.__nightmare) {
+                log('initialize in browser before');
+                window.XMLHttpRequest.prototype.onAllFinished(null, null, true/* default values */).then(function (status) {
+                    log('calculating diff', status);
+                    var n = now();
+                    other('onAllFinished', n);
+                    other('diff', n - other.data().start);
+                });
+//            }
 
             var query = (function () {
                 var t, tmp = {};
                 location.search.replace(/^\?(.*)$/, '$1').split(/&/g).map(function (a) {
-                    t = a.split(/=/g);
-                    t[1] = t[1] ? decodeURIComponent(t[1]) : true;
-                    if (typeof tmp[t[0]] === 'undefined') {
-                        tmp[t[0]] = t[1];
+                    t = a.match(/^([^=]*)(?:=(.*))?$/);
+                    t[2] = t[2] ? decodeURIComponent(t[2]) : true;
+
+                    if (typeof tmp[t[1]] === 'undefined') {
+                        tmp[t[1]] = [];
                     }
-                    else {
-                        if (typeof tmp[t[0]] === 'string') {
-                            tmp[t[0]] = [tmp[t[0]], t[1]];
-                        }
-                        else {
-                            tmp[t[0]].push(t[1]);
-                        }
-                    }
+
+                    tmp[t[1]].push(t[2]);
                 });
                 return tmp;
             }());
 
             if (query.tape) {
 
-                var back = [];
+                query.tape.forEach(function (tape) {
 
-                ajaxN('/test/ajax/' + query.tape + '.txt')
-                    .then(function (data) {
+                    ajaxN('/test/ajax/' + tape + '.txt')
+                        .then(function (data) {
 
-                        data = data.split(/\n/g).filter(function (d) {
-                            return !!trim(d);
-                        }).map(function (d, t, i) {
-                            t = {}, i = 0;
-                            d.replace(/([^\s]+)/g, function (r) {
-                                t[(i++ === 0) ? 'm' : 'u'] = (/^\d+$/.test(r) ? parseInt(r, 10) : r);
+                            data = data.split(/\n/g).filter(function (d) {
+                                return !!trim(d);
+                            }).map(function (d, t, i) {
+                                t = {}, i = 0;
+                                d.replace(/([^\s]+)/g, function (r) {
+                                    t[(i++ === 0) ? 'm' : 'u'] = (/^\d+$/.test(r) ? parseInt(r, 10) : r);
+                                });
+                                return t;
                             });
-                            return t;
-                        });
 
-                        (function run(t, m, u) {
+                            (function run(t, m, u) {
 
-                            t = data.shift();
+                                t = data.shift();
 
-                            if (t) {
+                                if (t) {
 
-                                m = 'ajax' + t.m.toUpperCase();
+                                    m = 'ajax' + t.m.toUpperCase();
 
-                                u = t.u;
+                                    u = t.u;
 
-                                if (typeof u === 'string') {
+                                    if (typeof u === 'string') {
 
-                                    u += ((u.indexOf('?') > -1 ) ? '&' : '?' ) + m;
+                                        u += ((u.indexOf('?') > -1 ) ? '&' : '?' ) + m;
+                                    }
+
+                                    pre(t);
+
+                                    window[m](u).then(run);
                                 }
+                            }());
 
-                                back.push(t);
-
-                                pre.innerHTML = JSON.stringify(back, null, '    ');
-
-                                window[m](u).then(run)
-                            }
-                        }());
-
-                    })
+                        });
+                });
             }
         });
 

@@ -1,0 +1,5 @@
+n /delay?timeout=300
+f /delay?timeout=300
+j /delay?timeout=300
+d 300
+n /delay

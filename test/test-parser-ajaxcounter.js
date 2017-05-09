@@ -17,7 +17,19 @@ function trim(s) {
 // http://xxx.xxx.xxx.xxx:1025/test/links.html#empty-href
 describe('parser - onAllFinished event', () => {
 
-    function decode(tape, opt) {
+    function decode(tapes, opt) {
+
+        if (typeof tapes === 'string') {
+            tapes = [tapes];
+        }
+
+        var query = tapes.map(function (t) {
+            return 'tape=' + encodeURIComponent(t);
+        }).join('&');
+
+        if (query) {
+            query = '?' + query;
+        }
 
         /*
          var def = {
@@ -30,77 +42,70 @@ describe('parser - onAllFinished event', () => {
          }
          */
 
-        var file = path.resolve(__dirname, '..', 'static', 'test', 'ajax', tape + '.txt');
+        var files = {};
 
-        file = trim(fs.readFileSync(file).toString()).split("\n").map(trim);
+        tapes.forEach(function (tape) {
+            var file = path.resolve(__dirname, '..', 'static', 'test', 'ajax', tape + '.txt');
+            files[tape] = trim(fs.readFileSync(file).toString()).split("\n").map(trim);
+        });
 
-        return json('/test/ajax.html?tape=' + tape, opt)
+        return json('/test/ajax.html' + query, opt)
             .then(function (response) {
 
-                var data = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre>([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'))
-                    .map((d) => trim(d.m + ' ' + d.u)).join("\n")
-                ;
+                var data = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="json">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'));
+
+                data = data.map((d) => trim(d.m + ' ' + d.u)).join("\n");
+
+                var other = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="other">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'))
 
                 return {
-                    file,
+                    files,
                     data : trim(data).split("\n"),
-                    wath: response.json.watchdog
+                    other: other,
+                    watch: response.json.watchdog
                 };
             });
     }
 
-    it('test - alltypes - success', function () {
+    it('test - 001-simple', function () {
 
-        this.timeout(5000);
+        this.timeout(8000);
 
         this.slow(4000);
 
-        return decode('alltypes-success').then((d) => {
+        config.onlyfasttests && this.skip();
 
-            assert.deepEqual(d.data, d.file);
+        return decode('001-simple').then((d) => {
+
+            assert.deepEqual(d.data, d.files['001-simple']);
+
+            assert(d.other.diff > 1200);
 
             assert.deepEqual({
                 counter: 0,
                 flow: "correct",
-                notFinishedAsynchronousResponses: []
-            }, d.wath);
-
+                notFinishedAsynchronousRequests: [],
+                finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
+            }, d.watch);
         });
     });
 
-    it('test - jq5sec', function () {
+    return;
+
+    it('test - status code 500', function () {
 
         this.timeout(9000);
 
         this.slow(4000);
 
-        return decode('jq5sec', {
-            "ajaxwatchdog": {
-                "waitafterlastajaxresponse":1000,
-                "longestajaxrequest":2000
-            }
+        return decode(["002-status-code-500/first", "002-status-code-500/500"], {
+            // "ajaxwatchdog": {
+            //     "waitafterlastajaxresponse":1000,
+            //     "longestajaxrequest":2000
+            // }
         }).then((d) => {
 
-            assert.deepEqual(d.data, [
-                "n /delay",
-                "n /delay",
-                "j /delay?timeout=5000"
-            ]);
-
-            assert.deepEqual(d.wath, {
-                "counter": 1,
-                "flow": "incomplete",
-                "notFinishedAsynchronousResponses": [
-                    [
-                        "xhr",
-                        "GET",
-                        "/delay?timeout=5000&ajaxJ",
-                        true,
-                        null,
-                        null
-                    ]
-                ]
-            });
+            log.dump(d);
 
         });
     });

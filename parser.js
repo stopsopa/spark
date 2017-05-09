@@ -1,22 +1,22 @@
 'use strict';
 
-const path          = require('path');
-const bodyParser    = require('body-parser');
-const http          = require('http');
-const express       = require('express');
-const url           = require('url');
-const Nightmare     = require('nightmare');
-const assert        = console.assert;
+const path              = require('path');
+const bodyParser        = require('body-parser');
+const http              = require('http');
+const express           = require('express');
+const url               = require('url');
+const Nightmare         = require('nightmare');
+const assert            = console.assert;
 
 require(path.resolve(__dirname, 'lib', 'rootrequire'))(__dirname, '.');
 
-const log           = rootrequire('lib', 'log');
+const log               = rootrequire('lib', 'log');
 
-const app           = express();
+const app               = express();
 
 assert(process.argv.length > 3, "try to call for example 'node " + path.basename(__filename) + " 0.0.0.0 80'");
 
-const ip = process.argv[2];
+const ip                = process.argv[2];
 
 // http://www.w3resource.com/javascript/form/ip-address-validation.php
 assert(
@@ -28,7 +28,7 @@ const port = process.argv[3];
 
 assert(port >= 0 && port <= 65535, "port beyond range 0 - 65535 : '" + port + "'");
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(bodyParser.json()); // https://github.com/expressjs/body-parser#expressconnect-top-level-generic
 
@@ -60,11 +60,12 @@ const defopt = {
         // but then you need to tell prerender when
         // take the snapshot of document by calling manually
         // window.nmsc = window.nmsc || []; nmsc.push(true);
-        waitafterlastajaxresponse: 3000, // 1 sec
-        longestajaxrequest: 15000 // 5 sec
+        waitafterlastajaxresponse: 3001, // 1 sec
+        longestajaxrequest: 5001, // 5 sec
+        debug: true
     },
 
-    headers : {},
+    headers: {},
     // readyid: 'readyid', // don't change anything, you just can use predefined id instead of random
     nmsc: 'nmsc', // if setup for "mynamespace" then triggering manually looks like
     // window.mynamespace = window.mynamespace || []; mynamespace.push(true);
@@ -73,9 +74,10 @@ const defopt = {
 
     firstrequesttype: 'get', // 'head' or in some rare circumstances 'get' ('get' - worse performance)
     firstrequestheaders: {
-        'User-Agent' : 'Electron/version',
+        'User-Agent': 'Electron/version',
         Connection: 'close'
-    }
+    },
+    servercacheprotection: '___prerender'
 };
 
 // http://stackoverflow.com/a/16608045/5560682
@@ -86,7 +88,7 @@ function isObject(a) {
 function unique(pattern) {
     pattern || (pattern = 'xyx');
     return pattern.replace(/[xy]/g,
-        function(c) {
+        function (c) {
             var r = Math.random() * 16 | 0,
                 v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
@@ -98,25 +100,25 @@ function curl(uri, method, headers) {
     uri = url.parse(uri);
 
     var options = {
-        method  : method,
-        host    : uri.hostname,
-        port    : uri.port,
-        path    : uri.path,
-        headers : Object.assign({}, headers || {}, {
+        method: method,
+        host: uri.hostname,
+        port: uri.port,
+        path: uri.path,
+        headers: Object.assign({}, headers || {}, {
             Host: uri.hostname
         })
     };
 
     return new Promise(function (resolve, reject) {
 
-        var req = http.request(options, function(res) {
+        var req = http.request(options, function (res) {
 
             res.setEncoding('utf8');
 
             resolve(res);
         });
 
-        req.on('error', function(e) {
+        req.on('error', function (e) {
             reject(e)
         });
 
@@ -127,9 +129,9 @@ function curl(uri, method, headers) {
 app.all('/fetch', (req, res) => {
 
     var
-        params  = req.query,
-        error   = false
-    ;
+        params = req.query,
+        error = false
+        ;
 
     var json = (function () {
         var stop = false;
@@ -172,13 +174,13 @@ app.all('/fetch', (req, res) => {
             Object.assign(params, req.body);
         }
 
-        params                  = Object.assign({}, defopt, params);
+        params = Object.assign({}, defopt, params);
 
-        params.defopt           = Object.assign({}, defopt);
+        params.defopt = Object.assign({}, defopt);
 
-        params.u                = unique();
+        params.u = unique();
 
-        params.nightmare        = Object.assign({}, nightmaredef, params.nightmare || {});
+        params.nightmare = Object.assign({}, nightmaredef, params.nightmare || {});
 
         if (!params.nmsc) {
             params.nmsc = 'nmsc';
@@ -188,8 +190,8 @@ app.all('/fetch', (req, res) => {
             error = "provide 'url' as http get, post or json param";
         }
 
-        if ( ! /^https?:\/\//i.test(params.url)) {
-            error = "provide absolute path that beginning from http[s]://...";
+        if (!/^https?:\/\//i.test(params.url)) {
+            error = "provide absolute path that starts from http[s]://...";
         }
 
         if (!params.url) {
@@ -215,16 +217,17 @@ app.all('/fetch', (req, res) => {
             params.readyid = 'readyid_' + unique();
         }
 
-        log('[browser:'+params.u+':init]: ' + params.url);
-
-
+        log('[browser:' + params.u + ':init]: ' + params.url);
 
         // hardcoded for now
         // params.ajaxwatchdog = 8000;
+        var prerender = (function (url, t) {
+            t = url.split("#");
+            t[0] = t[0] + ( (url.indexOf('?') > -1) ? '&' : '?' ) + params.servercacheprotection;
+            return t.join("#");
+        }(params.url));
 
-
-
-        curl(params.url, params.firstrequesttype, params.firstrequestheaders)
+        curl(prerender, params.firstrequesttype, params.firstrequestheaders)
             .then(function (res) {
 
                 if (res.statusCode !== 200) {
@@ -243,7 +246,7 @@ app.all('/fetch', (req, res) => {
 
                 try {
                     // no mime type example https://cran.r-project.org/doc/manuals/NEWS.1
-                    mime    = res.headers['content-type'];
+                    mime = res.headers['content-type'];
 
                     if (mime.toLowerCase().indexOf('text/html') > -1) {
                         okMimeType = true;
@@ -271,7 +274,7 @@ app.all('/fetch', (req, res) => {
 
                         var type = args[0];
 
-                        args[0] = '[browser:'+params.u+':'+type+']';
+                        args[0] = '[browser:' + params.u + ':' + type + ']';
 
                         if (!events.console) {
                             events.console = {};
@@ -282,14 +285,12 @@ app.all('/fetch', (req, res) => {
                         }
 
                         events.console[type].push(args);
-
-                        log.apply(this, args);
                     })
                     .on('page', function (type) {
 
                         var args = Array.prototype.slice.call(arguments);
 
-                        switch(type) {
+                        switch (type) {
                             case 'error':
                                 // @todo - check if js error really stop browser, i think it shouldn't
                                 return json(500, {
@@ -301,7 +302,7 @@ app.all('/fetch', (req, res) => {
                             case 'alert':
                             case 'prompt':
                             case 'confirm':
-                                args[0] = '[browser:'+params.u+':'+args[0]+':type:'+type+']';
+                                args[0] = '[browser:' + params.u + ':' + args[0] + ':type:' + type + ']';
 
                                 return log.apply(this, args);
                             default:
@@ -338,7 +339,7 @@ app.all('/fetch', (req, res) => {
                             events['did-get-redirect-request'].push(data);
                         }
                     })
-                    .goto(params.url, params.headers || {})
+                    .goto(prerender, params.headers || {})
                     .wait('body')
                     .evaluate(function (params) {
 
@@ -347,7 +348,8 @@ app.all('/fetch', (req, res) => {
                         (function (ready) {
 
                             function trigger(status) {
-                                window[params.nmsc] = window[params.nmsc] || []; window[params.nmsc].push(status);
+                                window[params.nmsc] = window[params.nmsc] || [];
+                                window[params.nmsc].push(status);
                             };
 
                             if (window[params.nmsc] && window[params.nmsc].length) {
@@ -366,12 +368,12 @@ app.all('/fetch', (req, res) => {
                                 }
 
                                 if (typeof params.ajaxwatchdog === 'object') {
-                                    log('use ajaxwatchdog counter')
+                                    log('use ajaxwatchdog counter', params.ajaxwatchdog);
                                     window.XMLHttpRequest.prototype.onAllFinished(
-                                        trigger,
                                         params.ajaxwatchdog.waitafterlastajaxresponse || params.defopt.ajaxwatchdog.waitafterlastajaxresponse,
-                                        params.ajaxwatchdog.longestajaxrequest || params.defopt.ajaxwatchdog.longestajaxrequest
-                                    );
+                                        params.ajaxwatchdog.longestajaxrequest || params.defopt.ajaxwatchdog.longestajaxrequest,
+                                        typeof params.ajaxwatchdog.debug === 'boolean' ? params.ajaxwatchdog.debug : params.defopt.ajaxwatchdog.debug
+                                    ).then(trigger);
                                 }
 
                             }
@@ -408,11 +410,11 @@ app.all('/fetch', (req, res) => {
                                     var node = document.doctype;
                                     var html = "<!DOCTYPE "
                                         + (node ? (
-                                            node.name
-                                            + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
-                                            + (!node.publicId && node.systemId ? ' SYSTEM' : '')
-                                            + (node.systemId ? ' "' + node.systemId + '"' : '')
-                                        ) : 'nodoctype')
+                                                node.name
+                                                + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '')
+                                                + (!node.publicId && node.systemId ? ' SYSTEM' : '')
+                                                + (node.systemId ? ' "' + node.systemId + '"' : '')
+                                            ) : 'nodoctype')
                                         + '>';
                                     html += document.documentElement.outerHTML;
 
@@ -440,7 +442,7 @@ app.all('/fetch', (req, res) => {
                                     // directory/link
                                     // not //origin/directory/link
                                     // not #hash
-                                    for (var i = 0, l = list.length ; i < l ; i += 1 ) {
+                                    for (var i = 0, l = list.length; i < l; i += 1) {
 
                                         h = list[i];
 
@@ -514,7 +516,7 @@ app.all('/fetch', (req, res) => {
                         var okMimeType = true, mime = null;
                         try {
                             // no mime type example https://cran.r-project.org/doc/manuals/NEWS.1
-                            mime    = events['did-get-response-details'][7]['content-type'][0];
+                            mime = events['did-get-response-details'][7]['content-type'][0];
 
                             if (mime.toLowerCase().indexOf('text/html') > -1) {
                                 okMimeType = true;
@@ -531,9 +533,35 @@ app.all('/fetch', (req, res) => {
                             throw "mime type '" + mime + "-'";
                         }
 
-                        data.statusCode = status;
+                        var fix = (function (reg, l) {
 
-                        data.contentType = mime;
+                            function preg_quote (str, delimiter) {
+                                return (str + '').replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\' + (delimiter || '') + '-]', 'g'), '\\$&');
+                            }
+
+                            if (params.servercacheprotection) {
+                                reg = new RegExp('[\?&]' + preg_quote(params.servercacheprotection) + '&?', 'g');
+                                return function (t) {
+                                    t = t.split('#');
+                                    t[0] = t[0].replace(reg, function (t) {
+                                        l = t[t.length -1];
+                                        return (l === '&' && t[0] === '?') ? '?' : '';
+                                    });
+                                    return t.join('#');
+                                }
+                            }
+                            else {
+                                return function (t) {return t};
+                            }
+                        }());
+
+                        data.statusCode             = status;
+
+                        data.contentType            = mime;
+
+                        data.internalLinks.href     = fix(data.internalLinks.href);
+
+                        data.internalLinks.search   = fix(data.internalLinks.search);
 
                         data.internalLinks.links = (function () {
 
@@ -560,7 +588,7 @@ app.all('/fetch', (req, res) => {
                             // directory/link
                             // not //origin/directory/link
                             // not #hash
-                            for (var i = 0, l = list.length ; i < l ; i += 1 ) {
+                            for (var i = 0, l = list.length; i < l; i += 1) {
 
                                 h = list[i];
 
@@ -613,7 +641,9 @@ app.all('/fetch', (req, res) => {
                             return links;
                         }()).reverse().filter(function (e, i, arr) {
                             return arr.indexOf(e, i + 1) === -1;
-                        }).reverse().sort();
+                        }).reverse().map(fix).sort();
+
+                        data.html = fix(data.html);
 
                         if (params.returnonlyhtml) {
 
@@ -692,5 +722,5 @@ try /fetch?url=http://....
 });
 
 app.listen(port, ip, () => {
-    console.log('Parser server is running '+ip+':'+port)
+    console.log('Parser server is running ' + ip + ':' + port)
 });

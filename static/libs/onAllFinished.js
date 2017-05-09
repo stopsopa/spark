@@ -23,6 +23,20 @@
     };
 }());
 
+// Object.values polyfill
+if (!Object.values) {
+    log('Applying Object.values polyfill');
+    // http://stackoverflow.com/a/38748490
+    Object.values = function (obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    }
+}
+else {
+    log('Object.values polyfill is not necessary');
+}
+
 if (typeof require !== 'undefined') {
     window.__nightmare = {};
     __nightmare.ipc = require('electron').ipcRenderer;
@@ -158,11 +172,10 @@ if (typeof require !== 'undefined') {
             }
         }
 
-        var list = {}, c, on, off, t;
+        var list = {}, c, on, off;
         for (var i in XMLHttpRequest.prototype) {
             try {
-                t = typeof XMLHttpRequest.prototype[i];
-                if (t === 'function') {
+                if (typeof XMLHttpRequest.prototype[i] === 'function') {
 
                     c = capitalizeFirstLetter(i);
 
@@ -173,10 +186,6 @@ if (typeof require !== 'undefined') {
                     over(i, on, off);
 
                     list[i] = [on, off];
-                    log('overrided: ', i);
-                }
-                else {
-                    //                        log("can't override - not function: ", i)
                 }
             }
             catch (e) {
@@ -186,7 +195,7 @@ if (typeof require !== 'undefined') {
 
         window.XMLHttpRequest.prototype.list = list;
 
-        log('list: ', list)
+        log('list:', Object.keys(list).map(function (e) {return '[on|off]' + capitalizeFirstLetter(e)}).join(', '));
 
     }());
 
@@ -196,156 +205,218 @@ if (typeof require !== 'undefined') {
             return log('onAllFinished is already defined');
         }
 
-        window.XMLHttpRequest.prototype.onAllFinished = function (finishedfn, debouncetime /* 1000 */, fusetime /* 1500 */) {
-
-            // to prevent bind two times
-            window.XMLHttpRequest.prototype.onAllFinished = function () {
-                log('second attempt to use onAllFinished - aborted');
+        function debounce(fn, delay) {
+            var timer = null;
+            return function () {
+                var context = this, args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    fn.apply(context, args);
+                }, delay);
             };
-
-            if (typeof debouncetime === 'undefined') {
-                log('debouncetime is not defined')
-                debouncetime = 1000;
-            }
-
-            if (debouncetime < 100) {
-                log('debouncetime is smaller then debouncetime');
-                debouncetime = 100;
-            }
-
-            if (typeof fusetime === 'undefined' || fusetime < debouncetime) {
-                log('automatically setup fusetime')
-                fusetime = debouncetime + 500;
-            }
-
-            function debounce(fn, delay) {
-                var timer = null;
-                return function () {
-                    var context = this, args = arguments;
-                    clearTimeout(timer);
-                    timer = setTimeout(function () {
-                        fn.apply(context, args);
-                    }, delay);
-                };
-            };
-
-            (function () {
-
-                var urls = {};
-
-                var counter = 0;
-
-                function up (key, args) {
-
-                    log('up', key, args)
-
-                    urls[key] = args;
-
-                    counter += 1;
-
-                    initEmergency(key);
-                }
-                function down(key) {
-
-                    log('down', key)
-                    counter -= 1;
-                    delete urls[key];
-                    initEmergency(key);
-                    if (counter === 0) {
-                        onReady();
-                    }
-                }
-                var emergency;
-                function initEmergency(key) {
-                    if (!emergency) {
-                        emergency = debounce(function () {
-                            if (finishedfn) {
-                                var tmp = [];
-                                for (var i in urls) {
-                                    tmp.push(urls[i]);
-                                }
-                                log('onAllFinished fired - incomplete')
-                                finishedfn({
-                                    notFinishedAsynchronousResponses: tmp,
-                                    flow: 'incomplete',
-                                    counter: counter
-                                });
-                            }
-                            finishedfn = false;
-                        }, fusetime);
-                    }
-                    emergency();
-                }
-                var onReady = debounce(function () {
-                    if (counter === 0) {
-                        if (finishedfn) {
-                            log('onAllFinished fired - correct')
-                            finishedfn({
-                                notFinishedAsynchronousResponses: [],
-                                flow: 'correct',
-                                counter: counter
-                            });
-                        }
-                        finishedfn = false;
-                    }
-                }, debouncetime);
-
-                (function (old) {
-                    if (old && !old.old) {
-                        fetch = function () {
-
-                            args = Array.prototype.slice.call(arguments);
-                            args = ['fetch'].concat(args);
-
-                            var key = unique();
-
-                            up(key, args)
-
-                            var promise = old.apply(this, Array.prototype.slice.call(arguments));
-                            return promise.then(function () {
-                                // log('fetch down: ' +  url, JSON.stringify(urls, null, 2))
-                                down(key);
-                            });
-                        }
-                        fetch.old = old;
-                    }
-                    else {
-                        // log("don't override fetch")
-                    }
-                }(window.fetch));
-
-                var args;
-                XMLHttpRequest.prototype.onOpen(function () {
-                    args = Array.prototype.slice.call(arguments);
-                    args = ['xhr'].concat(args);
-                });
-
-                XMLHttpRequest.prototype.onSend(function () {
-
-                    var key = unique();
-
-                    up(key, args);
-
-                    var xhr = this;
-                    this.addEventListener('readystatechange', function (e) {
-                        if (xhr.readyState === 4) {
-                            down(key);
-                        }
-                    })
-                });
-
-                onReady();
-            }())
         };
 
-        if (!window.__nightmare) {
-            // only for browser mode to et
-            window.XMLHttpRequest.prototype.onAllFinished(function (status) {
-                log('onAllFinished', status)
-            }, 3000, 3000);
-        }
+        var status = 'pending', debug = false, urls = {}, non200 = {}, cache = [],
+            promise, waitafterlastajaxresponse, longestajaxrequest,
+            emergencyFn, onReadyFn, resolveTmp;
 
-        // normally it shouldn't be called here, it's only for testing
-    }())
+        var l = function () {
+            cache.push(Array.prototype.slice.call(arguments));
+        };
 
+        function initEmergency() {
+            if (longestajaxrequest) {
+                if (!emergencyFn) {
+                    emergencyFn = debounce(function (d) {
+                        if (status === 'pending') {
+                            status = 'resolved';
+                            l('triggering onAllFinished: incomplete');
+                            d = Object.values(urls);
+                            resolveTmp({
+                                notFinishedAsynchronousRequests: d,
+                                finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: Object.values(non200),
+                                flow: 'incomplete',
+                                counter: d.length
+                            });
+                            resolveTmp = true;
+                        }
+                    }, longestajaxrequest);
+                }
+                emergencyFn();
+            }
+        };
+        function onReady() {
+            log(waitafterlastajaxresponse, !onReadyFn, Object.keys(urls).length, status === 'pending', urls)
+            if (waitafterlastajaxresponse) {
+                if (!onReadyFn) {
+                    onReadyFn = debounce(function (c) {
+                        c = Object.keys(urls).length;
+                        if (c === 0) {
+                            if (status === 'pending') {
+                                status = 'resolved';
+                                l('triggering onAllFinished: correct');
+                                resolveTmp({
+                                    notFinishedAsynchronousRequests: [],
+                                    finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: Object.values(non200),
+                                    flow: 'correct',
+                                    counter: c
+                                });
+                                resolveTmp = true;
+                            }
+                        }
+                    }, waitafterlastajaxresponse);
+                }
+                onReadyFn();
+            }
+        };
+        function up (key, args) {
+
+            urls[key] = args;
+
+            initEmergency(key);
+        };
+        function down(key, code, args) {
+            delete urls[key];
+            if (code != 200) {
+                non200[key] = {
+                    request: args,
+                    statusCode: /^\d{3}$/.test(code) ? parseInt(code, 10) : (code + '')
+                };
+            }
+            initEmergency(key);
+            if (Object.keys(urls).length === 0) {
+                onReady();
+            }
+        };
+
+        // duck puching fetch
+        (function (old) {
+
+            if (!old) {
+                return log('fetch is not available');
+            }
+
+            if (old.old) {
+                return l('fetch is already overrided');
+            }
+
+            window.fetch = function () {
+
+                var args = Array.prototype.slice.call(arguments);
+                var cache = ['fetch'].concat(args);
+
+                var key = unique();
+
+                up(key, cache);
+
+                var promise = old.apply(this, args);
+
+                promise.then(function (response) {
+                    down(key, response.status, args);
+                }, function () {
+                    down(key, 0, args);
+                });
+
+                return promise;
+            }
+            fetch.old = old;
+        }(window.fetch));
+
+        // duck puching XMLHttpRequest
+        (function (args) {
+
+            XMLHttpRequest.prototype.onOpen(function () {
+                args = Array.prototype.slice.call(arguments);
+                args = ['xhr'].concat(args);
+            });
+
+            XMLHttpRequest.prototype.onSend(function () {
+
+                var key = unique();
+
+                up(key, args);
+
+                var xhr = this;
+
+                this.addEventListener('readystatechange', function (e) {
+                    if (xhr.readyState === 4) {
+                        down(key, xhr.status, args);
+                    }
+                })
+            });
+        }());
+
+        promise = new Promise(function (resolve) {
+            resolveTmp = resolve;
+        });
+
+        window.XMLHttpRequest.prototype.onAllFinished = function (/* waitafterlastajaxresponse:1000, longestajaxrequest:1500, debug:false */) {
+
+            var args = Array.prototype.slice.call(arguments);
+
+            if (resolveTmp === true) {
+
+                if (args.length) {
+
+                    log('onAllFinished arguments ignored, promise already initialized', 'now given args:', {
+                        waitafterlastajaxresponse: args[0],
+                        longestajaxrequest: args[1],
+                        debug: (typeof args[2] === 'undefined') ? 'default:false' : args[2]
+                    }, 'previousely given args:', {
+                        waitafterlastajaxresponse: waitafterlastajaxresponse,
+                        longestajaxrequest: longestajaxrequest,
+                        debug: debug
+                    });
+                }
+
+                return promise;
+            }
+
+            waitafterlastajaxresponse   = args[0];
+            longestajaxrequest          = args[1];
+            debug                       = (typeof args[2] === 'undefined') ? false : args[2];
+
+            if (debug) {
+
+                l = function () {
+                    log.apply(console, arguments);
+                };
+
+                (function (tmp) {
+                    while (tmp = cache.shift())
+                        log.apply(console, tmp);
+                }());
+            }
+
+            if (typeof waitafterlastajaxresponse === 'undefined') {
+                waitafterlastajaxresponse = 1000;
+                log('waitafterlastajaxresponse unspecified, setup to default value: ' + waitafterlastajaxresponse)
+            }
+
+            if (waitafterlastajaxresponse < 1000) {
+                waitafterlastajaxresponse = 1000;
+                log('waitafterlastajaxresponse is smaller then waitafterlastajaxresponse, fixed to: ' + waitafterlastajaxresponse);
+            }
+
+            if (typeof longestajaxrequest === 'undefined') {
+                longestajaxrequest = waitafterlastajaxresponse + 500;
+                log('longestajaxrequest unspecified, autosetup to: ' + longestajaxrequest)
+            }
+
+            if (longestajaxrequest < waitafterlastajaxresponse) {
+                longestajaxrequest = waitafterlastajaxresponse + 500;
+                log('longestajaxrequest lt waitafterlastajaxresponse, fixed to: ' + longestajaxrequest)
+            }
+
+            log('onAllFinished initialized: ' + JSON.stringify({
+                waitafterlastajaxresponse: waitafterlastajaxresponse,
+                longestajaxrequest: longestajaxrequest,
+                debug: debug
+            }));
+
+            onReady();
+
+            return promise;
+        };
+    }());
 }());
