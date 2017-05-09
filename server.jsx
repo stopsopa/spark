@@ -230,12 +230,11 @@ app.all('/fetch', (req, res) => {
         // hardcoded for now
         // params.ajaxwatchdog = 8000;
 
-
-        var prerender = params.url;
-        if (params.servercacheprotection) {
-            // fix for native (hidden) server caching
-            prerender = params.url + ( (params.url.indexOf('?') > -1) ? '&' : '?' ) + params.servercacheprotection;
-        }
+        var prerender = (function (url, t) {
+            t = url.split("#");
+            t[0] = t[0] + ( (url.indexOf('?') > -1) ? '&' : '?' ) + params.servercacheprotection;
+            return t.join("#");
+        }(params.url));
 
         curl(prerender, params.firstrequesttype, params.firstrequestheaders)
             .then(function (res) {
@@ -559,20 +558,21 @@ app.all('/fetch', (req, res) => {
 
                         data.contentType = mime;
 
-
                         var fix = (function (reg, l) {
 
                             function preg_quote (str, delimiter) {
-                                return (str + '').replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\' + (delimiter || '') + '-]', 'g'), '\\$&')
+                                return (str + '').replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\' + (delimiter || '') + '-]', 'g'), '\\$&');
                             }
 
                             if (params.servercacheprotection) {
                                 reg = new RegExp('[\?&]' + preg_quote(params.servercacheprotection) + '&?', 'g');
                                 return function (t) {
-                                    return t.replace(reg, function (t) {
+                                    t = t.split('#');
+                                    t[0] = t[0].replace(reg, function (t) {
                                         l = t[t.length -1];
                                         return (l === '&' && t[0] === '?') ? '?' : '';
-                                    })
+                                    });
+                                    return t.join('#');
                                 }
                             }
                             else {
