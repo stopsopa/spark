@@ -67,6 +67,32 @@ describe('parser - onAllFinished event', () => {
             });
     }
 
+    it('test - 000-dry', function () {
+
+        this.timeout(8000);
+
+        this.slow(4000);
+
+        config.onlyfasttests && this.skip();
+
+        return decode(["000-dry/one", "000-dry/two"]).then((d) => {
+
+            assert.deepEqual(d.data, [
+                "n /delay?timeout=10&amp;1",
+                "f /delay?timeout=10&amp;2",
+                "d 250",
+                "j /delay?timeout=10&amp;3",
+                "n /delay?timeout=10&amp;4",
+                "f /delay?timeout=10&amp;5",
+                "j /delay?timeout=10&amp;6"
+            ]);
+
+            assert.equal(d.data.length, 7);
+
+            assert(d.other.diff > 800);
+        });
+    });
+
     it('test - 001-simple', function () {
 
         this.timeout(8000);
@@ -77,9 +103,13 @@ describe('parser - onAllFinished event', () => {
 
         return decode('001-simple').then((d) => {
 
-            assert.deepEqual(d.data, d.files['001-simple']);
+            var file = d.files['001-simple'];
+
+            assert.deepEqual(d.data, file);
 
             assert(d.other.diff > 1200);
+
+            assert.equal(d.data.length, file.length);
 
             assert.deepEqual({
                 counter: 0,

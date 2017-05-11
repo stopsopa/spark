@@ -1,0 +1,3 @@
+n /delay?timeout=10&1
+f /delay?timeout=10&2
+j /delay?timeout=10&3

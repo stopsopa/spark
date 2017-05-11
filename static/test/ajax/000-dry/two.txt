@@ -1,0 +1,4 @@
+d 250
+n /delay?timeout=10&4
+f /delay?timeout=10&5
+j /delay?timeout=10&6
