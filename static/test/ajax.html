@@ -49,9 +49,9 @@
                             reject('Server not found');
                             return;
                         }
+                        
                         if (xhr.readyState === 4)   {
-                            if (xhr.status == 200) {
-
+//                            if (xhr.status == 200) {
                                 var resp = xhr.responseText;
 
                                 try {
@@ -62,10 +62,10 @@
 
                                 xhr=null;
                                 resolve(resp);
-                            }
-                            else {
-                                reject('Error status code: ' + xhr.status);
-                            }
+//                            }
+//                            else {
+//                                reject('Error status code: ' + xhr.status);
+//                            }
                         }
                     }
                     xhr.send();
@@ -75,22 +75,28 @@
         })();
 
         function ajaxJ(url, data) {
-            return $.ajax(url, {
-//                type: (url.indexOf('/delay') === 0) ? 'POST' : 'GET',
-                type: 'GET',
-//                contentType: 'application/json; charset=utf-8',
-//                data: JSON.stringify(data)
+            return new Promise(function (resolve, reject) {
+                $.ajax(url, {
+    //                type: (url.indexOf('/delay') === 0) ? 'POST' : 'GET',
+                    type: 'GET',
+    //                contentType: 'application/json; charset=utf-8',
+    //                data: JSON.stringify(data)
+                })
+                .done(resolve)
+                .fail(resolve)
+                .always(resolve);
             });
         }
         function ajaxF(url, data) {
-            return fetch(url, {
+            return fetch(url//, {
 //                method: (url.indexOf('/delay') === 0) ? 'POST' : 'GET',
-                method: 'GET',
+                //method: 'GET',
 //                headers: new Headers({
 ////                    'Content-type' : 'application/json; charset=utf-8'
 //                }),
 //                body: JSON.stringify(data)
-            });
+            //}
+            );
         }
 
         var ajaxD = (function () {
@@ -209,7 +215,7 @@
 
                                     pre(t);
 
-                                    window[m](u).then(run);
+                                    window[m](u).then(run, run);
                                 }
                             }());
 

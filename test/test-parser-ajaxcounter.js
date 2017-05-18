@@ -13,6 +13,24 @@ const json          = rootrequire('test', 'lib', 'json');
 function trim(s) {
     return s.replace(/^\s*(\S*(\s+\S+)*)\s*$/,'$1');
 }
+var entities = (function () {
+    var d = {
+        '&': /&amp;/g,
+        "'": /&apos;/g,
+        '"': /&quot;/g,
+        '>': /&gt;/g,
+        '<': /&lt;/g
+    };
+
+    return function (str) {
+
+        for (var i in d) {
+            str = str.replace(d[i], i);
+        }
+
+        return str;
+    }
+}());
 
 // http://xxx.xxx.xxx.xxx:1025/test/links.html#empty-href
 describe('parser - onAllFinished event', () => {
@@ -49,25 +67,52 @@ describe('parser - onAllFinished event', () => {
             files[tape] = trim(fs.readFileSync(file).toString()).split("\n").map(trim);
         });
 
+        Object.keys(files).forEach(function (i) {
+            files[i].sort();
+        });
+
         return json('/test/ajax.html' + query, opt)
             .then(function (response) {
 
                 var data = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="json">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'));
 
-                data = data.map((d) => trim(d.m + ' ' + d.u)).join("\n");
-
                 var other = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="other">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'))
 
+                var all = Array.prototype.concat.apply([], Object.values(files));
+
+                all.sort();
+
+                data = data.map((d) => trim(d.m + ' ' + d.u)).map(entities).join("\n");
+
+                data = data.trim(data).split("\n");
+
+                data.sort();
+
                 return {
-                    files,
-                    data : trim(data).split("\n"),
-                    other: other,
-                    watch: response.json.watchdog
+                    files   : files,
+                    all     : all,
+                    data    : data,
+                    other   : other,
+                    watch   : response.json.watchdog,
+                    json    : response.json
                 };
             });
     }
 
-    it('test - 000-dry', function () {
+    it('test - 000-encoded', function () {
+
+        this.timeout(8000);
+
+        this.slow(2500);
+
+        config.onlyfasttests && this.skip();
+
+        return decode("000-encoded").then((d) => {
+            assert(d.json.html.indexOf('b&amp;c') > -1);
+        });
+    });
+
+    it('test - 002-dry', function () {
 
         this.timeout(8000);
 
@@ -75,19 +120,11 @@ describe('parser - onAllFinished event', () => {
 
         config.onlyfasttests && this.skip();
 
-        return decode(["000-dry/one", "000-dry/two"]).then((d) => {
+        return decode(["002-dry/one", "002-dry/two"]).then((d) => {
 
-            assert.deepEqual(d.data, [
-                "n /delay?timeout=10&amp;1",
-                "f /delay?timeout=10&amp;2",
-                "d 250",
-                "j /delay?timeout=10&amp;3",
-                "n /delay?timeout=10&amp;4",
-                "f /delay?timeout=10&amp;5",
-                "j /delay?timeout=10&amp;6"
-            ]);
+            assert.deepEqual(d.data, d.all);
 
-            assert.equal(d.data.length, 7);
+            assert.equal(d.data.length, d.all.length);
 
             assert(d.other.diff > 800);
         });
@@ -103,13 +140,11 @@ describe('parser - onAllFinished event', () => {
 
         return decode('001-simple').then((d) => {
 
-            var file = d.files['001-simple'];
+            assert.deepEqual(d.data, d.all);
 
-            assert.deepEqual(d.data, file);
+            assert.equal(d.data.length, d.all.length);
 
             assert(d.other.diff > 1200);
-
-            assert.equal(d.data.length, file.length);
 
             assert.deepEqual({
                 counter: 0,
@@ -120,22 +155,33 @@ describe('parser - onAllFinished event', () => {
         });
     });
 
-    return;
-
+    // http://x.x.x.x:1026/test/ajax.html?tape=002-status-code-500/first&tape=002-status-code-500/500
     it('test - status code 500', function () {
 
         this.timeout(9000);
 
         this.slow(4000);
 
-        return decode(["002-status-code-500/first", "002-status-code-500/500"], {
-            // "ajaxwatchdog": {
-            //     "waitafterlastajaxresponse":1000,
-            //     "longestajaxrequest":2000
-            // }
-        }).then((d) => {
+        this.skip();
 
-            log.dump(d);
+        // config.onlyfasttests && this.skip();
+
+        return decode(["002-status-code-500/first", "002-status-code-500/500"]).then((d) => {
+
+            log.dump(d.data);
+            log.dump(d.all);
+            assert.deepEqual(d.data, d.all);
+
+            assert.equal(d.data.length, d.all.length);
+
+            assert(d.other.diff > 2000);
+
+            assert.deepEqual(d.watch, {
+                counter: 0,
+                flow: "correct",
+                notFinishedAsynchronousRequests: [],
+                finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
+            });
 
         });
     });

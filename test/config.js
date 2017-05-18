@@ -48,5 +48,5 @@ module.exports = Object.assign(rootrequire('config'), {
         protocol    : 'http:'
     },
     // with this you can run 'npm run test fast'
-    onlyfasttests: (process.argv[3] && (process.argv[3] === 'fast'))
+    onlyfasttests: process.argv.indexOf('fast') > -1
 });

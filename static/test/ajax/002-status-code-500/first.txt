@@ -1,10 +1,9 @@
-n /delay?timeout=100
-n /delay?timeout=100
-j /delay?timeout=100
-f /delay?timeout=100
+j /delay?timeout=101&code=500
+f /delay?timeout=102&code=500
+n /delay?timeout=103&code=500
 d 400
-f /delay?timeout=100
-j /delay?timeout=100
-n /delay?timeout=100
+f /delay?timeout=104
+j /delay?timeout=105
+n /delay?timeout=106
 
 

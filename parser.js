@@ -77,7 +77,7 @@ const defopt = {
         'User-Agent': 'Electron/version',
         Connection: 'close'
     },
-    servercacheprotection: '___prerender'
+    servercacheprotection: '_-_prerender_-_'
 };
 
 // http://stackoverflow.com/a/16608045/5560682
@@ -131,10 +131,12 @@ app.all('/fetch', (req, res) => {
     var
         params = req.query,
         error = false
-        ;
+    ;
 
     var json = (function () {
+
         var stop = false;
+
         return function (code, data) {
 
             if (stop) {
@@ -679,47 +681,7 @@ app.all('/fetch', (req, res) => {
     }
 });
 
-app.use(express.static('static'));
-
-app.all('/json', (req, res) => {
-
-    var params = {
-        timeout: 300
-    }
-
-    if (req.query.timeout > 0) {
-        params = Object.assign(params, req.query);
-    }
-
-    if (req.body.timeout > 0) {
-        params = Object.assign(params, req.body);
-    }
-
-    params.timeout = parseInt(params.timeout, 10);
-
-    setTimeout(() => {
-
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-        res.end(JSON.stringify({
-            ok: true
-        }));
-
-    }, params.timeout)
-});
-
-app.get('/ajaxwrong', (req, res) => {
-
-});
-
-app.all('/', (req, res) => {
-    const msg = `
-<pre>    
-${ip}:${port} parser is working...
-try /fetch?url=http://....    
-`;
-    res.end(msg)
-});
+// app.use(express.static('static'));
 
 app.listen(port, ip, () => {
     console.log('Parser server is running ' + ip + ':' + port)

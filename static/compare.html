@@ -61,8 +61,8 @@
             var fil = /^https?:\/\//;
             var map = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} /;
             var rep = /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+(.*)$/;
-            var precheck = /\?_prerender$/;
-            var prerep = /^(.*)\?_prerender$/;
+            var precheck = /\?_-_prerender_-_$/;
+            var prerep = /^(.*)\?_-_prerender_-_$/;
             return list.map(function (l) {
 
                 if (map.test(l)) {

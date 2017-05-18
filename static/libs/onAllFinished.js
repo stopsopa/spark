@@ -246,7 +246,7 @@ if (typeof require !== 'undefined') {
             }
         };
         function onReady() {
-            log(waitafterlastajaxresponse, !onReadyFn, Object.keys(urls).length, status === 'pending', urls)
+            // log(waitafterlastajaxresponse, !onReadyFn, Object.keys(urls).length, status === 'pending', urls)
             if (waitafterlastajaxresponse) {
                 if (!onReadyFn) {
                     onReadyFn = debounce(function (c) {
@@ -303,7 +303,10 @@ if (typeof require !== 'undefined') {
             window.fetch = function () {
 
                 var args = Array.prototype.slice.call(arguments);
-                var cache = ['fetch'].concat(args);
+
+                var opt = (typeof args[1] === 'object') ? args[1] : {};
+
+                var cache = ['fetch', (typeof opt.method === 'string') ? opt.method.toUpperCase() : 'GET', args[0]];
 
                 var key = unique();
 
@@ -312,9 +315,9 @@ if (typeof require !== 'undefined') {
                 var promise = old.apply(this, args);
 
                 promise.then(function (response) {
-                    down(key, response.status, args);
+                    down(key, response.status, cache);
                 }, function () {
-                    down(key, 0, args);
+                    down(key, 0, cache);
                 });
 
                 return promise;
@@ -324,6 +327,21 @@ if (typeof require !== 'undefined') {
 
         // duck puching XMLHttpRequest
         (function (args) {
+
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
+            //@todo one call can override another call
 
             XMLHttpRequest.prototype.onOpen(function () {
                 args = Array.prototype.slice.call(arguments);

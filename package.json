@@ -16,7 +16,7 @@
     "scripts": {
         "prod": "/bin/bash prod.sh $$",
         "testenv": "/bin/bash dev.sh start",
-        "test": "node_modules/mocha/bin/mocha test/test.js",
+        "test": "node_modules/mocha/bin/mocha test/test.js -b",
         "cover": "istanbul cover _mocha --report lcovonly test/test.js",
         "crawler": "node parser.js",
         "supervisor": "node supervisor.js",
