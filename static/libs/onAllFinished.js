@@ -217,7 +217,7 @@ if (typeof require !== 'undefined') {
         };
 
         var status = 'pending', debug = false, urls = {}, non200 = {}, cache = [],
-            promise, waitafterlastajaxresponse, longestajaxrequest,
+            promise, waitafterlastajaxresponse, longestajaxrequest, flag,
             emergencyFn, onReadyFn, resolveTmp;
 
         var l = function () {
@@ -235,10 +235,8 @@ if (typeof require !== 'undefined') {
                             resolveTmp({
                                 notFinishedAsynchronousRequests: d,
                                 finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: Object.values(non200),
-                                flow: 'incomplete',
-                                counter: d.length
+                                flow: 'incomplete'
                             });
-                            resolveTmp = true;
                         }
                     }, longestajaxrequest);
                 }
@@ -258,10 +256,8 @@ if (typeof require !== 'undefined') {
                                 resolveTmp({
                                     notFinishedAsynchronousRequests: [],
                                     finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: Object.values(non200),
-                                    flow: 'correct',
-                                    counter: c
+                                    flow: 'correct'
                                 });
-                                resolveTmp = true;
                             }
                         }
                     }, waitafterlastajaxresponse);
@@ -323,25 +319,13 @@ if (typeof require !== 'undefined') {
                 return promise;
             }
             fetch.old = old;
+
+            log('fetch overrided');
+
         }(window.fetch));
 
         // duck puching XMLHttpRequest
         (function (args) {
-
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
-            //@todo one call can override another call
 
             XMLHttpRequest.prototype.onOpen(function () {
                 args = Array.prototype.slice.call(arguments);
@@ -349,7 +333,6 @@ if (typeof require !== 'undefined') {
             });
 
             XMLHttpRequest.prototype.onSend(function () {
-
                 var key = unique();
 
                 up(key, args);
@@ -362,37 +345,44 @@ if (typeof require !== 'undefined') {
                     }
                 })
             });
+
+            log('ajax overrided');
         }());
 
         promise = new Promise(function (resolve) {
             resolveTmp = resolve;
         });
 
-        window.XMLHttpRequest.prototype.onAllFinished = function (/* waitafterlastajaxresponse:1000, longestajaxrequest:1500, debug:false */) {
+        window.XMLHttpRequest.prototype.onAllFinished = function (/* waitafterlastajaxresponse:1000, longestajaxrequest:1500, debug:false, flag: '-default-' */) {
 
             var args = Array.prototype.slice.call(arguments);
 
-            if (resolveTmp === true) {
+            window.XMLHttpRequest.prototype.onAllFinished = function () {
 
-                if (args.length) {
+                var argsnow = Array.prototype.slice.call(arguments);
+
+                if (argsnow.length) {
 
                     log('onAllFinished arguments ignored, promise already initialized', 'now given args:', {
-                        waitafterlastajaxresponse: args[0],
-                        longestajaxrequest: args[1],
-                        debug: (typeof args[2] === 'undefined') ? 'default:false' : args[2]
+                        waitafterlastajaxresponse: argsnow[0],
+                        longestajaxrequest: argsnow[1],
+                        debug: (typeof argsnow[2] === 'undefined') ? 'default:false' : argsnow[2],
+                        flag: argsnow[3]
                     }, 'previousely given args:', {
                         waitafterlastajaxresponse: waitafterlastajaxresponse,
                         longestajaxrequest: longestajaxrequest,
-                        debug: debug
+                        debug: debug,
+                        flag: flag
                     });
                 }
 
                 return promise;
-            }
+            };
 
             waitafterlastajaxresponse   = args[0];
             longestajaxrequest          = args[1];
             debug                       = (typeof args[2] === 'undefined') ? false : args[2];
+            flag                        = args[3] || '-default-';
 
             if (debug) {
 
@@ -406,7 +396,7 @@ if (typeof require !== 'undefined') {
                 }());
             }
 
-            if (typeof waitafterlastajaxresponse === 'undefined') {
+            if (!waitafterlastajaxresponse) {
                 waitafterlastajaxresponse = 1000;
                 log('waitafterlastajaxresponse unspecified, setup to default value: ' + waitafterlastajaxresponse)
             }
@@ -416,8 +406,8 @@ if (typeof require !== 'undefined') {
                 log('waitafterlastajaxresponse is smaller then waitafterlastajaxresponse, fixed to: ' + waitafterlastajaxresponse);
             }
 
-            if (typeof longestajaxrequest === 'undefined') {
-                longestajaxrequest = waitafterlastajaxresponse + 500;
+            if (!longestajaxrequest) {
+                longestajaxrequest = waitafterlastajaxresponse + 4000;
                 log('longestajaxrequest unspecified, autosetup to: ' + longestajaxrequest)
             }
 
@@ -429,7 +419,8 @@ if (typeof require !== 'undefined') {
             log('onAllFinished initialized: ' + JSON.stringify({
                 waitafterlastajaxresponse: waitafterlastajaxresponse,
                 longestajaxrequest: longestajaxrequest,
-                debug: debug
+                debug: debug,
+                flag: flag
             }));
 
             onReady();

@@ -29,9 +29,9 @@ npm install -g yarn
 yarn install
 
 npm run supervisor 0.0.0.0 8080 &
-npm run crawler 0.0.0.0 80 &
-echo '<head><meta http-equiv="refresh" content="4"></head><body><pre>' > static/log.html && node crawler.js &>> static/log.html & disown
-echo '<pre>' > static/log.html && node crawler.js &>> static/log.html & disown
+npm run parser 0.0.0.0 80 &
+echo '<head><meta http-equiv="refresh" content="4"></head><body><pre>' > static/log.html && npm run parser &>> static/log.html & disown
+echo '<pre>' > static/log.html && npm run parser &>> static/log.html & disown
 
 # vagrant for testing
 
@@ -55,15 +55,15 @@ update spark_cache set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 
 yarn install
 
 npm run test
-npm run crawler
+npm run parser
 http://localhost/sandbox.html
 
-npm run crawler 0.0.0.0 80
+npm run parser 0.0.0.0 80
 
-(sudo killall electron && echo 'killed' || echo 'nothing to kill') && (sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run crawler 0.0.0.0 80
+(sudo killall electron && echo 'killed' || echo 'nothing to kill') && (sudo killall node && echo 'killed' || echo 'nothing to kill') && sudo npm run parser 0.0.0.0 80
 
 #kill and run for tests
-    ((kill $(ps aux | grep "killme" | grep -v grep | grep -v sh | head -1 | awk '{print $2}')) && echo 'killed' || echo 'nothing to kill') && npm run crawler 0.0.0.0 81 killme & disown
+    ((kill $(ps aux | grep "killme" | grep -v grep | grep -v sh | head -1 | awk '{print $2}')) && echo 'killed' || echo 'nothing to kill') && npm run parser 0.0.0.0 81 killme & disown
     and then
     http://xxxx:81/sandbox.html
 
@@ -104,7 +104,7 @@ node early_spider.js
 411 pages within 31 minut [1860 sek] => 4.52 sek per page
 
 ---- test --- vvv
- npm run crawler 0.0.0.0 8081
+ npm run parser 0.0.0.0 8081
 ---- test --- ^^^
 
 

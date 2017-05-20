@@ -10,10 +10,10 @@ const log           = rootrequire('lib', 'log');
 var def = {
     // "url": url,
     "returnonlyhtml": false,
-    "ajaxwatchdog": {
-        "waitafterlastajaxresponse":1000,
-        "longestajaxrequest":5000
-    }
+    // "ajaxwatchdog": { // default
+    //     "waitafterlastajaxresponse":1000,
+    //     "longestajaxrequest":5000
+    // }
 }
 
 module.exports = function () {

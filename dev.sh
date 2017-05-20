@@ -15,7 +15,7 @@ if [ "$#" == 0 ] || [ "$#" -gt 1 ] ; then
 	echo "call: /bin/bash $0 start";
 else
     echo 'starting servers...';
-    npm run crawler ${PARSER_HOST} ${PARSER_PORT} testmode & disown
+    npm run parser ${PARSER_HOST} ${PARSER_PORT} testmode & disown
     cd test
         node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
         # http://localhost:92/crawler/index.html
@@ -27,10 +27,10 @@ else
     curl "${PARSER_HOST}:${PARSER_PORT}" &> /dev/null && echo 'PARSER     : working' || echo 'PARSER     : not working';
     curl "${TESTEN_HOST}:${TESTEN_PORT}" &> /dev/null && echo 'TESTSERVER : working' || echo 'TESTSERVER : not working';
 
-#    node crawler.js &>> static/log.html & disown
-#    node crawler.js
+#    npm run parser &>> static/log.html & disown
+#    npm run parser
 
-#    node crawler.js test/config.js
+#    node parser.js test/config.js
 #    curl 'http://138.68.156.126:91/fetch?url=http://localhost:92/crawler/index.html' \
 #    -H 'Content-type: application/json; charset=UTF-8' \
 #    --data-binary '{"returnonlyhtml":true}' --compressed

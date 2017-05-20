@@ -24,8 +24,8 @@ else
     npm run supervisor 0.0.0.0 8080 &>> /dev/null & disown
     /bin/bash start.sh 0.0.0.0 80 &>> /dev/null & disown
 #    #sleep 3
-    #echo '<pre>' > static/log.html && node crawler.jsx &>> static/log.html & disown
-    node crawler.js &>> static/log.html & disown
+    #echo '<pre>' > static/log.html && npm run parser &>> static/log.html & disown
+    npm parser &>> static/log.html & disown
 fi
 
 

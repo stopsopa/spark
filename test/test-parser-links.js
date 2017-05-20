@@ -49,7 +49,7 @@ describe('parser - links', () => {
         }
     }());
 
-    it('test - all', function () {
+    it('all', function () {
         config.onlyfasttests && this.skip();
         this.timeout(4000);
         this.slow(2500);
@@ -59,7 +59,7 @@ describe('parser - links', () => {
         });
     });
 
-    it('test - hash', function () {
+    it('hash', function () {
         config.onlyfasttests && this.skip();
         this.timeout(4000);
         this.slow(2500);
@@ -69,7 +69,7 @@ describe('parser - links', () => {
         });
     });
 
-    it('test - slash', function () {
+    it('slash', function () {
         config.onlyfasttests && this.skip();
         this.timeout(4000);
         this.slow(2500);
@@ -79,7 +79,7 @@ describe('parser - links', () => {
         });
     });
 
-    it('test - empty-href', function () {
+    it('empty-href', function () {
         config.onlyfasttests && this.skip();
         this.timeout(4000);
         this.slow(2500);
@@ -89,7 +89,7 @@ describe('parser - links', () => {
         });
     });
 
-    it('test - two-slashes-same-port', function () {
+    it('two-slashes-same-port', function () {
         config.onlyfasttests && this.skip();
         this.timeout(4000);
         this.slow(2500);
@@ -99,7 +99,7 @@ describe('parser - links', () => {
         });
     });
 
-    it('test - main-domain-with-slashq-same-port', function () {
+    it('main-domain-with-slashq-same-port', function () {
         config.onlyfasttests && this.skip();
         this.timeout(4000);
         this.slow(2500);

@@ -157,13 +157,15 @@
 
             // run only in browser
 //            if (!window.__nightmare) {
+            setTimeout(function () {
                 log('initialize in browser before');
-                window.XMLHttpRequest.prototype.onAllFinished(null, null, true/* default values */).then(function (status) {
+                window.XMLHttpRequest.prototype.onAllFinished(null, null, true, 'ajax.html').then(function (status) {
                     log('calculating diff', status);
                     var n = now();
                     other('onAllFinished', n);
                     other('diff', n - other.data().start);
                 });
+            }, 500);
 //            }
 
             var query = (function () {

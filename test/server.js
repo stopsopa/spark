@@ -76,7 +76,7 @@ app.all('/delay', (req, res) => {
 
         res.end(JSON.stringify(Object.assign(params, {
             ok: true
-        })));
+        }), null, '    '));
 
     }, timeout);
 });

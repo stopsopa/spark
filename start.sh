@@ -1,2 +1,2 @@
 #!/bin/bash
-npm run crawler $1 $2 & disown
+npm run parser $1 $2 & disown

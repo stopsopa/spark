@@ -60,9 +60,10 @@ const defopt = {
         // but then you need to tell prerender when
         // take the snapshot of document by calling manually
         // window.nmsc = window.nmsc || []; nmsc.push(true);
-        waitafterlastajaxresponse: 3001, // 1 sec
-        longestajaxrequest: 5001, // 5 sec
-        debug: true
+        waitafterlastajaxresponse: 1000,
+        longestajaxrequest: 5000,
+        debug: true,
+        flag: '-parser-'
     },
 
     headers: {},
@@ -126,6 +127,8 @@ function curl(uri, method, headers) {
     });
 }
 
+app.use(express.static('static'));
+
 app.all('/fetch', (req, res) => {
 
     var
@@ -156,7 +159,7 @@ app.all('/fetch', (req, res) => {
 
                 data.statusCode = code;
 
-                res.end(JSON.stringify(data));
+                res.end(JSON.stringify(data, null, '    '));
 
             }
             catch (e) {
@@ -198,7 +201,7 @@ app.all('/fetch', (req, res) => {
 
         if (!params.url) {
             return json(500, {
-                error: 'crawler',
+                error: 'parser',
                 code: 'wrong-input-parameters',
                 data: {
                     method: req.method,
@@ -209,7 +212,7 @@ app.all('/fetch', (req, res) => {
 
         if (error) {
             return json(500, {
-                error: 'crawler',
+                error: 'parser',
                 code: 'wrong-input-parameters',
                 data: error
             });
@@ -374,7 +377,8 @@ app.all('/fetch', (req, res) => {
                                     window.XMLHttpRequest.prototype.onAllFinished(
                                         params.ajaxwatchdog.waitafterlastajaxresponse || params.defopt.ajaxwatchdog.waitafterlastajaxresponse,
                                         params.ajaxwatchdog.longestajaxrequest || params.defopt.ajaxwatchdog.longestajaxrequest,
-                                        typeof params.ajaxwatchdog.debug === 'boolean' ? params.ajaxwatchdog.debug : params.defopt.ajaxwatchdog.debug
+                                        typeof params.ajaxwatchdog.debug === 'boolean' ? params.ajaxwatchdog.debug : params.defopt.ajaxwatchdog.debug,
+                                        typeof params.ajaxwatchdog.flag === 'boolean' ? params.ajaxwatchdog.flag : params.defopt.ajaxwatchdog.flag
                                     ).then(trigger);
                                 }
 
@@ -658,7 +662,7 @@ app.all('/fetch', (req, res) => {
                         var args = Array.prototype.slice.call(arguments);
 
                         json(500, {
-                            error: 'crawler',
+                            error: 'parser',
                             code: 'nightmare-js-crashed-exception',
                             data: args
                         });
@@ -674,14 +678,12 @@ app.all('/fetch', (req, res) => {
     }
     catch (ee) {
         json(500, {
-            error: 'crawler',
+            error: 'parser',
             code: 'general-exception',
             data: ee
         });
     }
 });
-
-// app.use(express.static('static'));
 
 app.listen(port, ip, () => {
     console.log('Parser server is running ' + ip + ':' + port)

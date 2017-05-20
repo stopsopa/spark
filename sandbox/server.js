@@ -113,7 +113,7 @@ app.all('/fetch', (req, res) => {
                 return res.end(data);
             }
 
-            res.end(JSON.stringify(data));
+            res.end(JSON.stringify(data), null, '    ');
 
         }
         catch (e) {
@@ -239,7 +239,7 @@ app.get('/json', (req, res) => {
 
         res.end(JSON.stringify({
             ok: true
-        }));
+        }, null, '    '));
 
     }, 300)
 })

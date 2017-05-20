@@ -43,7 +43,7 @@ function response(res, data, code) {
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
-    res.end(JSON.stringify(data));
+    res.end(JSON.stringify(data, null, '    '));
 }
 
 app.all('/status', (req, res) => {

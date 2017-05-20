@@ -71,6 +71,13 @@ describe('parser - onAllFinished event', () => {
             files[i].sort();
         });
 
+        opt = Object.assign(opt || {}, opt || {
+            ajaxwatchdog: {
+                waitafterlastajaxresponse: 1001,
+                longestajaxrequest: 1501
+            }
+        });
+
         return json('/test/ajax.html' + query, opt)
             .then(function (response) {
 
@@ -99,7 +106,8 @@ describe('parser - onAllFinished event', () => {
             });
     }
 
-    it('test - 000-encoded', function () {
+    // check if in html from document.documentElement.outerHTML encode all content in dom elements, like pre with json
+    it('000-encoded', function () {
 
         this.timeout(8000);
 
@@ -112,7 +120,8 @@ describe('parser - onAllFinished event', () => {
         });
     });
 
-    it('test - 002-dry', function () {
+    //
+    it('002-dry', function () {
 
         this.timeout(8000);
 
@@ -126,11 +135,17 @@ describe('parser - onAllFinished event', () => {
 
             assert.equal(d.data.length, d.all.length);
 
-            assert(d.other.diff > 800);
+            assert(d.other.diff > 1200, [d.other.diff, '!>', 1500]);
+
+            assert.deepEqual(d.watch, {
+                flow: "correct",
+                notFinishedAsynchronousRequests: [],
+                finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
+            });
         });
     });
 
-    it('test - 001-simple', function () {
+    it('001-simple', function () {
 
         this.timeout(8000);
 
@@ -146,30 +161,25 @@ describe('parser - onAllFinished event', () => {
 
             assert(d.other.diff > 1200);
 
-            assert.deepEqual({
-                counter: 0,
+            assert.deepEqual(d.watch, {
                 flow: "correct",
                 notFinishedAsynchronousRequests: [],
                 finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
-            }, d.watch);
+            });
         });
     });
 
     // http://x.x.x.x:1026/test/ajax.html?tape=002-status-code-500/first&tape=002-status-code-500/500
-    it('test - status code 500', function () {
+    it('status code 500', function () {
 
         this.timeout(9000);
 
         this.slow(4000);
 
-        this.skip();
-
-        // config.onlyfasttests && this.skip();
+        config.onlyfasttests && this.skip();
 
         return decode(["002-status-code-500/first", "002-status-code-500/500"]).then((d) => {
 
-            log.dump(d.data);
-            log.dump(d.all);
             assert.deepEqual(d.data, d.all);
 
             assert.equal(d.data.length, d.all.length);
@@ -177,12 +187,126 @@ describe('parser - onAllFinished event', () => {
             assert(d.other.diff > 2000);
 
             assert.deepEqual(d.watch, {
-                counter: 0,
+                "finishedOnTimeAsynchronousRequestsButWithNon200StatusCode": [
+                    {
+                        "request": [
+                            "xhr",
+                            "GET",
+                            "/delay?timeout=51&ajaxN",
+                            true
+                        ],
+                        "statusCode": 500
+                    },
+                    {
+                        "request": [
+                            "fetch",
+                            "GET",
+                            "/delay?timeout=102&code=500&ajaxF"
+                        ],
+                        "statusCode": 500
+                    },
+                    {
+                        "request": [
+                            "xhr",
+                            "GET",
+                            "/delay?timeout=103&code=500&ajaxN",
+                            true
+                        ],
+                        "statusCode": 500
+                    }
+                ],
+                "flow": "correct",
+                "notFinishedAsynchronousRequests": []
+            });
+        });
+    });
+
+    // http://x.x.x.x:1026/test/ajax.html?tape=003-timeout/slow&tape=003-timeout/n&tape=003-timeout/j&tape=003-timeout/f
+    it('long - wait', function () {
+
+        this.timeout(9000);
+
+        this.slow(5000);
+
+        config.onlyfasttests && this.skip();
+
+        return decode(["003-timeout/fast", "003-timeout/n", "003-timeout/j", "003-timeout/f"], {
+            ajaxwatchdog: {
+                waitafterlastajaxresponse: 1000,
+                longestajaxrequest: 4500
+            }
+        }).then((d) => {
+
+            assert.deepEqual(d.data, d.all);
+
+            assert.equal(d.data.length, d.all.length);
+
+            assert(d.other.diff > 1500);
+
+            assert.deepEqual(d.watch, {
                 flow: "correct",
                 notFinishedAsynchronousRequests: [],
                 finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
             });
+        });
+    });
 
+    // http://x.x.x.x:1026/test/ajax.html?tape=003-timeout/fast&tape=003-timeout/n&tape=003-timeout/j&tape=003-timeout/f
+    it('long - standard', function () {
+
+        this.timeout(9000);
+
+        this.slow(4000);
+
+        config.onlyfasttests && this.skip();
+
+        return decode(["003-timeout/fast", "003-timeout/n", "003-timeout/j", "003-timeout/f"], {
+            ajaxwatchdog: {
+                waitafterlastajaxresponse: 1000,
+                longestajaxrequest: 1500
+            }
+        }).then((d) => {
+
+            assert.deepEqual(d.data, d.all);
+
+            assert.equal(d.data.length, d.all.length);
+
+            assert(d.other.diff > 1500);
+
+            d.watch.notFinishedAsynchronousRequests.sort(function (a, b) {
+
+                if (a[2] === b[2]) {
+                    return 0;
+                }
+
+                return a[2] > b[2];
+            });
+
+            assert.deepEqual(d.watch, {
+                "finishedOnTimeAsynchronousRequestsButWithNon200StatusCode": [],
+                "flow": "incomplete",
+                "notFinishedAsynchronousRequests": [
+                    [
+                        "fetch",
+                        "GET",
+                        "/delay?timeout=3000&ajaxF"
+                    ],
+                    [
+                        "xhr",
+                        "GET",
+                        "/delay?timeout=3000&ajaxJ",
+                        true,
+                        null,
+                        null
+                    ],
+                    [
+                        "xhr",
+                        "GET",
+                        "/delay?timeout=3000&ajaxN",
+                        true
+                    ]
+                ]
+            });
         });
     });
 });
