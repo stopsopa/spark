@@ -13,6 +13,19 @@ const json          = rootrequire('test', 'lib', 'json');
 function trim(s) {
     return s.replace(/^\s*(\S*(\s+\S+)*)\s*$/,'$1');
 }
+// Object.values polyfill
+if (!Object.values) {
+    log('Applying Object.values polyfill');
+    // http://stackoverflow.com/a/38748490
+    Object.values = function (obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    }
+}
+else {
+    log('Object.values polyfill is not necessary');
+}
 var entities = (function () {
     var d = {
         '&': /&amp;/g,
@@ -262,8 +275,8 @@ describe('parser - onAllFinished event', () => {
 
         return decode(["003-timeout/fast", "003-timeout/n", "003-timeout/j", "003-timeout/f"], {
             ajaxwatchdog: {
-                waitafterlastajaxresponse: 1000,
-                longestajaxrequest: 1500
+                waitafterlastajaxresponse: 800,
+                longestajaxrequest: 1000
             }
         }).then((d) => {
 
