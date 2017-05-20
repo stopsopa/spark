@@ -235,7 +235,7 @@ describe('parser - onAllFinished event', () => {
     });
 
     // http://x.x.x.x:1026/test/ajax.html?tape=003-timeout/slow&tape=003-timeout/n&tape=003-timeout/j&tape=003-timeout/f
-    it('long - wait', function () {
+    it('long - is time', function () {
 
         this.timeout(9000);
 
@@ -265,7 +265,7 @@ describe('parser - onAllFinished event', () => {
     });
 
     // http://x.x.x.x:1026/test/ajax.html?tape=003-timeout/fast&tape=003-timeout/n&tape=003-timeout/j&tape=003-timeout/f
-    it('long - standard', function () {
+    it('long - no time', function () {
 
         this.timeout(9000);
 
@@ -275,8 +275,8 @@ describe('parser - onAllFinished event', () => {
 
         return decode(["003-timeout/fast", "003-timeout/n", "003-timeout/j", "003-timeout/f"], {
             ajaxwatchdog: {
-                waitafterlastajaxresponse: 800,
-                longestajaxrequest: 1000
+                waitafterlastajaxresponse: 1000,
+                longestajaxrequest: 1500
             }
         }).then((d) => {
 
