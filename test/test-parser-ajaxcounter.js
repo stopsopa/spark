@@ -2,122 +2,15 @@
 
 const assert        = require('assert');
 const path          = require('path');
-const fs            = require('fs');
 
 require(path.resolve(__dirname, '..', 'lib', 'rootrequire'))(__dirname, '..');
 
 const config        = rootrequire('test', 'config');
 const log           = rootrequire('lib', 'log');
-const json          = rootrequire('test', 'lib', 'json');
-
-function trim(s) {
-    return s.replace(/^\s*(\S*(\s+\S+)*)\s*$/,'$1');
-}
-// Object.values polyfill
-if (!Object.values) {
-    log('Applying Object.values polyfill');
-    // http://stackoverflow.com/a/38748490
-    Object.values = function (obj) {
-        return Object.keys(obj).map(function(key) {
-            return obj[key];
-        });
-    }
-}
-else {
-    log('Object.values polyfill is not necessary');
-}
-var entities = (function () {
-    var d = {
-        '&': /&amp;/g,
-        "'": /&apos;/g,
-        '"': /&quot;/g,
-        '>': /&gt;/g,
-        '<': /&lt;/g
-    };
-
-    return function (str) {
-
-        for (var i in d) {
-            str = str.replace(d[i], i);
-        }
-
-        return str;
-    }
-}());
+const decode        = rootrequire('test', 'lib', 'decode');
 
 // http://xxx.xxx.xxx.xxx:1025/test/links.html#empty-href
 describe('parser - onAllFinished event', () => {
-
-    function decode(tapes, opt) {
-
-        if (typeof tapes === 'string') {
-            tapes = [tapes];
-        }
-
-        var query = tapes.map(function (t) {
-            return 'tape=' + encodeURIComponent(t);
-        }).join('&');
-
-        if (query) {
-            query = '?' + query;
-        }
-
-        /*
-         var def = {
-             // "url": url,
-             "returnonlyhtml": false,
-             "ajaxwatchdog": {
-                 "waitafterlastajaxresponse":1000,
-                 "longestajaxrequest":5000
-             }
-         }
-         */
-
-        var files = {};
-
-        tapes.forEach(function (tape) {
-            var file = path.resolve(__dirname, '..', 'static', 'test', 'ajax', tape + '.txt');
-            files[tape] = trim(fs.readFileSync(file).toString()).split("\n").map(trim);
-        });
-
-        Object.keys(files).forEach(function (i) {
-            files[i].sort();
-        });
-
-        opt = Object.assign(opt || {}, opt || {
-            ajaxwatchdog: {
-                waitafterlastajaxresponse: 1001,
-                longestajaxrequest: 1501
-            }
-        });
-
-        return json('/test/ajax.html' + query, opt)
-            .then(function (response) {
-
-                var data = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="json">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'));
-
-                var other = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="other">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'))
-
-                var all = Array.prototype.concat.apply([], Object.values(files));
-
-                all.sort();
-
-                data = data.map((d) => trim(d.m + ' ' + d.u)).map(entities).join("\n");
-
-                data = data.trim(data).split("\n");
-
-                data.sort();
-
-                return {
-                    files   : files,
-                    all     : all,
-                    data    : data,
-                    other   : other,
-                    watch   : response.json.watchdog,
-                    json    : response.json
-                };
-            });
-    }
 
     // check if in html from document.documentElement.outerHTML encode all content in dom elements, like pre with json
     it('000-encoded', function () {
@@ -129,6 +22,11 @@ describe('parser - onAllFinished event', () => {
         config.onlyfasttests && this.skip();
 
         return decode("000-encoded").then((d) => {
+
+            assert.equal(d.json.contentType, "text/html; charset=UTF-8");
+
+            assert.equal(d.json.statusCode, 200);
+
             assert(d.json.html.indexOf('b&amp;c') > -1);
         });
     });
@@ -144,13 +42,17 @@ describe('parser - onAllFinished event', () => {
 
         return decode(["002-dry/one", "002-dry/two"]).then((d) => {
 
+            assert.equal(d.json.contentType, "text/html; charset=UTF-8");
+
+            assert.equal(d.json.statusCode, 200);
+
             assert.deepEqual(d.data, d.all);
 
             assert.equal(d.data.length, d.all.length);
 
             assert(d.other.diff > 1200, [d.other.diff, '!>', 1500]);
 
-            assert.deepEqual(d.watch, {
+            assert.deepEqual(d.watchdog, {
                 flow: "correct",
                 notFinishedAsynchronousRequests: [],
                 finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
@@ -168,13 +70,17 @@ describe('parser - onAllFinished event', () => {
 
         return decode('001-simple').then((d) => {
 
+            assert.equal(d.json.contentType, "text/html; charset=UTF-8");
+
+            assert.equal(d.json.statusCode, 200);
+
             assert.deepEqual(d.data, d.all);
 
             assert.equal(d.data.length, d.all.length);
 
             assert(d.other.diff > 1200);
 
-            assert.deepEqual(d.watch, {
+            assert.deepEqual(d.watchdog, {
                 flow: "correct",
                 notFinishedAsynchronousRequests: [],
                 finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
@@ -193,13 +99,17 @@ describe('parser - onAllFinished event', () => {
 
         return decode(["002-status-code-500/first", "002-status-code-500/500"]).then((d) => {
 
+            assert.equal(d.json.contentType, "text/html; charset=UTF-8");
+
+            assert.equal(d.json.statusCode, 200);
+
             assert.deepEqual(d.data, d.all);
 
             assert.equal(d.data.length, d.all.length);
 
             assert(d.other.diff > 2000);
 
-            assert.deepEqual(d.watch, {
+            assert.deepEqual(d.watchdog, {
                 "finishedOnTimeAsynchronousRequestsButWithNon200StatusCode": [
                     {
                         "request": [
@@ -239,7 +149,7 @@ describe('parser - onAllFinished event', () => {
 
         this.timeout(9000);
 
-        this.slow(5000);
+        this.slow(5500);
 
         config.onlyfasttests && this.skip();
 
@@ -250,13 +160,17 @@ describe('parser - onAllFinished event', () => {
             }
         }).then((d) => {
 
+            assert.equal(d.json.contentType, "text/html; charset=UTF-8");
+
+            assert.equal(d.json.statusCode, 200);
+
             assert.deepEqual(d.data, d.all);
 
             assert.equal(d.data.length, d.all.length);
 
             assert(d.other.diff > 1500);
 
-            assert.deepEqual(d.watch, {
+            assert.deepEqual(d.watchdog, {
                 flow: "correct",
                 notFinishedAsynchronousRequests: [],
                 finishedOnTimeAsynchronousRequestsButWithNon200StatusCode: []
@@ -280,13 +194,17 @@ describe('parser - onAllFinished event', () => {
             }
         }).then((d) => {
 
+            assert.equal(d.json.contentType, "text/html; charset=UTF-8");
+
+            assert.equal(d.json.statusCode, 200);
+
             assert.deepEqual(d.data, d.all);
 
             assert.equal(d.data.length, d.all.length);
 
             assert(d.other.diff > 1500);
 
-            d.watch.notFinishedAsynchronousRequests.sort(function (a, b) {
+            d.watchdog.notFinishedAsynchronousRequests.sort(function (a, b) {
 
                 if (a[2] === b[2]) {
                     return 0;
@@ -295,7 +213,7 @@ describe('parser - onAllFinished event', () => {
                 return a[2] > b[2];
             });
 
-            assert.deepEqual(d.watch, {
+            assert.deepEqual(d.watchdog, {
                 "finishedOnTimeAsynchronousRequestsButWithNon200StatusCode": [],
                 "flow": "incomplete",
                 "notFinishedAsynchronousRequests": [

@@ -59,10 +59,10 @@ const defopt = {
     ajaxwatchdog: { // false - disable watchdog at all,
         // but then you need to tell prerender when
         // take the snapshot of document by calling manually
-        // window.nmsc = window.nmsc || []; nmsc.push(true);
+        //   window.nmsc = window.nmsc || []; nmsc.push(true);
         waitafterlastajaxresponse: 1000,
         longestajaxrequest: 5000,
-        debug: true,
+        debug: true, // more console.log logs
         flag: '-parser-'
     },
 
@@ -146,6 +146,8 @@ app.all('/fetch', (req, res) => {
                 return;
             }
 
+            stop = true;
+
             try {
 
                 res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -165,8 +167,6 @@ app.all('/fetch', (req, res) => {
             catch (e) {
                 log('express error: ', e)
             }
-
-            stop = true;
         }
     }());
 
