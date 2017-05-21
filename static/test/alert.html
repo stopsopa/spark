@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Error</title>
+</head>
+<body>
+<div></div>
+    js exception
+    <script>
+        function now() {
+            return (new Date()).getTime();
+        }
+        var delay = 500;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var start = now();
+            setTimeout(function () {
+                document.querySelector('div').innerHTML = JSON.stringify({
+                    diff: Math.abs( (now() - start) - delay) < 2,
+                    message : 'do something ' + 'before'
+                });
+            }, delay);
+        });
+
+        alert('alert message');
+    </script>
+<script src="/test/assets/alert.js"></script>
+</body>
+</html>

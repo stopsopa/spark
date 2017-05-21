@@ -85,6 +85,9 @@ const defopt = {
 function isObject(a) {
     return (!!a) && (a.constructor === Object);
 };
+function isArray(obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+};
 
 function unique(pattern) {
     pattern || (pattern = 'xyx');
@@ -265,7 +268,15 @@ app.all('/fetch', (req, res) => {
                 }
 
                 if (!okMimeType) {
-                    throw "mime type '" + mime + "-'";
+
+                    return json(500, {
+                        error: 'prerequest',
+                        code: 'wrong-mime-type',
+                        data: {
+                            status: res.statusCode,
+                            headers: res.headers
+                        }
+                    });
                 }
 
                 var night = Nightmare(params.nightmare);
@@ -295,20 +306,28 @@ app.all('/fetch', (req, res) => {
 
                         var args = Array.prototype.slice.call(arguments);
 
+                        if (type === 'error') {
+                            type = 'exception';
+                        }
+
+                        if (!events.console) {
+                            events.console = {};
+                        }
+
+                        if (!events.console[type]) {
+                            events.console[type] = [];
+                        }
+
+                        events.console[type].push(args);
+
                         switch (type) {
                             case 'error':
-                                // @todo - check if js error really stop browser, i think it shouldn't
-                                return json(500, {
-                                    error: 'client',
-                                    code: 'page-general-error',
-                                    data: args
-                                });
+                                return log.apply(this, args);
                                 break;
                             case 'alert':
                             case 'prompt':
                             case 'confirm':
                                 args[0] = '[browser:' + params.u + ':' + args[0] + ':type:' + type + ']';
-
                                 return log.apply(this, args);
                             default:
                         }
@@ -318,10 +337,29 @@ app.all('/fetch', (req, res) => {
                         // https://github.com/electron/electron/blob/master/docs/api/web-contents.md#class-webcontents
                         // log('did-get-response-details', Array.prototype.slice.call(arguments)[7])
                         var data = Array.prototype.slice.call(arguments);
+
                         data.push({
                             doc: 'https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-did-get-response-details'
                         });
+
                         events['did-get-response-details'] = data;
+
+                        try {
+                            if (isObject(events['did-get-response-details'][7])) {
+                                events['did-get-response-details'][7] = (function (data) {
+                                    var tmp = {};
+                                    for (var k in data) {
+                                        if (data.hasOwnProperty(k) && k && isArray(data[k]) && data[k][0]) {
+                                            tmp[k] = data[k][0];
+                                        }
+                                    }
+                                    return tmp;
+                                }(events['did-get-response-details'][7]));
+                            }
+                        }
+                        catch (e) {
+                            log.dump(e);
+                        }
                     })
                     .once('did-fail-load', function (event, errorCode, errorDescription, validatedURL, isMainFrame) {
                         if (isMainFrame) {
@@ -522,7 +560,8 @@ app.all('/fetch', (req, res) => {
                         var okMimeType = true, mime = null;
                         try {
                             // no mime type example https://cran.r-project.org/doc/manuals/NEWS.1
-                            mime = events['did-get-response-details'][7]['content-type'][0];
+                            // mime = events['did-get-response-details'][7]['content-type'][0];
+                            mime = events['did-get-response-details'][7]['content-type'];
 
                             if (mime.toLowerCase().indexOf('text/html') > -1) {
                                 okMimeType = true;

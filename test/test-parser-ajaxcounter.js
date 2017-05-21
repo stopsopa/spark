@@ -183,7 +183,7 @@ describe('parser - onAllFinished event', () => {
 
         this.timeout(9000);
 
-        this.slow(4000);
+        this.slow(5000);
 
         config.onlyfasttests && this.skip();
 

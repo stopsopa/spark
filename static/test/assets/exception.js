@@ -1,0 +1,1 @@
+throw 'exc from ext file';
