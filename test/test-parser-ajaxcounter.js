@@ -21,7 +21,7 @@ describe('parser - onAllFinished event', () => {
 
         config.onlyfasttests && this.skip();
 
-        return decode("000-encoded").then((d) => {
+        return decode(["000-encoded"]).then((d) => {
 
             assert.equal(d.json.contentType, "text/html; charset=UTF-8");
 
@@ -68,7 +68,7 @@ describe('parser - onAllFinished event', () => {
 
         config.onlyfasttests && this.skip();
 
-        return decode('001-simple').then((d) => {
+        return decode(['001-simple']).then((d) => {
 
             assert.equal(d.json.contentType, "text/html; charset=UTF-8");
 

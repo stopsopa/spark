@@ -35,8 +35,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json()); // https://github.com/expressjs/body-parser#expressconnect-top-level-generic
 
-app.use(express.static(path.resolve(__dirname, '..', 'static')));
-
 app.all('/', (req, res) => {
     res.end(ip + ':' + port + ' is working...');
 })
@@ -88,5 +86,7 @@ app.get('/ajaxwrong', (req, res) => {
 app.listen(port, ip, () => {
     console.log('Test endpoints server is running ' + ip + ':' + port)
 });
+
+app.use(express.static(path.resolve(__dirname, '..', 'static')));
 
 

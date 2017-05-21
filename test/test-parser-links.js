@@ -99,11 +99,11 @@ describe('parser - links', () => {
         });
     });
 
-    it('main-domain-with-slashq-same-port', function () {
+    it('main-domain-with-slash-same-port', function () {
         config.onlyfasttests && this.skip();
         this.timeout(4000);
         this.slow(2500);
-        return json('/test/links.html#main-domain-with-slashq-same-port').then((res) => {
+        return json('/test/links.html#main-domain-with-slash-same-port').then((res) => {
             assert(res.json.html.indexOf('slash at the beginning') > 0);
             assert.deepEqual(del(0, 9), res.json.internalLinks.links);
         });

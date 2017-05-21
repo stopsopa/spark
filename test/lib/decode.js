@@ -6,7 +6,9 @@ const fs            = require('fs');
 require(path.resolve(__dirname, '..', '..', 'lib', 'rootrequire'))(__dirname, '..', '..');
 
 const json          = rootrequire('test', 'lib', 'json');
+const arglib        = rootrequire('lib', 'args');
                       rootrequire('lib', 'polyfills');
+const log           = rootrequire('lib', 'log');
 
 function trim(s) {
     return s.replace(/^\s*(\S*(\s+\S+)*)\s*$/,'$1');
@@ -31,11 +33,11 @@ var entities = (function () {
     }
 }());
 
-module.exports = function (tapes, opt) {
+module.exports = function (/*[path:string], tapes:array, options:object*/) {
 
-    if (typeof tapes === 'string') {
-        tapes = [tapes];
-    }
+    var alib = arglib(arguments);
+
+    var tapes = alib.array.shift([]);
 
     var query = tapes.map(function (t) {
         return 'tape=' + encodeURIComponent(t);
@@ -67,6 +69,8 @@ module.exports = function (tapes, opt) {
         files[i].sort();
     });
 
+    var opt = alib.object.shift({});
+
     opt = Object.assign(opt || {}, opt || {
         ajaxwatchdog: {
             waitafterlastajaxresponse: 1001,
@@ -74,12 +78,24 @@ module.exports = function (tapes, opt) {
         }
     });
 
-    return json('/test/ajax.html' + query, opt)
+    return json(alib.string.shift('/test/ajax.html') + query, opt)
         .then(function (response) {
 
-            var data = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="json">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'));
+            var data = [], other = {};
 
-            var other = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="other">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'))
+            try {
+                data = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="json">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'));
+            }
+            catch (e) {
+                log("can't decode #json");
+            }
+
+            try {
+                other = JSON.parse(response.json.html.replace(/^[\s\S]*?<pre id="other">([\s\S]*?)<\/pre>[\s\S]*$/g, '$1'));
+            }
+            catch (e) {
+                log("can't decode #other");
+            }
 
             var all = Array.prototype.concat.apply([], Object.values(files));
 
@@ -87,9 +103,15 @@ module.exports = function (tapes, opt) {
 
             data = data.map((d) => trim(d.m + ' ' + d.u)).map(entities).join("\n");
 
-            data = data.trim(data).split("\n");
+            data = trim(data);
 
-            data.sort();
+            if (data.indexOf("\n") > -1) {
+                data = data.split("\n");
+                data.sort();
+            }
+            else {
+                data = data ? [data] : [];
+            }
 
             return {
                 files       : files,
