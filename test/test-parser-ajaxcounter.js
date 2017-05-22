@@ -189,7 +189,7 @@ describe('parser - onAllFinished event', () => {
 
         return decode(["003-timeout/fast", "003-timeout/n", "003-timeout/j", "003-timeout/f"], {
             ajaxwatchdog: {
-                waitafterlastajaxresponse: 1000,
+                waitafterlastajaxresponse: 500,
                 longestajaxrequest: 1500
             }
         }).then((d) => {

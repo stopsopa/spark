@@ -269,7 +269,7 @@ if (typeof require !== 'undefined') {
 
             urls[key] = args;
 
-            initEmergency(key);
+            initEmergency();
         };
         function down(key, code, args) {
             delete urls[key];
@@ -279,7 +279,7 @@ if (typeof require !== 'undefined') {
                     statusCode: /^\d{3}$/.test(code) ? parseInt(code, 10) : (code + '')
                 };
             }
-            initEmergency(key);
+            initEmergency();
             if (Object.keys(urls).length === 0) {
                 onReady();
             }
@@ -423,6 +423,7 @@ if (typeof require !== 'undefined') {
                 flag: flag
             }));
 
+            initEmergency();
             onReady();
 
             return promise;
