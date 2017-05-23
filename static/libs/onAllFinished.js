@@ -23,20 +23,6 @@
     };
 }());
 
-// Object.values polyfill
-if (!Object.values) {
-    log('Applying Object.values polyfill');
-    // http://stackoverflow.com/a/38748490
-    Object.values = function (obj) {
-        return Object.keys(obj).map(function(key) {
-            return obj[key];
-        });
-    }
-}
-else {
-    log('Object.values polyfill is not necessary');
-}
-
 if (typeof require !== 'undefined') {
     window.__nightmare = {};
     __nightmare.ipc = require('electron').ipcRenderer;
@@ -113,6 +99,20 @@ if (typeof require !== 'undefined') {
 };
 
 
+
+// Object.values polyfill
+if (!Object.values) {
+    log('Applying Object.values polyfill');
+    // http://stackoverflow.com/a/38748490
+    Object.values = function (obj) {
+        return Object.keys(obj).map(function(key) {
+            return obj[key];
+        });
+    }
+}
+else {
+    log('Object.values polyfill is not necessary');
+}
 (function () {
 
     function unique(pattern) {
