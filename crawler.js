@@ -242,5 +242,5 @@ log('start...');
         });
     }
     run();
-    setInterval(run, 9 * 60 * 60 * 1000); // 10800000
+    setInterval(run, parseInt(60 * 60 * 8) * 1000); // 10800000
 }());

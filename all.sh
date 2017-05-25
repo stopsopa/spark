@@ -37,6 +37,12 @@ else
 
 #   7 hours
     sleep $((60 * 60 * 7)) && node crawler.js lh &>> static/log.html & disown
+
+    # WARNING: CHANGE ALSO IN
+    # crawler.js:245
+#           3.5h       3.5h       1h  = 8h
+#       mm       agp        lh
+#
 fi
 
 
