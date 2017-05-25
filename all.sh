@@ -26,10 +26,17 @@ else
     node crawler.js mm &>> static/log.html & disown
 
     echo "> running: node crawler.js agp"
-    sleep $((60 * 60 * 3)) && node crawler.js agp &>> static/log.html & disown
+
+#    3 hours
+#    sleep $((60 * 60 * 3)) && node crawler.js agp &>> static/log.html & disown
+
+#   3.5 hour
+    sleep $((60 * 30 * 7)) && node crawler.js agp &>> static/log.html & disown
 
     echo "> running: node crawler.js lh"
-    sleep $((60 * 60 * 6)) && node crawler.js lh &>> static/log.html & disown
+
+#   7 hours
+    sleep $((60 * 60 * 7)) && node crawler.js lh &>> static/log.html & disown
 fi
 
 
