@@ -15,6 +15,7 @@ const url           = require('url');
 const app           = express();
 const config        = rootrequire('config')
 const dbprovider    = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
+const pingdom       = rootrequire('pingdom', 'pingdom');
 
 function hash(url) {
 
@@ -747,6 +748,21 @@ app.all('/json', (req, res) => {
 
 app.get('/ajaxwrong', (req, res) => {
 
+});
+
+app.get('/pingdom', (req, res) => {
+    res.end(JSON.stringify({
+        status: pingdom.test(),
+        info: [
+            'If something is wrong',
+            'got to server and restart prerender using',
+            'cd /opt/spark && /bin/bash all.sh start',
+            'then you can test logs online under',
+            '/log.html',
+            'or test manually prerender under',
+            '/sandbox.html'
+        ]
+    }));
 });
 
 app.all('/', (req, res) => {

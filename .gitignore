@@ -4,4 +4,6 @@ node_modules/
 /.vagrant
 *.tar
 *.tar.gz
+/static/pingdom.json
+config.js
 

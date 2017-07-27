@@ -8,10 +8,13 @@ const sha1          = require('sha1');
 
 require(path.resolve(__dirname, 'lib', 'rootrequire.js'))(__dirname, '.');
 
-let log           = rootrequire('lib', 'log.js');
+let log             = rootrequire('lib', 'log.js');
 const spark         = rootrequire('lib', 'curljson.js').spark;
 const dbprovider    = rootrequire('lib', 'db', 'mysql', 'db_spark.js');
 const config        = rootrequire('config')[process.argv[2]];
+const pingdom       = rootrequire('pingdom', 'pingdom');
+
+pingdom.set(process.argv[2]);
 
 const db            = dbprovider(config);
 
@@ -240,6 +243,8 @@ log('start...');
         db.cache.query('update :table: set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))').then(function () {
             inter(config.crawler.continueIdleAfter);
         });
+
+        pingdom.set(process.argv[2]);
     }
     run();
     setInterval(run, parseInt(60 * 60 * 11) * 1000); // 10800000
