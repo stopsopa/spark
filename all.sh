@@ -22,25 +22,24 @@ else
     npm run supervisor 0.0.0.0 8080 &>> /dev/null & disown
     /bin/bash start.sh 0.0.0.0 80 &>> /dev/null & disown
 
-    echo "> running: node crawler.js mm"
-    node crawler.js mm &>> static/log.html & disown
-
     echo "> running: node crawler.js agp"
+    node crawler.js agp &>> static/log.html & disown
 
 #    3 hours
-#    sleep $((60 * 60 * 3)) && node crawler.js agp &>> static/log.html & disown
+#    sleep $((60 * 60 * 3)) && node crawler.js mm &>> static/log.html & disown
 
 #   3.5 hour
-    sleep $((60 * 30 * 7)) && node crawler.js agp &>> static/log.html & disown
+    echo "> running: node crawler.js mm"
+    sleep $((60 * 30 * 7)) && node crawler.js mm &>> static/log.html & disown
 
-    echo "> running: node crawler.js lh"
 
 #   7 hours
+    echo "> running: node crawler.js lh"
     sleep $((60 * 60 * 7)) && node crawler.js lh &>> static/log.html & disown
 
     # WARNING: CHANGE ALSO IN
     # crawler.js:245
-#           3.5h       3.5h       1h  = 8h
+#           3.5h       3.5h       3.5h  = 11h
 #       mm       agp        lh
 #
 fi
