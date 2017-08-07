@@ -1,2 +1,2 @@
 - remove double code to get list of links on the page
-- http and https links require('https') now is not working with https i think
+- http and https links require('https') now is not working with https i think (i need to check it)

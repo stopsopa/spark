@@ -1,0 +1,64 @@
+Eksport import settings version
+Add new portal dynamic
+Add link manually
+Delete link
+Komponent do filtrow
+Exclude javascript: in href
+
+- settigns nadpisanie dla pojedynczych stron (kolumna indikatorem)
+- excludowanie ()
+    - tester excludowania
+- triggerowanie innych stron
+
+http://www.lymphomahub.com/therapies/licenses//settings//subtype//trials/0/drug//page/3/2/keyword//location//region/
+
+http://www.lymphomahub.com/therapies/licenses/FDA,EMA/settings//subtype//trials/0/drug//page/1/2/keyword//location//region/
+
+http://www.lymphomahub.com/medical-information/categories//page/1/10/keyword/
+
+
+
+
+ where xx and ((www and ttt) or zz)
+ [
+ ]
+ {
+    t: 'bool'
+    f: 'and',
+    v: [
+        {
+            t: 'regexp',
+            f: (true|false),
+            v: /^therapies/
+        },
+        {
+            t: 'string'
+            f: (true|false),
+            v: '//settings'
+        },
+        {
+            t: false,
+            f: 'or',
+            v: [
+                {
+                    t: true
+                    f: (true|false),
+                    v: /^therapies/
+                },
+                {
+                    t: true
+                    f: (true|false),
+                    v: /^therapies/
+                },
+            ]
+        }
+    ]
+ }
+
+
+---- db layout ----
+
+# node machine:
+
+
+

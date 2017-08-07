@@ -14,9 +14,12 @@ kill -SIGTERM $(ps aux | grep "testmode" | grep -v grep | head -1 | awk '{print 
 if [ "$#" == 0 ] || [ "$#" -gt 1 ] ; then
 	echo "call: /bin/bash $0 start";
 else
-    echo 'starting servers...';
+    echo 'starting parser...';
+
     npm run parser ${PARSER_HOST} ${PARSER_PORT} testmode & disown
+
     cd test
+        echo 'starting testing endpoints server...';
         node server.js ${TESTEN_HOST} ${TESTEN_PORT} testmode & disown
         # http://localhost:92/crawler/index.html
     cd ..
