@@ -88,8 +88,6 @@ describe('parser - events log', () => {
 
         return json('/test/jsexception.html').then((response) => {
 
-            log('response.json.html', response.json.html);
-
             assert(response.json.html.indexOf('{"message":"do something before"}') > -1);
 
             assert.deepEqual(response.json.events.console.exception, [
@@ -117,7 +115,7 @@ describe('parser - events log', () => {
 
         return json('/test/console.error.html').then((response) => {
 
-            assert(response.json.html.indexOf('{"diff":true,"message":"do something before"}') > -1);
+            assert(response.json.html.indexOf('{"message":"do something before"}') > -1);
 
             var error = response.json.events.console.error;
 
@@ -153,7 +151,7 @@ describe('parser - events log', () => {
 
         return json('/test/console.log.html').then((response) => {
 
-            assert(response.json.html.indexOf('{"diff":true,"message":"do something before"}') > -1);
+            assert(response.json.html.indexOf('{"message":"do something before"}') > -1);
 
             var tmp = response.json.events.console.log.filter(function (r) {
                 return r[1].indexOf('console log message') > -1 || r[1].indexOf('c.l from ext file') > -1
@@ -183,7 +181,7 @@ describe('parser - events log', () => {
 
         return json('/test/alert.html').then((response) => {
 
-            assert(response.json.html.indexOf('{"diff":true,"message":"do something before"}') > -1);
+            assert(response.json.html.indexOf('{"message":"do something before"}') > -1);
 
             var tmp = response.json.events.console.alert;
 

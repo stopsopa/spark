@@ -17,10 +17,8 @@
         var delay = 500;
 
         document.addEventListener('DOMContentLoaded', function () {
-            var start = now();
             setTimeout(function () {
                 document.querySelector('div').innerHTML = JSON.stringify({
-                    diff: Math.abs( (now() - start) - delay) < 2,
                     message : 'do something ' + 'before'
                 });
             }, delay);
