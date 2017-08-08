@@ -81,10 +81,10 @@ https://docs.travis-ci.com/user/gui-and-headless-browsers/
 https://github.com/oliviertassinari/react-swipeable-views
 
 --- hash --- vvv
-node lib/hash.js "http://138.68.156.126:1025/crawler/index.html"
+node lib/hash.js "http://x.x.x.x:1025/crawler/index.html"
 
 {
-    "url": "http://138.68.156.126:1025/crawler/index.html",
+    "url": "http://x.x.x.x:1025/crawler/index.html",
     "hash": "fa099f7e8346f93bdd044b784abfb74d6db60ce8"
 }
 

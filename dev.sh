@@ -34,7 +34,7 @@ else
 #    npm run parser
 
 #    node parser.js test/config.js
-#    curl 'http://138.68.156.126:91/fetch?url=http://localhost:92/crawler/index.html' \
+#    curl 'http://x.x.x.x:91/fetch?url=http://localhost:92/crawler/index.html' \
 #    -H 'Content-type: application/json; charset=UTF-8' \
 #    --data-binary '{"returnonlyhtml":true}' --compressed
 fi
