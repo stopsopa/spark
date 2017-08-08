@@ -4,6 +4,8 @@ node_modules/
 /.vagrant
 *.tar
 *.tar.gz
+/static/asset/
+/static/dist/
 
 
 test/cache\.txt
