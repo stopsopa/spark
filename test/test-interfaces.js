@@ -40,13 +40,18 @@ overridetests('database interfaces tests', engines, (engine) => {
 
             var url = 'http://domain.com/directory/file';
 
+            var ids = [];
             
-            return Promise.all([
-                db.cache.create(url + '1'),
-                db.cache.create(url + '2')
-            ]).then((ids) => Promise.all(ids.map((r) => {
-                return db.cache.fetchOne(r.id);
-            }))).then((data) => {
+            return db.cache.create(url + '1').then(function (r) {
+                ids.push(r.id);
+                return db.cache.create(url + '2');
+            })
+            .then(function (r) {
+                ids.push(r.id);
+                return ids;
+            })
+            .then((ids) => Promise.all(ids.map(id => db.cache.fetchOne(id))))
+            .then((data) => {
                 data.forEach((d) => {
                     assert(db.hash(d.url) === d.id);
                     assert(d.html === null);

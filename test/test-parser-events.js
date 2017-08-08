@@ -88,7 +88,9 @@ describe('parser - events log', () => {
 
         return json('/test/jsexception.html').then((response) => {
 
-            assert(response.json.html.indexOf('{"diff":true,"message":"do something before"}') > -1);
+            log('response.json.html', response.json.html);
+
+            assert(response.json.html.indexOf('{"message":"do something before"}') > -1);
 
             assert.deepEqual(response.json.events.console.exception, [
                 [
