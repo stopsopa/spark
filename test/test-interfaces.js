@@ -33,7 +33,7 @@ overridetests('database interfaces tests', engines, (engine) => {
     describe('interfaces tests', () => {
 
         before(() => {
-            db.cache.truncate();
+            return db.cache.truncate();
         });
 
         it('create', () => {
@@ -41,17 +41,13 @@ overridetests('database interfaces tests', engines, (engine) => {
             var url = 'http://domain.com/directory/file';
 
             var ids = [];
-            
-            return db.cache.create(url + '1').then(function (r) {
-                ids.push(r.id);
-                return db.cache.create(url + '2');
-            })
-            .then(function (r) {
-                ids.push(r.id);
-                return ids;
-            })
-            .then((ids) => Promise.all(ids.map(id => db.cache.fetchOne(id))))
-            .then((data) => {
+
+            return Promise.all([
+                db.cache.create(url + '1'),
+                db.cache.create(url + '2')
+            ]).then((ids) => Promise.all(ids.map((r) => {
+                return db.cache.fetchOne(r.id);
+            }))).then((data) => {
                 data.forEach((d) => {
                     assert(db.hash(d.url) === d.id);
                     assert(d.html === null);

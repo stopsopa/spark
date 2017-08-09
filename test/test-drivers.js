@@ -27,7 +27,7 @@ overridetests('database drivers tests', engines, (engine) => {
 
     const driver        = rootrequire('lib', 'db', engine, 'driver');
 
-    const db            = driver(cnf);
+    const db            = driver(cnf, config);
 
     describe('database tests', () => {
 
@@ -45,7 +45,7 @@ overridetests('database drivers tests', engines, (engine) => {
             const db        = driver(test);
 
             return db.cache.query('show tables').catch((err) => {
-                assert.equal('connection error', err.message);
+                assert.equal('connection error: Error: connect ETIMEDOUT', err.message);
             });
         });
 
@@ -55,10 +55,68 @@ overridetests('database drivers tests', engines, (engine) => {
             });
         });
 
-        describe('CRUD', (done) => {
+        describe('parallel queries tests', () => {
+
+            beforeEach(() => {
+                return db.cache.truncate();
+            });
+
+            // node_modules/mocha/bin/mocha test/test-drivers.js
+            // https://github.com/stopsopa/spark/commit/2de2e965b8cdac2da25b4216e635073491235f6a
+            var again = (v) => {
+
+                return () => {
+
+                    it('try', () => {
+
+                        var ids;
+
+                        return db.cache.count()
+                            .then((count) => {
+                                assert.equal(0, count);
+                                return Promise.all(
+                                    '0123456789abcdefghijklmnoprstuwxyz'.split('')
+                                        .map(i => db.cache.create(i + v))
+                                );
+                            })
+                            .then((data) => {
+                                ids = data.map(row => row.id);
+                                return db.cache.count();
+                            })
+                            .then((count) => {
+                                assert.equal(34, count);
+                                return Promise.all(ids.map(id => db.cache.fetchOne(id)));
+                            })
+                            .then((ids) => {
+                                // console.log('ids', ids)
+                            })
+                        ;
+                    });
+                }
+            };
+
+            function unique(pattern) {
+                pattern || (pattern = 'xyxyxy');
+                return pattern.replace(/[xy]/g,
+                    function(c) {
+                        var r = Math.random() * 16 | 0,
+                            v = c == 'x' ? r : (r & 0x3 | 0x8);
+                        return v.toString(16);
+                    });
+            }
+
+            '0123456789abcdefghijklmnoprstuwxyz'.split('')
+                .forEach(i => describe('parallel queries ' + i, again(unique())));
+
+            after(function() {
+                return db.cache.truncate();
+            });
+        });
+
+        describe('CRUD', () => {
 
             before(() => {
-                db.cache.truncate();
+                return db.cache.truncate();
             });
 
             var id = 'test1';
@@ -185,8 +243,7 @@ overridetests('database drivers tests', engines, (engine) => {
                 })
                 .catch((e) => {
                     assert.deepEqual({
-                        error: 'found 2 rows',
-                        message: 'fetchOne query error',
+                        message: 'fetchOne query error: found 2 rows',
                     }, e);
                 });
             });
@@ -227,19 +284,10 @@ overridetests('database drivers tests', engines, (engine) => {
             it('syntax error', () => {
                 return db.cache.query("SELECT SELECT * FROM :table:", {id:'test'})
                     .catch((e) => {
-                        assert.deepEqual({
-                            message: e.message,
-                            error: {
-                                query: e.error.query,
-                                params: e.error.params
-                            }
-                        }, {
-                            message: 'query error',
-                            error: {
-                                query: 'SELECT SELECT * FROM `spark_cache`',
-                                params: {id: 'test'}
-                            }
-                        });
+                        assert.deepEqual(
+                            e.message,
+                            "query error: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECT * FROM `spark_cache`' at line 1"
+                        );
                     });
             });
 
