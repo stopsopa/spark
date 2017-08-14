@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `spark_cache` (
   `json` longtext DEFAULT NULL,
   `warning` varchar(10) DEFAULT NULL,
   `errorCounter` int(11) DEFAULT NULL,
-  `block` tinyint(1) NOT NULL DEFAULT '0',
+  `excluded` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `hash_index` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
