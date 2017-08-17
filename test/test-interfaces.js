@@ -56,7 +56,7 @@ overridetests('database interfaces tests', engines, (engine) => {
                     assert(d.json === null);
                     assert(d.warning === null);
                     assert(d.errorCounter === null);
-                    assert(d.block === 0);
+                    assert(d.excluded === 0);
                     assert(d.created.toISOString().length === 24);
                     assert(d.updateRequest.toISOString().length === 24);
                     assert(d.lastTimeFound.toISOString().length === 24);
@@ -101,7 +101,7 @@ overridetests('database interfaces tests', engines, (engine) => {
 
                     assert(d.warning === null);
                     assert(d.errorCounter === null);
-                    assert(d.block === 0);
+                    assert(d.excluded === 0);
                 });
         })
 
@@ -124,7 +124,7 @@ overridetests('database interfaces tests', engines, (engine) => {
                     assert.deepEqual(JSON.parse(d.json), {error:'wrong2'});
                     assert(d.warning === null);
                     assert(d.errorCounter === 2); // most important
-                    assert(d.block === 0);
+                    assert(d.excluded === 0);
                     assert(d.updateRequest === null);
                     assert(d.lastTimeFound.toISOString().length === 24);
                 });

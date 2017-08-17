@@ -134,7 +134,7 @@ overridetests('database drivers tests', engines, (engine) => {
                     json            : JSON.stringify({test:'data'}, null, '  ') || '-empty-',
                     warning         : 'test',
                     errorCounter    : 6,
-                    block           : 0
+                    excluded        : 0
                 };
 
                 return db.cache.insert(ins)
@@ -185,7 +185,7 @@ overridetests('database drivers tests', engines, (engine) => {
                     json            : null,
                     warning         : null,
                     errorCounter    : 0,
-                    block           : 1
+                    excluded        : 1
                 };
 
                 return db.cache.update(upd, id)
