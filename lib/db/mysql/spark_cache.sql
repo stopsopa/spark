@@ -15,18 +15,19 @@
 
 DROP TABLE IF EXISTS `spark_cache`;
 CREATE TABLE IF NOT EXISTS `spark_cache` (
-  `id` varchar(40) NOT NULL,
+  `id` varchar(40) NOT NULL COMMENT 'Hash from full url',
   `url` longtext NOT NULL,
-  `html` longtext DEFAULT NULL,
-  `created` datetime DEFAULT NULL,
+  `html` longtext,
+  `created` datetime NOT NULL COMMENT 'When link was found/created for the first time',
   `updated` datetime DEFAULT NULL,
-  `updateRequest` datetime DEFAULT NULL,
-  `lastTimeFound` datetime DEFAULT NULL,
-  `statusCode` int(10) unsigned DEFAULT NULL,
-  `json` longtext DEFAULT NULL,
+  `updateRequest` datetime DEFAULT NULL COMMENT 'Flat to prerender again',
+  `lastTimeFound` datetime DEFAULT NULL COMMENT 'Link last time found on other page',
+  `statusCode` int(3) unsigned DEFAULT NULL,
+  `json` longtext,
   `warning` varchar(10) DEFAULT NULL,
-  `errorCounter` int(11) DEFAULT NULL,
-  `excluded` tinyint(1) NOT NULL DEFAULT '0',
+  `errorCounter` int(3) unsigned DEFAULT NULL,
+  `excluded` datetime DEFAULT NULL COMMENT 'Link excluded from further prerendering',
+  `settings` longtext COMMENT '''export'' - will be exported with config, json - override settings and will be exported',
   PRIMARY KEY (`id`),
   KEY `hash_index` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

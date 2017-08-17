@@ -134,7 +134,8 @@ overridetests('database drivers tests', engines, (engine) => {
                     json            : JSON.stringify({test:'data'}, null, '  ') || '-empty-',
                     warning         : 'test',
                     errorCounter    : 6,
-                    excluded        : 0
+                    excluded        : null,
+                    settings        : null
                 };
 
                 return db.cache.insert(ins)
@@ -178,14 +179,15 @@ overridetests('database drivers tests', engines, (engine) => {
                 var upd = {
                     url             : 'http://url-',
                     html            : 'html-',
-                    created         : null,
+                    created         : db.date(),
                     updated         : null,
                     updateRequest   : db.date(),
                     statusCode      : 301,
                     json            : null,
                     warning         : null,
                     errorCounter    : 0,
-                    excluded        : 1
+                    excluded        : db.date(),
+                    settings        : "{data:true}"
                 };
 
                 return db.cache.update(upd, id)
@@ -210,7 +212,8 @@ overridetests('database drivers tests', engines, (engine) => {
                 var ins = {
                     id: id,
                     html: '-html-',
-                    url: 'http://url-'
+                    url: 'http://url-',
+                    created: db.date()
                 }
 
                 return db.cache.insert(ins)
@@ -220,7 +223,8 @@ overridetests('database drivers tests', engines, (engine) => {
                         var tmp = {
                             id      : data.id,
                             html    : data.html,
-                            url     : data.url
+                            url     : data.url,
+                            created : data.created
                         };
 
                         assert.deepEqual(ins, tmp);
@@ -252,7 +256,8 @@ overridetests('database drivers tests', engines, (engine) => {
                 return db.cache.insert({
                     id              : 'additionid',
                     url             : 'http://url-for-count',
-                    html            : 'other value'
+                    html            : 'other value',
+                    created         : db.date()
                 })
                 .then(() => db.cache.count({
                     'html': '%html%'

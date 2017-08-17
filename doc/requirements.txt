@@ -4,16 +4,17 @@ Add new portal dynamic
     - connection tester
 
 Add link manually
-    - individual
+    - individual   [column 'manual']
         - but it needs to be exported as a part of configuration
 
 Delete link
     - also through filter
 
 Komponent do filtrow
+    How to store filters? (maybe json in text field, might be sufficient ?)
 
-Settings overriding (indicator in listing)
-    - individually or
+Overriding settings (indicator in listing)
+    - individually or   [column 'settings']
     - through filters
         - tester
 
@@ -42,6 +43,9 @@ http://www.lymphomahub.com/therapies/licenses/FDA,EMA/settings//subtype//trials/
 
 http://www.lymphomahub.com/medical-information/categories//page/1/10/keyword/
 
+
+// regexp serialization in json:
+//      https://github.com/vkiryukhin/jsonfn/blob/master/jsonfn.js
 
  where xx and ((www and ttt) or zz)
  [
