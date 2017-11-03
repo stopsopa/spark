@@ -128,10 +128,10 @@ function crawl() {
 
             url += ((url.indexOf('?') > -1) ? '&' : '?' ) + '_';
 
-            log(row.url);
-
             spark(url)
                 .then(function (res) {
+
+                    log(`${res.statusCode} - ${row.url}`);
 
                     var list = [], origin;
 
@@ -210,7 +210,7 @@ WHERE               id = :id
                     }
                 }, function (e) {
 
-                    log("spark can't crawl : " + row.url, JSON.stringify(e));
+                    log("      spark can't crawl : " + row.url, JSON.stringify(e));
 
                     if (!emergency) {
                         emercounter = 0;
