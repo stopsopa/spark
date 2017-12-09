@@ -242,6 +242,9 @@ log('start...');
 
         db.cache.query('update :table: set updateRequest = FROM_UNIXTIME(UNIX_TIMESTAMP() + (100000 - length(url)))').then(function () {
             inter(config.crawler.continueIdleAfter);
+        }, function (e) {
+            log('updateRequest error');
+            log(e)
         });
 
         pingdom.set(process.argv[2]);

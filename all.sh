@@ -2,12 +2,10 @@
 
 echo "> stopping processes";
 
-sudo killall electron &> /dev/null
-sudo killall electron &> /dev/null
-sudo killall electron &> /dev/null
-sudo killall node &> /dev/null
-sudo killall node &> /dev/null
-sudo killall node &> /dev/null
+sudo /bin/bash kill.sh electron 1> /dev/null 2> /dev/null
+sudo /bin/bash kill.sh crawler.js 1> /dev/null 2> /dev/null
+sudo /bin/bash kill.sh server.jsx 1> /dev/null 2> /dev/null
+sudo /bin/bash kill.sh supervisor 1> /dev/null 2> /dev/null
 
 kill $(ps aux | grep bash | grep -v grep | grep -v "$$" | grep -v "  $1" | awk '{print $2}') &> /dev/null
 
