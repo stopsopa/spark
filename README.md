@@ -7,3 +7,5 @@ What? Why?
 
 In order to provide SEO accesability for existing projects (Angular 1) I decided to go for prerender tools.
 I didn't want though use prerender.io because it is old.
+Project is currently in use with few projects from more then year and it seems to work just fine.
+Progressively though I'm replacing all systems with SSR build on top of React/Redux stack.
