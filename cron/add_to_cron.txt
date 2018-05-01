@@ -2,5 +2,11 @@
 
 /opt/pinggui2/react
 
+*    *  *  *  * root cd /opt/spark && date "+ --- vvv \%Y-\%m-\%d \%H:\%M:\%S vvv ---" >> ensure.log && /bin/bash ensure.sh >> ensure.log
 
-* *     * * *        root     cd /opt/spark && /bin/bash ensure.sh >> ensure.log
+/opt/spark/
+
+*    *  *  *  * root cd /opt/spark && date "+ --- vvv \%Y-\%m-\%d \%H:\%M:\%S vvv ---" >> static/logs/a-logs.log  && /bin/bash ensure.sh $$ 2>&1 >> static/logs/a-logs.log
+
+
+while true; do /bin/bash all.sh $$; sleep 60; done & disown &>> cron_working_pid.log

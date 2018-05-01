@@ -1,9 +1,5 @@
 #!/bin/bash
 
-
-( sleep 5 ; echo "test" ) &
-
-
 trim() {
     local var="$*"
     # remove leading whitespace characters
@@ -18,11 +14,13 @@ TEST=$(trim $TEST)
 
 if [ "$TEST" == "< HTTP/1.1 200 OK" ]; then
     echo 'it works'
-    echo -e "\n"
 else
     echo 'try to restart'
-    echo -e "\n"
+    echo "command /bin/bash cron.sh "$$" $1"
 
-    ( sleep 5 ; /bin/bash all.sh start ) &
+    # https://stackoverflow.com/a/20401674/5560682
+    function faketty { script -qfc "$(printf "%q " "$@")"; }
+
+    faketty /bin/bash cron.sh "$$" $1
 fi
 
