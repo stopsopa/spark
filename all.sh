@@ -14,7 +14,7 @@ sleep 3
 echo "now run manually: "
 echo "    ";
 echo "    ";
-echo "    while true; do /bin/bash cron.sh \$\$; sleep 20; done & disown";
+echo "    while true; do /bin/bash cron.sh \$\$; sleep 120; done & disown";
 echo "    ";
 echo "    ";
 #while true; do /bin/bash cron.sh $$; sleep 120; done & disown
