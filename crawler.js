@@ -1,8 +1,8 @@
-'use strict';
+// 'use strict';
+
 
 const path          = require('path');
 const http          = require('http');
-const process       = require('process');
 const sha1          = require('sha1');
 
 
@@ -252,3 +252,27 @@ log('start...');
     run();
     setInterval(run, parseInt(60 * 60 * 11) * 1000); // 10800000
 }());
+
+
+
+// ping endpoint
+
+(/^\d+$/.test(process.argv[3])) ? (function (port) {
+
+    const express       = require('express');
+
+    const app           = express();
+
+    app.all('/ping', (req, res) => {
+        res.end(JSON.stringify({
+            ok: true,
+            // port: port
+        }))
+    });
+
+    app.listen(port, '0.0.0.0', () => {
+
+        console.log('crawler.js endpoint is up and running: 0.0.0.0:' + port)
+    });
+
+}(parseInt(process.argv[3], 10))) : (function () {throw `process.argv[3] is missing`}());

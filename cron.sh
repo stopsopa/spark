@@ -16,9 +16,19 @@ TEST=$(trim $TEST)
 
 if [ "$TEST" == "< HTTP/1.1 200 OK" ]; then
 
-    echo 'it works'
+    TEST=$(curl localhost:456/ping);
 
-    exit 0;
+    if [ "$TEST" == '{"ok":true}' ]; then
+
+        echo 'it works'
+
+        exit 0;
+
+    else
+        echo 'localhost:456/ping doesnt work'
+    fi
+else
+    echo 'http://138.68.156.126/pingdom doesnt work'
 fi
 
 
@@ -70,20 +80,20 @@ else
     npm run supervisor 0.0.0.0 8080 &>> /dev/null & disown
     /bin/bash start.sh 0.0.0.0 80 &>> /dev/null & disown
 
-    echo "> running: node crawler.js agp"
-    node crawler.js agp &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js agp 456"
+    node crawler.js agp 456 &>> ${LOGFILE} & disown
 
 #    3 hours
 #    sleep $((60 * 60 * 3)) && node crawler.js mm &>> ${LOGFILE} & disown
 
 #   3.5 hour
-    echo "> running: node crawler.js mm"
-    sleep $((60 * 30 * 7)) && node crawler.js mm &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js mm 457"
+    sleep $((60 * 30 * 7)) && node crawler.js mm 457 &>> ${LOGFILE} & disown
 
 
 #   7 hours
-    echo "> running: node crawler.js lh"
-    sleep $((60 * 60 * 7)) && node crawler.js lh &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js lh 458"
+    sleep $((60 * 60 * 7)) && node crawler.js lh 458 &>> ${LOGFILE} & disown
 
     # WARNING: CHANGE ALSO IN
     # crawler.js:245
