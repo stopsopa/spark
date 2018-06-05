@@ -257,22 +257,22 @@ log('start...');
 
 // ping endpoint
 
-(/^\d+$/.test(process.argv[3])) ? (function (port) {
-
-    const express       = require('express');
-
-    const app           = express();
-
-    app.all('/ping', (req, res) => {
-        res.end(JSON.stringify({
-            ok: true,
-            // port: port
-        }))
-    });
-
-    app.listen(port, '0.0.0.0', () => {
-
-        console.log('crawler.js endpoint is up and running: 0.0.0.0:' + port)
-    });
-
-}(parseInt(process.argv[3], 10))) : (function () {throw `process.argv[3] is missing`}());
+// (/^\d+$/.test(process.argv[3])) ? (function (port) {
+//
+//     const express       = require('express');
+//
+//     const app           = express();
+//
+//     app.all('/ping', (req, res) => {
+//         res.end(JSON.stringify({
+//             ok: true,
+//             // port: port
+//         }))
+//     });
+//
+//     app.listen(port, '0.0.0.0', () => {
+//
+//         console.log('crawler.js endpoint is up and running: 0.0.0.0:' + port)
+//     });
+//
+// }(parseInt(process.argv[3], 10))) : (function () {throw `process.argv[3] is missing`}());

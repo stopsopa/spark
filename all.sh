@@ -34,12 +34,14 @@ echo 'end...'
 #
 
 
-#
+# 
 # and it should be:
 # root      1870  0.0  3.5 949896 36496 ?        Sl   May01   0:03 node index.server.js pingserver
-# root     29861  3.3  3.8 890968 39072 pts/0    Sl   09:42   0:00 node server.jsx 0.0.0.0 80
 # root     29499  0.2  2.8 682460 28852 pts/0    Sl   09:41   0:00 node logs_server.js --dir static/logs --log 0 --port 88 --flag prerenderlogserver
-
 # root     29799  4.6  3.7 1188184 38588 pts/0   Sl   09:42   0:00 node crawler.js agp
+# root     29859  0.0  0.0   4512   720 pts/0    S    09:42   0:00 sh -c node server.jsx "0.0.0.0" "80"
+# root     29860  0.0  0.0   4512   764 pts/0    S    09:42   0:00 sh -c node supervisor.jsx "0.0.0.0" "8080"
+# root     29861  3.3  3.8 890968 39072 pts/0    Sl   09:42   0:00 node server.jsx 0.0.0.0 80
 # root     29867  2.1  3.4 884068 34648 pts/0    Sl   09:42   0:00 node supervisor.jsx 0.0.0.0 8080
+# root     29878  0.0  0.0  12944   976 pts/0    S+   09:42   0:00 grep --color=auto node
 #
