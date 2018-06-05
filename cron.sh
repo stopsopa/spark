@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 trim() {
     local var="$*"
     # remove leading whitespace characters
@@ -80,20 +78,22 @@ else
     npm run supervisor 0.0.0.0 8080 &>> /dev/null & disown
     /bin/bash start.sh 0.0.0.0 80 &>> /dev/null & disown
 
-    echo "> running: node crawler.js agp 456"
-    node crawler.js agp 456 &>> ${LOGFILE} & disown
-
-#    3 hours
-#    sleep $((60 * 60 * 3)) && node crawler.js mm &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js gvhd 453"
+    node crawler.js gvhd 453 &>> ${LOGFILE} & disown
 
 #   3.5 hour
-    echo "> running: node crawler.js mm 457"
-    sleep $((60 * 30 * 7)) && node crawler.js mm 457 &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js agp 454"
+    sleep $((60 * 30 * 7)) && node crawler.js agp 454 &>> ${LOGFILE} & disown
 
 
 #   7 hours
-    echo "> running: node crawler.js lh 458"
-    sleep $((60 * 60 * 7)) && node crawler.js lh 458 &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js mm 455"
+    sleep $((60 * 60 * 7)) && node crawler.js mm 455 &>> ${LOGFILE} & disown
+
+
+#   11.5 hours
+    echo "> running: node crawler.js lh 456"
+    sleep $((60 * 60 * 7)) && node crawler.js lh 456 &>> ${LOGFILE} & disown
 
     # WARNING: CHANGE ALSO IN
     # crawler.js:245
