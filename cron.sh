@@ -88,12 +88,12 @@ else
 
 #   7 hours
     echo "> running: node crawler.js mm 455"
-    sleep $((60 * 60 * 7)) && node crawler.js mm 455 &>> ${LOGFILE} & disown
+    sleep $((60 * 30 * 15)) && node crawler.js mm 455 &>> ${LOGFILE} & disown
 
 
 #   11.5 hours
     echo "> running: node crawler.js lh 453"
-    sleep $((60 * 60 * 7)) && node crawler.js lh 453 &>> ${LOGFILE} & disown
+    sleep $((60 * 30 * 23)) && node crawler.js lh 453 &>> ${LOGFILE} & disown
 
     # WARNING: CHANGE ALSO IN
     # crawler.js:245
