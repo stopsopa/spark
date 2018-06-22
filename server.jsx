@@ -480,6 +480,11 @@ app.all('/fetch', (req, res) => {
                                             continue;
                                         }
 
+                                                        // special hub case
+                                                        if (h.indexOf('/pdf/download/') !== -1) {
+                                                            continue;
+                                                        }
+
                                         if (/^file:/.test(h)) {
                                             continue;
                                         }
