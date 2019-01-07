@@ -248,8 +248,8 @@ app.all('/fetch', (req, res) => {
                     return json(500, {
                         error: 'prerequest',
                         code: 'wrong-status-code',
-                        prerender,
-                        params,
+                        // prerender,
+                        // params,
                         data: {
                             status: res.statusCode,
                             headers: res.headers
