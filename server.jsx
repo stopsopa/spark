@@ -3,6 +3,7 @@
 const path          = require('path');
 require(path.resolve(__dirname, 'lib', 'rootrequire.jsx'))(__dirname, '.');
 const http          = require('http');
+const https         = require('https');
 const sha1          = require('sha1');
 
 const Nightmare     = require('nightmare');
@@ -108,6 +109,8 @@ function unique(pattern) {
 
 function curl(uri, method, headers) {
 
+    const hts = /^https:\/\//i.test(uri);
+
     uri = url.parse(uri);
 
     var options = {
@@ -122,7 +125,7 @@ function curl(uri, method, headers) {
 
     return new Promise(function (resolve, reject) {
 
-        var req = http.request(options, function(res) {
+        var req = (hts ? https : http).request(options, function(res) {
 
             res.setEncoding('utf8');
 
@@ -245,6 +248,8 @@ app.all('/fetch', (req, res) => {
                     return json(500, {
                         error: 'prerequest',
                         code: 'wrong-status-code',
+                        prerender,
+                        params,
                         data: {
                             status: res.statusCode,
                             headers: res.headers
