@@ -121,17 +121,19 @@ function crawl() {
         return;
     }
 
-    db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL ORDER BY updateRequest DESC LIMIT 1")
+    db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL AND block = 0 ORDER BY updateRequest DESC LIMIT 1")
         .then(function (row, url) {
 
             url = row.url;
 
             url += ((url.indexOf('?') > -1) ? '&' : '?' ) + '_';
 
+            log(`att: ${row.url}`);
+
             spark(url)
                 .then(function (res) {
 
-                    log(`${res.statusCode} - ${row.url}`);
+                    log(`${res.statusCode}: ${row.url}`);
 
                     var list = [], origin;
 
@@ -175,9 +177,17 @@ function crawl() {
                                     // log('inter');
                                     inter(config.crawler.waitBeforeCrawlNextPage);
                                 }, function (e) {
-                                    log.json('error')
+
+                                    log.json(`error '${row.url}': blocked`);
                                     log.json(e)
-                                    log.json(upd)
+                                    log.json(upd);
+
+                                    db.cache.update({
+                                        block: 1,
+                                    }, row.id).then(() => {
+
+                                        inter(config.crawler.waitBeforeCrawlNextPage);
+                                    });
                                 });
                         });
                     }

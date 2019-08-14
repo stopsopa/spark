@@ -8,7 +8,7 @@ apt-get update &&\
 
 Xvfb -ac -screen scrn 1280x2000x24 :9.0 &> /dev/null & disown
 
-oraz    BARDZO WAŻNE ABY DODAĆ TO DO .bashrc
+and it's very important do add this to .bashrc
 export DISPLAY=:9.0
 
 diagnose:

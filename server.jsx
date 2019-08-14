@@ -591,6 +591,22 @@ app.all('/fetch', (req, res) => {
                             }
                         }());
 
+                        fix = (function (old) {
+
+                            return html => {
+
+                                if (typeof html === 'string') {
+
+                                    html = html.replace(/\?_&amp;___prerender/g, '');
+
+                                    html = html.replace(/\?_&___prerender/g, '');
+                                }
+
+                                return old(html);
+                            }
+
+                        }(fix));
+
                         data.internalLinks.href     = fix(data.internalLinks.href);
                         data.internalLinks.search   = fix(data.internalLinks.search);
                         data.internalLinks.links    = (function () {
