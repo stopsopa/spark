@@ -121,7 +121,8 @@ function crawl() {
         return;
     }
 
-    db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL AND block = 0 ORDER BY updateRequest DESC LIMIT 1")
+    // db.cache.fetchOne("SELECT * FROM :table: WHERE updateRequest IS NOT NULL AND block = 0 ORDER BY updateRequest DESC LIMIT 1")
+    db.cache.fetchOne("SELECT * FROM :table: s WHERE updateRequest IS NOT NULL AND block = 0 ORDER BY CASE WHEN (s.statusCode = 200) THEN 1 ELSE 0 END, updateRequest DESC LIMIT 1")
         .then(function (row, url) {
 
             url = row.url;
@@ -193,9 +194,7 @@ function crawl() {
                     }
                     else {
                         db.cache.query(`
-UPDATE :table: SET  html            = :html,
-                    updated         = :updated,
-                    statusCode      = :statusCode,
+UPDATE :table: SET  updated         = :updated,
                     updateRequest     = null,
                     json            = :json,
                     warning         = null,
@@ -203,10 +202,10 @@ UPDATE :table: SET  html            = :html,
 WHERE               id = :id                         
 `,                      {
                             id          : row.id,
-                            html        : html || '',
+                            // html        : html || '',
                             updated     : db.now(),
                             updateRequest     : null,
-                            statusCode  : res.statusCode,
+                            // statusCode  : res.statusCode,
                             json        : JSON.stringify(res.json, null, '  ') || '-empty-'
                         })
                         .then(function (res) {

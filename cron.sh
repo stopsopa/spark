@@ -82,13 +82,13 @@ else
     node crawler.js gvhd 456 &>> ${LOGFILE} & disown
 
 #   3.5 hour
-    echo "> running: node crawler.js agp 454"
-    sleep $((60 * 30 * 7)) && node crawler.js agp 454 &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js mm 454"
+    sleep $((60 * 30 * 7)) && node crawler.js mm 454 &>> ${LOGFILE} & disown
 
 
 #   7 hours
-    echo "> running: node crawler.js mm 455"
-    sleep $((60 * 30 * 15)) && node crawler.js mm 455 &>> ${LOGFILE} & disown
+    echo "> running: node crawler.js agp 455"
+    sleep $((60 * 30 * 15)) && node crawler.js agp 455 &>> ${LOGFILE} & disown
 
 
 #   11.5 hours
