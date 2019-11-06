@@ -2,12 +2,12 @@
 
 /bin/bash stopall.sh
 
+/bin/bash kill.sh cron.sh $$
 
 kill $(ps aux | grep bash | grep -v grep | grep -v "$$" | grep -v " Ss+ " | grep -v " Ss ") &> /dev/null
 sudo /bin/bash kill.sh prerenderlogserver &> /dev/null
 
 node logs_server.js --dir static/logs --log 0 --port 88 --flag prerenderlogserver & disown
-
 
 sleep 3
 
