@@ -9,29 +9,34 @@ trim() {
     echo -n "$var"
 }
 
-TEST=$(curl -vs -o /dev/null  http://138.68.156.126/pingdom 2>&1 | grep 'HTTP/1.1' | grep -v ping);
-TEST=$(trim $TEST)
 
-if [ "$TEST" == "< HTTP/1.1 200 OK" ]; then
+#    /bin/bash all.sh
+#    while true; do /bin/bash cron.sh 31413; sleep 3600; done & disown
 
-    TEST=$(curl localhost:456/ping);
 
-    if [ "$TEST" == '{"ok":true}' ]; then
+CMD="node ping.js http://138.68.156.126/pingdom"
 
-        echo 'it works'
+printf "\nCMD: $CMD"
+
+$CMD;
+
+if [ "$?" = "200" ]; then
+
+    CMD="node ping.js http://localhost:456/ping"
+
+    printf "\nCMD: $CMD"
+
+    $CMD;
+
+    if [ "$?" = "200" ]; then
+
+        printf "\nit works"
 
         exit 0;
-
-    else
-        echo 'localhost:456/ping doesnt work'
     fi
 else
     echo 'http://138.68.156.126/pingdom doesnt work'
 fi
-
-
-
-
 
 echo "> stopping processes";
 

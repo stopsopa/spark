@@ -776,6 +776,16 @@ app.get('/ajaxwrong', (req, res) => {
 
 });
 
+app.get('/302', (req, res) => {
+
+    return res.redirect('/test');
+    res.writeHead(302, {
+        'Location': 'your/404/path.html'
+        //add other headers here...
+    });
+    res.end();
+});
+
 app.get('/pingdom', (req, res) => {
     res.end(JSON.stringify({
         status: pingdom.test(),

@@ -562,6 +562,10 @@ ini@~1.3.0:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.4.tgz#0537cb79daf59b59a1a517dff706c86ec039162e"
 
+inspc@^0.0.18:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/inspc/-/inspc-0.0.18.tgz#b753aa751d28e416ac663cf9cb9016f8e826d70a"
+
 ipaddr.js@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ipaddr.js/-/ipaddr.js-1.1.1.tgz#c791d95f52b29c1247d5df80ada39b8a73647230"
