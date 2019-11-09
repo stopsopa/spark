@@ -35,7 +35,7 @@ if [ "$?" = "200" ]; then
         exit 0;
     fi
 else
-    echo 'http://138.68.156.126/pingdom doesnt work'
+    echo 'http://138.68.156.126/pingdom doesnt work, YET but it will be NOW'
 fi
 
 echo "> stopping processes";
@@ -47,7 +47,7 @@ LOGDIR="static/logs";
 NOW=$(date +%Y-%m-%d-%H-%M-%S);
 LOGFILE="${DIR}/${LOGDIR}/${NOW}.log"
 
-echo 'before';
+echo 'before kill';
 
 sudo /bin/bash kill.sh electron &> /dev/null
 sudo /bin/bash kill.sh crawler.js &> /dev/null
@@ -61,7 +61,7 @@ sudo /bin/bash kill.sh server.jsx &> /dev/null
 sudo /bin/bash kill.sh supervisor &> /dev/null
 # sudo /bin/bash kill.sh prerenderlogserver &> /dev/null
 
-echo 'after'
+echo 'after kill'
 
 if [ $# -gt 1 ] ; then
     ps aux | grep bash | grep -v grep | grep -v "$$" | grep -v "\-bash" | grep -v "  $1" | grep -v "  $2"
