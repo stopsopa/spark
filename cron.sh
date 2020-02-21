@@ -87,8 +87,8 @@ else
     node crawler.js agp 456 &>> ${LOGFILE} & disown
 
 #   6 hour
-    echo "> running: node crawler.js lh 454"
-    sleep $((60 * 60 * 6)) && node crawler.js lh 454 &>> ${LOGFILE} & disown
+#    echo "> running: node crawler.js lh 454"
+#    sleep $((60 * 60 * 6)) && node crawler.js lh 454 &>> ${LOGFILE} & disown
 
 
 #   12 hours
@@ -107,6 +107,9 @@ else
 
     # node logs_server.js --dir ${LOGDIR} --log 0 --port 88 --flag prerenderlogserver & disown
 fi
+
+
+printf "\n\n    now just go to \n\n        http://138.68.156.126:88/ \n\n    to determine if prerender is working\n\n"
 
 
 

@@ -259,7 +259,7 @@ log('start...');
         pingdom.set(process.argv[2]);
     }
     run();
-    setInterval(run, parseInt(60 * 60 * 11) * 1000); // 10800000
+    setInterval(run, parseInt(60 * 60 * 24) * 1000); // 10800000
 }());
 
 
