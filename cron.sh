@@ -83,8 +83,8 @@ else
     npm run supervisor 0.0.0.0 8080 &>> /dev/null & disown
     /bin/bash start.sh 0.0.0.0 80 &>> /dev/null & disown
 
-    echo "> running: node crawler.js agp 456"
-    node crawler.js agp 456 &>> ${LOGFILE} & disown
+#    echo "> running: node crawler.js agp 456"
+#    node crawler.js agp 456 &>> ${LOGFILE} & disown
 
 #   6 hour
 #    echo "> running: node crawler.js lh 454"
@@ -92,8 +92,8 @@ else
 
 
 #   12 hours
-    echo "> running: node crawler.js mm 455"
-    sleep $((60 * 60 * 12)) && node crawler.js mm 455 &>> ${LOGFILE} & disown
+#    echo "> running: node crawler.js mm 455"
+#    sleep $((60 * 60 * 12)) && node crawler.js mm 455 &>> ${LOGFILE} & disown
 
 
 #   18 hours
