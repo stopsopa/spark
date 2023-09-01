@@ -2,6 +2,13 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/stopsopa/spark/badge.svg?branch=master)](https://coveralls.io/github/stopsopa/spark?branch=master)
 
+# DEPRECATED
+Created in 2016 - quite old now and not maintained.
+
+Nothing to be ashamed here:
+
+I used best tools available at a time and delivered what's needed quickly.
+
 What? Why?
 -
 
